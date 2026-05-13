@@ -37,7 +37,7 @@ export function Step5Preview() {
   const s2 = calcStep2Preview(config);
   const s3 = calcStep3Preview(config);
 
-  const realScenario = config.scenarios.find((s) => s.label === "realiste");
+  
   const pessScenario = config.scenarios.find((s) => s.label === "pessimiste");
   const optiScenario = config.scenarios.find((s) => s.label === "optimiste");
   const equityLow =

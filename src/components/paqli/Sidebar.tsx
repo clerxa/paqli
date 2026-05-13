@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Package,
@@ -7,6 +7,7 @@ import {
   GraduationCap,
   Award,
   Settings,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "./Logo";

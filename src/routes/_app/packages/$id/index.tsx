@@ -8,7 +8,7 @@ import { StatusPill } from "@/components/paqli/StatusPill";
 import { Skeleton } from "@/components/paqli/Skeleton";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
 import { Chip, NumberField, TextField } from "@/components/paqli/configurator/fields";
-import { DeviceChip } from "./index";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { loadPackage } from "@/lib/packageService";

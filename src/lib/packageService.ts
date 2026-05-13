@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import type { PackageConfig } from "./packageConfig";
-import { defaultBenefits } from "./packageConfig";
+import type { PackageConfig, ScenarioLabel } from "./packageConfig";
+import { defaultBenefits, defaultScenarios } from "./packageConfig";
 
 export async function upsertPackage(
   config: PackageConfig,

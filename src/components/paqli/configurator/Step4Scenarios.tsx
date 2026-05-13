@@ -50,21 +50,9 @@ export function Step4Scenarios() {
           Vous n'avez pas configuré de dispositif equity (BSPCE, AGA, RSU…).
           Cette étape n'est pas nécessaire pour votre package.
         </div>
-        <Link
-          to="/packages/$id/edit"
-          params={{ id: config.packageId ?? "" }}
-          className="inline-block"
-        >
-          <Button
-            variant="ghost"
-            onClick={(e) => {
-              e.preventDefault();
-              patch({ currentStep: 5 });
-            }}
-          >
-            Passer à l'étape suivante →
-          </Button>
-        </Link>
+        <Button variant="ghost" onClick={() => patch({ currentStep: 5 })}>
+          Passer à l'étape suivante →
+        </Button>
       </div>
     );
   }

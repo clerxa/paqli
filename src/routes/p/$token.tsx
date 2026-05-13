@@ -440,7 +440,7 @@ function PackageView({ data }: { data: CandidateLinkData }) {
         </p>
         <button
           onClick={async () => {
-            await trackEvent(data.id, "rdv_click");
+            await trackEvent("rdv_click");
             window.location.href = `mailto:?subject=${encodeURIComponent(
               `Question sur mon package ${pkg.title}`,
             )}`;

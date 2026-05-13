@@ -30,6 +30,13 @@ export function Configurator() {
       toast.error(err);
       return;
     }
+    if (config.currentStep === 4 && config.equityDevices.length > 0) {
+      const sErr = validateScenarios(config.scenarios);
+      if (sErr) {
+        toast.error(sErr);
+        return;
+      }
+    }
     await saveDraft();
     if (config.currentStep < 5) {
       const next = config.currentStep + 1;

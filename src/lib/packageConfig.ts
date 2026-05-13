@@ -225,3 +225,50 @@ export function validateStep(c: PackageConfig, step: number): string | null {
   }
   return null;
 }
+
+// Step 4 — equity scenarios
+export function estimateEquityScenario(
+  device: EquityDeviceForm | undefined,
+  targetValuationM: number,
+): number {
+  if (!device || targetValuationM <= 0) return 0;
+  if (!device.quantity || !device.currentValuationM) return 0;
+
+  if (device.type === "bspce" || device.type === "stock_options") {
+    if (!device.strikePrice) return 0;
+    const multiple = targetValuationM / device.currentValuationM;
+    const exitPrice = device.strikePrice * multiple;
+    const grossGain = (exitPrice - device.strikePrice) * device.quantity;
+    if (grossGain <= 0) return 0;
+    return roundForDisplay(grossGain * (1 - 0.314));
+  }
+  // shares-like (aga/rsu/espp)
+  const ref = device.strikePrice > 0 ? device.strikePrice : 1;
+  const multiple = targetValuationM / Math.max(device.currentValuationM, 0.0001);
+  const exit = ref * multiple;
+  const gross = exit * device.quantity;
+  if (gross <= 0) return 0;
+  return roundForDisplay(gross * (1 - 0.314));
+}
+
+export function estimateScenarioTotal(
+  devices: EquityDeviceForm[],
+  targetValuationM: number,
+): number {
+  let total = 0;
+  for (const d of devices) total += estimateEquityScenario(d, targetValuationM);
+  return roundForDisplay(total);
+}
+
+export function validateScenarios(scenarios: ScenarioForm[]): string | null {
+  const pess = scenarios.find((s) => s.label === "pessimiste")?.targetValuationM ?? 0;
+  const real = scenarios.find((s) => s.label === "realiste")?.targetValuationM ?? 0;
+  const opti = scenarios.find((s) => s.label === "optimiste")?.targetValuationM ?? 0;
+  if (pess <= 0 || real <= 0 || opti <= 0)
+    return "Tous les scénarios doivent avoir une valorisation supérieure à 0.";
+  if (real <= pess)
+    return "Le scénario réaliste doit être supérieur au pessimiste.";
+  if (opti <= real)
+    return "Le scénario optimiste doit être supérieur au réaliste.";
+  return null;
+}

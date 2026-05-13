@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Link } from "@tanstack/react-router";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { Chip, NumberField, TextArea, WarnBanner } from "./fields";
 import { Button } from "@/components/paqli/Button";

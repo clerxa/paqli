@@ -102,6 +102,11 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
     .from("savings_devices")
     .select("*")
     .eq("package_id", id);
+  const { data: sc } = await supabase
+    .from("scenarios")
+    .select("*")
+    .eq("package_id", id)
+    .order("display_order", { ascending: true });
 
   const benefits = {
     ...defaultBenefits,

@@ -17,6 +17,7 @@ export async function upsertPackage(
     variable_target: config.variableTarget || null,
     benefits: config.benefits as unknown as Json,
     scenario_message: config.scenarioMessage || null,
+    scenario_display: config.scenarioDisplay,
     updated_at: new Date().toISOString(),
   };
 

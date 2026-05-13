@@ -13,9 +13,18 @@ function AppLayout() {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate({ to: "/login" });
+      navigate({ to: "/login", replace: true });
     }
   }, [loading, user, navigate]);
+
+  if (loading || !user) {
+    return (
+      <div
+        className="flex min-h-screen w-full items-center justify-center"
+        style={{ background: "#FAF8F5" }}
+      />
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full" style={{ background: "#FAF8F5" }}>

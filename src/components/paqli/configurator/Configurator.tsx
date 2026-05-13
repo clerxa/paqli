@@ -58,12 +58,12 @@ export function Configurator() {
         return <Step2Equity />;
       case 3:
         return <Step3Savings />;
+      case 4:
+        return <Step4Scenarios />;
+      case 5:
+        return <Step5Preview />;
       default:
-        return (
-          <div className="text-[13px] text-grey italic">
-            Étape {config.currentStep} — à venir.
-          </div>
-        );
+        return null;
     }
   }, [config.currentStep]);
 

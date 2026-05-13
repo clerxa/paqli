@@ -95,6 +95,12 @@ function PackageView({ data }: { data: CandidateLinkData }) {
   const pkg = data.packages;
   const org = pkg.organizations;
 
+  const track = useServerFn(trackLink);
+  const trackEvent = (
+    eventType: "simulated" | "question" | "rdv_click",
+    metadata?: Record<string, unknown>,
+  ) => track({ data: { token: data.token, eventType, metadata } }).catch(() => {});
+
   const [params, setParams] = useState<CandidateParams>({
     tmi: 0.30,
     seniority: 3,
@@ -106,7 +112,7 @@ function PackageView({ data }: { data: CandidateLinkData }) {
   function scheduleTrack(param: string, value: any) {
     if (trackTimer.current) window.clearTimeout(trackTimer.current);
     trackTimer.current = window.setTimeout(() => {
-      void trackEvent(data.id, "simulated", { param, value });
+      void trackEvent("simulated", { param, value });
     }, 2000);
   }
 

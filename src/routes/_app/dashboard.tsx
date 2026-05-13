@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Package as PackageIcon, ArrowUpRight } from "lucide-react";
 import { Topbar } from "@/components/paqli/Topbar";
 import { MetricCard } from "@/components/paqli/MetricCard";
@@ -7,6 +8,7 @@ import { StatusPill, type PillStatus } from "@/components/paqli/StatusPill";
 import { Button } from "@/components/paqli/Button";
 import { Skeleton } from "@/components/paqli/Skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import { seedDemoData } from "@/lib/seedDemo";
 import {
   useDashboard,
   timeAgo,

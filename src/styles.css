@@ -91,3 +91,8 @@
     letter-spacing: -0.01em;
   }
 }
+
+@keyframes paqli-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

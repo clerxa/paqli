@@ -94,9 +94,9 @@ export const emptyConfig: PackageConfig = {
   benefits: defaultBenefits,
   equityDevices: [],
   savingsDevices: [],
-  scenarios: [],
+  scenarios: defaultScenarios,
   scenarioMessage: "",
-  scenarioDisplay: "realistic_only",
+  scenarioDisplay: "all",
 };
 
 export function roundForDisplay(value: number): number {

@@ -1,0 +1,223 @@
+// Client-side fiscal estimation engine for Paqli candidate view
+// Rates hardcoded for 2026 — used for real-time recalculation
+
+export const TAX_2026 = {
+  FLAT_TAX: 0.314,
+  IR_BSPCE_3Y_PLUS: 0.128,
+  IR_BSPCE_UNDER_3Y: 0.30,
+  PS_RATE: 0.186,
+  CSG_CRDS: 0.097,
+  SOCIAL_CHARGES_SALARY: 0.22,
+};
+
+export type TMI = 0.11 | 0.30 | 0.41 | 0.45;
+
+export interface CandidateParams {
+  tmi: TMI;
+  seniority: 1 | 2 | 3 | 5;
+  peeContribution: number;
+}
+
+export interface EquityDeviceRow {
+  id: string;
+  type: string;
+  quantity: number;
+  strike_price: number;
+  current_valuation_m: number;
+  vesting_years: number;
+  cliff_months: number;
+}
+
+export interface SavingsDeviceRow {
+  id: string;
+  type: string;
+  matching_rate: number | null;
+  cap_amount: number | null;
+  avg_3y: number | null;
+}
+
+export interface ScenarioRow {
+  id: string;
+  label: string;
+  target_valuation_m: number;
+  horizon_years: number;
+  display_order: number;
+}
+
+export interface PackageData {
+  id: string;
+  title: string;
+  gross_salary: number | null;
+  variable_target: number | null;
+  benefits: Record<string, any> | null;
+  scenario_message: string | null;
+  scenario_display: "all" | "realistic_only" | "realistic_optimistic";
+  organizations: { name: string; logo_url: string | null } | null;
+  equity_devices: EquityDeviceRow[];
+  savings_devices: SavingsDeviceRow[];
+  scenarios: ScenarioRow[];
+}
+
+export interface ScenarioEstimate {
+  label: string;
+  estimate: number;
+  targetValuationM: number;
+  horizonYears: number;
+  taxRate: number;
+}
+
+export interface PackageEstimate {
+  salaryEst: number;
+  variableEst: number;
+  benefitsEst: number;
+  equityByScenario: ScenarioEstimate[];
+  peeEst: number;
+  interEst: number;
+  participationEst: number;
+  totalRange: { low: number; mid: number; high: number };
+}
+
+export function roundForDisplay(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) return 0;
+  if (value < 1000) return Math.round(value / 100) * 100;
+  if (value < 10000) return Math.round(value / 500) * 500;
+  if (value < 100000) return Math.round(value / 1000) * 1000;
+  return Math.round(value / 5000) * 5000;
+}
+
+export function formatEur(v: number): string {
+  if (v <= 0) return "—";
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(v);
+}
+
+export function formatRange(low: number, high: number): string {
+  if (low <= 0 && high <= 0) return "—";
+  if (low === high) return `~${formatEur(low)}`;
+  return `~${formatEur(low)} — ~${formatEur(high)}`;
+}
+
+function calcEquityScenarios(
+  pkg: PackageData,
+  params: CandidateParams,
+): ScenarioEstimate[] {
+  const device = pkg.equity_devices?.[0];
+  const scenarios = pkg.scenarios ?? [];
+  if (!device || scenarios.length === 0) return [];
+
+  const irRate =
+    params.seniority >= 3
+      ? TAX_2026.IR_BSPCE_3Y_PLUS
+      : TAX_2026.IR_BSPCE_UNDER_3Y;
+  const totalTaxRate = irRate + TAX_2026.PS_RATE;
+
+  return [...scenarios]
+    .sort((a, b) => a.display_order - b.display_order)
+    .map((scenario) => {
+      let estimate = 0;
+      if (
+        device.strike_price > 0 &&
+        device.current_valuation_m > 0 &&
+        device.quantity > 0
+      ) {
+        const totalShares =
+          (device.current_valuation_m * 1_000_000) / device.strike_price;
+        const exitPrice =
+          (scenario.target_valuation_m * 1_000_000) / totalShares;
+        const grossGain = (exitPrice - device.strike_price) * device.quantity;
+        if (grossGain > 0) {
+          estimate = roundForDisplay(grossGain * (1 - totalTaxRate));
+        }
+      }
+      return {
+        label: scenario.label,
+        estimate,
+        targetValuationM: scenario.target_valuation_m,
+        horizonYears: scenario.horizon_years,
+        taxRate: totalTaxRate,
+      };
+    });
+}
+
+export function calcPackageEstimate(
+  pkg: PackageData,
+  params: CandidateParams,
+): PackageEstimate {
+  const tmiFactor = 1 - 0.9 * params.tmi;
+  const salaryEst = roundForDisplay(
+    (pkg.gross_salary ?? 0) * (1 - TAX_2026.SOCIAL_CHARGES_SALARY) * tmiFactor,
+  );
+  const variableEst = roundForDisplay(
+    (pkg.variable_target ?? 0) *
+      (1 - TAX_2026.SOCIAL_CHARGES_SALARY) *
+      tmiFactor,
+  );
+
+  const b = pkg.benefits ?? {};
+  let benefitsTotal = 0;
+  if (b.mutuelle) benefitsTotal += (b.mutuelleMontant ?? 0) * 12;
+  if (b.ticketsResto)
+    benefitsTotal += (b.ticketsRestoValeur ?? 0) * 218 * 0.6;
+  if (b.vehicule) benefitsTotal += (b.vehiculeMontant ?? 0) * 12;
+  if (b.formation) benefitsTotal += b.formationBudget ?? 0;
+  const benefitsEst = roundForDisplay(benefitsTotal);
+
+  const equityByScenario = calcEquityScenarios(pkg, params);
+
+  const peeDevice = pkg.savings_devices?.find((d) => d.type === "pee");
+  const peeEst = peeDevice
+    ? roundForDisplay(
+        Math.min(
+          (params.peeContribution ?? 0) * (peeDevice.matching_rate ?? 0),
+          peeDevice.cap_amount ?? 0,
+          3768,
+        ),
+      )
+    : 0;
+
+  const interDevice = pkg.savings_devices?.find(
+    (d) => d.type === "interessement",
+  );
+  const interEst = interDevice?.avg_3y
+    ? roundForDisplay(interDevice.avg_3y * (1 - TAX_2026.CSG_CRDS))
+    : 0;
+
+  const partDevice = pkg.savings_devices?.find(
+    (d) => d.type === "participation",
+  );
+  const participationEst = partDevice?.avg_3y
+    ? roundForDisplay(partDevice.avg_3y * (1 - TAX_2026.CSG_CRDS))
+    : 0;
+
+  const realiste =
+    equityByScenario.find((s) => s.label === "realiste")?.estimate ?? 0;
+  const pess =
+    equityByScenario.find((s) => s.label === "pessimiste")?.estimate ?? 0;
+  const opti =
+    equityByScenario.find((s) => s.label === "optimiste")?.estimate ?? 0;
+  const baseTotal =
+    salaryEst +
+    variableEst +
+    benefitsEst +
+    peeEst +
+    interEst +
+    participationEst;
+
+  return {
+    salaryEst,
+    variableEst,
+    benefitsEst,
+    equityByScenario,
+    peeEst,
+    interEst,
+    participationEst,
+    totalRange: {
+      low: roundForDisplay(baseTotal + (pess || realiste)),
+      mid: roundForDisplay(baseTotal + realiste),
+      high: roundForDisplay(baseTotal + (opti || realiste)),
+    },
+  };
+}

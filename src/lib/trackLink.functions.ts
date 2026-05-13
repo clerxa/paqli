@@ -29,7 +29,7 @@ export const trackLink = createServerFn({ method: "POST" })
     await supabaseAdmin.from("link_events").insert({
       link_id: link.id,
       event_type: data.eventType,
-      metadata: data.metadata ?? {},
+      metadata: (data.metadata ?? {}) as any,
     });
 
     if (data.eventType === "opened" && !link.opened_at) {

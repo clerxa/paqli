@@ -20,7 +20,7 @@ async function ensureOrgAndProfile(fullName: string | null) {
     : "Mon entreprise";
   const { data, error } = await supabase.rpc("bootstrap_user_workspace", {
     _org_name: orgName,
-    _full_name: fullName,
+    _full_name: fullName ?? "",
   });
   if (error) throw error;
   return data as string;

@@ -5,7 +5,6 @@ import { Lock, Info, Calendar, Sparkles, Send, Loader2 } from "lucide-react";
 import { Logo } from "@/components/paqli/Logo";
 import {
   useCandidateLink,
-  trackEvent,
   type CandidateLinkData,
 } from "@/hooks/useCandidateLink";
 import {
@@ -17,6 +16,7 @@ import {
   type TMI,
 } from "@/lib/clientCalc";
 import { askCandidateAssistant } from "@/lib/candidateAssistant.functions";
+import { trackLink } from "@/lib/trackLink.functions";
 
 export const Route = createFileRoute("/p/$token")({
   component: PublicPackagePage,
@@ -95,6 +95,12 @@ function PackageView({ data }: { data: CandidateLinkData }) {
   const pkg = data.packages;
   const org = pkg.organizations;
 
+  const track = useServerFn(trackLink);
+  const trackEvent = (
+    eventType: "simulated" | "question" | "rdv_click",
+    metadata?: Record<string, unknown>,
+  ) => track({ data: { token: data.token, eventType, metadata } }).catch(() => {});
+
   const [params, setParams] = useState<CandidateParams>({
     tmi: 0.30,
     seniority: 3,
@@ -106,7 +112,7 @@ function PackageView({ data }: { data: CandidateLinkData }) {
   function scheduleTrack(param: string, value: any) {
     if (trackTimer.current) window.clearTimeout(trackTimer.current);
     trackTimer.current = window.setTimeout(() => {
-      void trackEvent(data.id, "simulated", { param, value });
+      void trackEvent("simulated", { param, value });
     }, 2000);
   }
 
@@ -418,7 +424,7 @@ function PackageView({ data }: { data: CandidateLinkData }) {
       <SectionTitle className="mt-8">
         <Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?
       </SectionTitle>
-      <Assistant linkId={data.id} pkg={pkg} params={params} />
+      <Assistant token={data.token} pkg={pkg} params={params} />
 
       {/* CTA */}
       <div
@@ -434,7 +440,7 @@ function PackageView({ data }: { data: CandidateLinkData }) {
         </p>
         <button
           onClick={async () => {
-            await trackEvent(data.id, "rdv_click");
+            await trackEvent("rdv_click");
             window.location.href = `mailto:?subject=${encodeURIComponent(
               `Question sur mon package ${pkg.title}`,
             )}`;
@@ -711,11 +717,11 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 function Assistant({
-  linkId,
+  token,
   pkg,
   params,
 }: {
-  linkId: string;
+  token: string;
   pkg: PackageData;
   params: CandidateParams;
 }) {
@@ -725,6 +731,7 @@ function Assistant({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const ask = useServerFn(askCandidateAssistant);
+  const track = useServerFn(trackLink);
 
   async function send() {
     const q = input.trim();
@@ -733,7 +740,7 @@ function Assistant({
     const next = [...messages, { role: "user" as const, content: q }];
     setMessages(next);
     setLoading(true);
-    void trackEvent(linkId, "question", { question: q.slice(0, 100) });
+    void track({ data: { token, eventType: "question", metadata: { question: q.slice(0, 100) } } }).catch(() => {});
 
     try {
       const packageContext = JSON.stringify(

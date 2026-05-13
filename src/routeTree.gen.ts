@@ -19,6 +19,7 @@ import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppCandidatesRouteImport } from './routes/_app/candidates'
 import { Route as AppPackagesIndexRouteImport } from './routes/_app/packages/index'
+import { Route as ApiPublicNotifyRhRouteImport } from './routes/api/public/notify-rh'
 import { Route as AppPackagesNewRouteImport } from './routes/_app/packages/new'
 import { Route as AppPackagesIdIndexRouteImport } from './routes/_app/packages/$id/index'
 import { Route as AppPackagesIdEditRouteImport } from './routes/_app/packages/$id/edit'
@@ -72,6 +73,11 @@ const AppPackagesIndexRoute = AppPackagesIndexRouteImport.update({
   path: '/packages/',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicNotifyRhRoute = ApiPublicNotifyRhRouteImport.update({
+  id: '/api/public/notify-rh',
+  path: '/api/public/notify-rh',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppPackagesNewRoute = AppPackagesNewRouteImport.update({
   id: '/packages/new',
   path: '/packages/new',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
   '/packages/new': typeof AppPackagesNewRoute
+  '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
   '/packages/': typeof AppPackagesIndexRoute
   '/packages/$id/edit': typeof AppPackagesIdEditRoute
   '/packages/$id/': typeof AppPackagesIdIndexRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
   '/packages/new': typeof AppPackagesNewRoute
+  '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
   '/packages': typeof AppPackagesIndexRoute
   '/packages/$id/edit': typeof AppPackagesIdEditRoute
   '/packages/$id': typeof AppPackagesIdIndexRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
   '/_app/packages/new': typeof AppPackagesNewRoute
+  '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
   '/_app/packages/': typeof AppPackagesIndexRoute
   '/_app/packages/$id/edit': typeof AppPackagesIdEditRoute
   '/_app/packages/$id/': typeof AppPackagesIdIndexRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/p/$token'
     | '/packages/new'
+    | '/api/public/notify-rh'
     | '/packages/'
     | '/packages/$id/edit'
     | '/packages/$id/'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/p/$token'
     | '/packages/new'
+    | '/api/public/notify-rh'
     | '/packages'
     | '/packages/$id/edit'
     | '/packages/$id'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/p/$token'
     | '/_app/packages/new'
+    | '/api/public/notify-rh'
     | '/_app/packages/'
     | '/_app/packages/$id/edit'
     | '/_app/packages/$id/'
@@ -185,6 +197,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   WelcomeRoute: typeof WelcomeRoute
   PTokenRoute: typeof PTokenRoute
+  ApiPublicNotifyRhRoute: typeof ApiPublicNotifyRhRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackagesIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/notify-rh': {
+      id: '/api/public/notify-rh'
+      path: '/api/public/notify-rh'
+      fullPath: '/api/public/notify-rh'
+      preLoaderRoute: typeof ApiPublicNotifyRhRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/packages/new': {
       id: '/_app/packages/new'
       path: '/packages/new'
@@ -312,6 +332,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   WelcomeRoute: WelcomeRoute,
   PTokenRoute: PTokenRoute,
+  ApiPublicNotifyRhRoute: ApiPublicNotifyRhRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -452,6 +452,3 @@ function SendLinkModal({
     </div>
   );
 }
-
-// Make NumberField import retained for future use
-void NumberField;

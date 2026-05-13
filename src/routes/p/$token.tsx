@@ -424,7 +424,7 @@ function PackageView({ data }: { data: CandidateLinkData }) {
       <SectionTitle className="mt-8">
         <Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?
       </SectionTitle>
-      <Assistant linkId={data.id} pkg={pkg} params={params} />
+      <Assistant token={data.token} pkg={pkg} params={params} />
 
       {/* CTA */}
       <div

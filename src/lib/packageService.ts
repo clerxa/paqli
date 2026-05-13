@@ -139,8 +139,16 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
       capAmount: Number(d.cap_amount) || 0,
       avg3y: Number(d.avg_3y) || 0,
     })),
-    scenarios: [],
+    scenarios:
+      sc && sc.length > 0
+        ? sc.map((s) => ({
+            label: s.label as ScenarioLabel,
+            targetValuationM: Number(s.target_valuation_m) || 0,
+            horizonYears: Number(s.horizon_years) || 4,
+          }))
+        : defaultScenarios,
     scenarioMessage: pkg.scenario_message ?? "",
-    scenarioDisplay: "realistic_only",
+    scenarioDisplay:
+      (pkg.scenario_display as PackageConfig["scenarioDisplay"]) ?? "all",
   };
 }

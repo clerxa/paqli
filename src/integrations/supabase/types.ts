@@ -14,6 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      candidate_links: {
+        Row: {
+          candidate_email: string | null
+          candidate_name: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          opened_at: string | null
+          organization_id: string
+          package_id: string
+          simulated_at: string | null
+          token: string
+        }
+        Insert: {
+          candidate_email?: string | null
+          candidate_name?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          opened_at?: string | null
+          organization_id: string
+          package_id: string
+          simulated_at?: string | null
+          token?: string
+        }
+        Update: {
+          candidate_email?: string | null
+          candidate_name?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          opened_at?: string | null
+          organization_id?: string
+          package_id?: string
+          simulated_at?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_links_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidate_links_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      link_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          link_id: string
+          metadata: Json | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          link_id: string
+          metadata?: Json | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          link_id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_events_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -43,6 +129,63 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      packages: {
+        Row: {
+          benefits: Json | null
+          created_at: string
+          created_by: string
+          gross_salary: number | null
+          id: string
+          organization_id: string
+          scenario_message: string | null
+          status: string
+          title: string
+          updated_at: string
+          variable_target: number | null
+        }
+        Insert: {
+          benefits?: Json | null
+          created_at?: string
+          created_by: string
+          gross_salary?: number | null
+          id?: string
+          organization_id: string
+          scenario_message?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          variable_target?: number | null
+        }
+        Update: {
+          benefits?: Json | null
+          created_at?: string
+          created_by?: string
+          gross_salary?: number | null
+          id?: string
+          organization_id?: string
+          scenario_message?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          variable_target?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "packages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "packages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

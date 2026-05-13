@@ -8,16 +8,19 @@ export const Route = createFileRoute("/_app")({
 });
 
 function AppLayout() {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) return;
+    if (!user) {
       navigate({ to: "/login", replace: true });
+    } else if (!profile) {
+      navigate({ to: "/welcome", replace: true });
     }
-  }, [loading, user, navigate]);
+  }, [loading, user, profile, navigate]);
 
-  if (loading || !user) {
+  if (loading || !user || !profile) {
     return (
       <div
         className="flex min-h-screen w-full items-center justify-center"

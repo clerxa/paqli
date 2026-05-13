@@ -503,6 +503,10 @@ export type Database = {
       }
     }
     Functions: {
+      bootstrap_user_workspace: {
+        Args: { _full_name: string; _org_name: string }
+        Returns: string
+      }
       current_user_org: { Args: never; Returns: string }
       has_role: {
         Args: {

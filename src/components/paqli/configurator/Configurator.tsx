@@ -11,8 +11,10 @@ import { SaveIndicator } from "./SaveIndicator";
 import { Step1Fixed } from "./Step1Fixed";
 import { Step2Equity } from "./Step2Equity";
 import { Step3Savings } from "./Step3Savings";
+import { Step4Scenarios } from "./Step4Scenarios";
+import { Step5Preview } from "./Step5Preview";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
-import { validateStep } from "@/lib/packageConfig";
+import { validateScenarios, validateStep } from "@/lib/packageConfig";
 
 export function Configurator() {
   const { config, setConfig, saveDraft, saveState } = usePackageConfig();

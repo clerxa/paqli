@@ -5,7 +5,6 @@ import { Lock, Info, Calendar, Sparkles, Send, Loader2 } from "lucide-react";
 import { Logo } from "@/components/paqli/Logo";
 import {
   useCandidateLink,
-  trackEvent,
   type CandidateLinkData,
 } from "@/hooks/useCandidateLink";
 import {
@@ -17,6 +16,7 @@ import {
   type TMI,
 } from "@/lib/clientCalc";
 import { askCandidateAssistant } from "@/lib/candidateAssistant.functions";
+import { trackLink } from "@/lib/trackLink.functions";
 
 export const Route = createFileRoute("/p/$token")({
   component: PublicPackagePage,

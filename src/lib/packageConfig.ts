@@ -64,10 +64,24 @@ export interface PackageConfig {
   equityDevices: EquityDeviceForm[];
   savingsDevices: SavingsDeviceForm[];
 
-  scenarios: unknown[];
+  scenarios: ScenarioForm[];
   scenarioMessage: string;
   scenarioDisplay: "all" | "realistic_only" | "realistic_optimistic";
 }
+
+export type ScenarioLabel = "pessimiste" | "realiste" | "optimiste";
+
+export interface ScenarioForm {
+  label: ScenarioLabel;
+  targetValuationM: number;
+  horizonYears: number;
+}
+
+export const defaultScenarios: ScenarioForm[] = [
+  { label: "pessimiste", targetValuationM: 80, horizonYears: 5 },
+  { label: "realiste", targetValuationM: 200, horizonYears: 4 },
+  { label: "optimiste", targetValuationM: 500, horizonYears: 5 },
+];
 
 export const emptyConfig: PackageConfig = {
   packageId: null,

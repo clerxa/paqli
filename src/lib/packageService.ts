@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import type { PackageConfig } from "./packageConfig";
 import { defaultBenefits } from "./packageConfig";
 
@@ -14,7 +15,7 @@ export async function upsertPackage(
     status: config.status,
     gross_salary: config.grossSalary || null,
     variable_target: config.variableTarget || null,
-    benefits: config.benefits as unknown as Record<string, unknown>,
+    benefits: config.benefits as unknown as Json,
     scenario_message: config.scenarioMessage || null,
     updated_at: new Date().toISOString(),
   };

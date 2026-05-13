@@ -351,6 +351,86 @@ export type Database = {
           },
         ]
       }
+      simulations: {
+        Row: {
+          created_at: string
+          id: string
+          link_id: string
+          pee_contribution: number
+          result_snapshot: Json
+          seniority_years: number
+          tax_rules_version: string
+          tmi: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link_id: string
+          pee_contribution?: number
+          result_snapshot: Json
+          seniority_years: number
+          tax_rules_version?: string
+          tmi: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link_id?: string
+          pee_contribution?: number
+          result_snapshot?: Json
+          seniority_years?: number
+          tax_rules_version?: string
+          tmi?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulations_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: true
+            referencedRelation: "candidate_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_rules: {
+        Row: {
+          created_at: string
+          description: string | null
+          device_type: string
+          effective_date: string
+          id: string
+          rule_key: string
+          source_url: string | null
+          value: number
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          device_type: string
+          effective_date: string
+          id?: string
+          rule_key: string
+          source_url?: string | null
+          value: number
+          version: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          device_type?: string
+          effective_date?: string
+          id?: string
+          rule_key?: string
+          source_url?: string | null
+          value?: number
+          version?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -385,7 +465,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      active_tax_rules: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          device_type: string | null
+          effective_date: string | null
+          id: string | null
+          rule_key: string | null
+          source_url: string | null
+          value: number | null
+          version: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          device_type?: string | null
+          effective_date?: string | null
+          id?: string | null
+          rule_key?: string | null
+          source_url?: string | null
+          value?: number | null
+          version?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          device_type?: string | null
+          effective_date?: string | null
+          id?: string | null
+          rule_key?: string | null
+          source_url?: string | null
+          value?: number | null
+          version?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       current_user_org: { Args: never; Returns: string }

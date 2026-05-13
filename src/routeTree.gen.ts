@@ -9,38 +9,194 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PTokenRouteImport } from './routes/p/$token'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppCandidatesRouteImport } from './routes/_app/candidates'
+import { Route as AppPackagesIndexRouteImport } from './routes/_app/packages/index'
+import { Route as AppPackagesNewRouteImport } from './routes/_app/packages/new'
+import { Route as AppPackagesIdIndexRouteImport } from './routes/_app/packages/$id/index'
+import { Route as AppPackagesIdEditRouteImport } from './routes/_app/packages/$id/edit'
 
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PTokenRoute = PTokenRouteImport.update({
+  id: '/p/$token',
+  path: '/p/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCandidatesRoute = AppCandidatesRouteImport.update({
+  id: '/candidates',
+  path: '/candidates',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPackagesIndexRoute = AppPackagesIndexRouteImport.update({
+  id: '/packages/',
+  path: '/packages/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPackagesNewRoute = AppPackagesNewRouteImport.update({
+  id: '/packages/new',
+  path: '/packages/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPackagesIdIndexRoute = AppPackagesIdIndexRouteImport.update({
+  id: '/packages/$id/',
+  path: '/packages/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPackagesIdEditRoute = AppPackagesIdEditRouteImport.update({
+  id: '/packages/$id/edit',
+  path: '/packages/$id/edit',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/candidates': typeof AppCandidatesRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/settings': typeof AppSettingsRoute
+  '/p/$token': typeof PTokenRoute
+  '/packages/new': typeof AppPackagesNewRoute
+  '/packages/': typeof AppPackagesIndexRoute
+  '/packages/$id/edit': typeof AppPackagesIdEditRoute
+  '/packages/$id/': typeof AppPackagesIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/candidates': typeof AppCandidatesRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/settings': typeof AppSettingsRoute
+  '/p/$token': typeof PTokenRoute
+  '/packages/new': typeof AppPackagesNewRoute
+  '/packages': typeof AppPackagesIndexRoute
+  '/packages/$id/edit': typeof AppPackagesIdEditRoute
+  '/packages/$id': typeof AppPackagesIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/_app/candidates': typeof AppCandidatesRoute
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/p/$token': typeof PTokenRoute
+  '/_app/packages/new': typeof AppPackagesNewRoute
+  '/_app/packages/': typeof AppPackagesIndexRoute
+  '/_app/packages/$id/edit': typeof AppPackagesIdEditRoute
+  '/_app/packages/$id/': typeof AppPackagesIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/candidates'
+    | '/dashboard'
+    | '/settings'
+    | '/p/$token'
+    | '/packages/new'
+    | '/packages/'
+    | '/packages/$id/edit'
+    | '/packages/$id/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/candidates'
+    | '/dashboard'
+    | '/settings'
+    | '/p/$token'
+    | '/packages/new'
+    | '/packages'
+    | '/packages/$id/edit'
+    | '/packages/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/login'
+    | '/register'
+    | '/_app/candidates'
+    | '/_app/dashboard'
+    | '/_app/settings'
+    | '/p/$token'
+    | '/_app/packages/new'
+    | '/_app/packages/'
+    | '/_app/packages/$id/edit'
+    | '/_app/packages/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
+  PTokenRoute: typeof PTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +204,93 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/p/$token': {
+      id: '/p/$token'
+      path: '/p/$token'
+      fullPath: '/p/$token'
+      preLoaderRoute: typeof PTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/candidates': {
+      id: '/_app/candidates'
+      path: '/candidates'
+      fullPath: '/candidates'
+      preLoaderRoute: typeof AppCandidatesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/packages/': {
+      id: '/_app/packages/'
+      path: '/packages'
+      fullPath: '/packages/'
+      preLoaderRoute: typeof AppPackagesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/packages/new': {
+      id: '/_app/packages/new'
+      path: '/packages/new'
+      fullPath: '/packages/new'
+      preLoaderRoute: typeof AppPackagesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/packages/$id/': {
+      id: '/_app/packages/$id/'
+      path: '/packages/$id'
+      fullPath: '/packages/$id/'
+      preLoaderRoute: typeof AppPackagesIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/packages/$id/edit': {
+      id: '/_app/packages/$id/edit'
+      path: '/packages/$id/edit'
+      fullPath: '/packages/$id/edit'
+      preLoaderRoute: typeof AppPackagesIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppCandidatesRoute: typeof AppCandidatesRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppPackagesNewRoute: typeof AppPackagesNewRoute
+  AppPackagesIndexRoute: typeof AppPackagesIndexRoute
+  AppPackagesIdEditRoute: typeof AppPackagesIdEditRoute
+  AppPackagesIdIndexRoute: typeof AppPackagesIdIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppCandidatesRoute: AppCandidatesRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppPackagesNewRoute: AppPackagesNewRoute,
+  AppPackagesIndexRoute: AppPackagesIndexRoute,
+  AppPackagesIdEditRoute: AppPackagesIdEditRoute,
+  AppPackagesIdIndexRoute: AppPackagesIdIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
+  PTokenRoute: PTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

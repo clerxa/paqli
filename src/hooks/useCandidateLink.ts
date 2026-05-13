@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getPackagePublic } from "@/lib/getPackagePublic.functions";
+import { trackLink } from "@/lib/trackLink.functions";
 import type { PackageData } from "@/lib/clientCalc";
 
 export interface CandidateLinkData {
@@ -17,73 +19,69 @@ export function useCandidateLink(token: string) {
   const [data, setData] = useState<CandidateLinkData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<LinkError>(null);
+  const fetchPackage = useServerFn(getPackagePublic);
+  const track = useServerFn(trackLink);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
       setError(null);
-
-      const { data: link, error: err } = await supabase
-        .from("candidate_links")
-        .select(
-          `id, token, candidate_name, expires_at, opened_at,
-           packages (
-             id, title, gross_salary, variable_target, benefits,
-             scenario_message, scenario_display,
-             organizations ( name, logo_url ),
-             equity_devices (*),
-             savings_devices (*),
-             scenarios (*)
-           )`,
-        )
-        .eq("token", token)
-        .maybeSingle();
-
-      if (cancelled) return;
-
-      if (err || !link || !link.packages) {
-        setError("not_found");
+      try {
+        const res = await fetchPackage({ data: { token } });
+        if (cancelled) return;
+        setData({
+          id: res.linkId,
+          token: res.token,
+          candidate_name: res.candidateName,
+          expires_at: res.expiresAt,
+          opened_at: res.openedAt,
+          packages: res.package as unknown as PackageData,
+        });
         setLoading(false);
-        return;
-      }
-
-      if (link.expires_at && new Date(link.expires_at) < new Date()) {
-        setError("expired");
+        if (!res.openedAt) {
+          void track({ data: { token, eventType: "opened" } });
+        }
+      } catch (e: any) {
+        if (cancelled) return;
+        let kind: LinkError = "not_found";
+        try {
+          if (e instanceof Response) {
+            if (e.status === 410) kind = "expired";
+            else kind = "not_found";
+          } else {
+            const msg = String(e?.message ?? "");
+            if (msg.includes("410") || msg.toLowerCase().includes("expired")) kind = "expired";
+          }
+        } catch {
+          // ignore
+        }
+        setError(kind);
         setLoading(false);
-        return;
-      }
-
-      setData(link as unknown as CandidateLinkData);
-      setLoading(false);
-
-      if (!link.opened_at) {
-        await supabase
-          .from("candidate_links")
-          .update({ opened_at: new Date().toISOString() })
-          .eq("token", token);
-        await supabase
-          .from("link_events")
-          .insert({ link_id: link.id, event_type: "opened" });
       }
     }
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, fetchPackage, track]);
 
   return { data, loading, error };
 }
 
-export async function trackEvent(
-  linkId: string,
+/**
+ * Tracker un événement candidat via le server fn (validation token + service role).
+ * Utilisé par la vue candidat pour `simulated`, `question`, `rdv_click`.
+ */
+export async function trackEventViaToken(
+  trackFn: ReturnType<typeof useServerFn<typeof trackLink>>,
+  token: string,
   eventType: "simulated" | "question" | "rdv_click",
-  metadata?: Record<string, any>,
+  metadata?: Record<string, unknown>,
 ) {
-  await supabase.from("link_events").insert({
-    link_id: linkId,
-    event_type: eventType,
-    metadata: metadata ?? {},
-  });
+  try {
+    await trackFn({ data: { token, eventType, metadata } });
+  } catch {
+    // tracking ne doit pas casser l'UX
+  }
 }

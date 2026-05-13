@@ -717,11 +717,11 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 function Assistant({
-  linkId,
+  token,
   pkg,
   params,
 }: {
-  linkId: string;
+  token: string;
   pkg: PackageData;
   params: CandidateParams;
 }) {
@@ -731,6 +731,7 @@ function Assistant({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const ask = useServerFn(askCandidateAssistant);
+  const track = useServerFn(trackLink);
 
   async function send() {
     const q = input.trim();
@@ -739,7 +740,7 @@ function Assistant({
     const next = [...messages, { role: "user" as const, content: q }];
     setMessages(next);
     setLoading(true);
-    void trackEvent(linkId, "question", { question: q.slice(0, 100) });
+    void track({ data: { token, eventType: "question", metadata: { question: q.slice(0, 100) } } }).catch(() => {});
 
     try {
       const packageContext = JSON.stringify(

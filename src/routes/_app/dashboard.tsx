@@ -61,9 +61,17 @@ function statusToPill(status: string): PillStatus {
 }
 
 function DashboardPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, organization } = useAuth();
   const { metrics, packages, recentActivity, todos, loading } = useDashboard();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && organization && !loading && packages.length === 0 && metrics?.totalLinks === 0) {
+      seedDemoData(organization.id, user.id).catch((e) =>
+        console.error("seedDemoData failed", e),
+      );
+    }
+  }, [user, organization, loading, packages.length, metrics?.totalLinks]);
 
   const firstName =
     profile?.full_name?.split(" ")[0] ??

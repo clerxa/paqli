@@ -14,50 +14,16 @@ export const Route = createFileRoute("/welcome")({
   component: WelcomePage,
 });
 
-function slugify(s: string) {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-async function ensureOrgAndProfile(userId: string, email: string, fullName: string | null) {
-  // Profile already exists?
-  const { data: existing } = await supabase
-    .from("profiles")
-    .select("id, organization_id")
-    .eq("id", userId)
-    .maybeSingle();
-  if (existing?.organization_id) return existing.organization_id;
-
-  const orgName = fullName ? `${fullName.split(" ")[0]}'s workspace` : "Mon entreprise";
-  const slug = `${slugify(orgName)}-${Date.now().toString(36)}`;
-  const { data: orgData, error: orgErr } = await supabase
-    .from("organizations")
-    .insert({ name: orgName, slug, plan: "starter" })
-    .select()
-    .single();
-  if (orgErr || !orgData) throw orgErr ?? new Error("org create failed");
-
-  const { error: profErr } = await supabase.from("profiles").insert({
-    id: userId,
-    organization_id: orgData.id,
-    role: "admin",
-    full_name: fullName,
-    email,
+async function ensureOrgAndProfile(fullName: string | null) {
+  const orgName = fullName
+    ? `${fullName.split(" ")[0]}'s workspace`
+    : "Mon entreprise";
+  const { data, error } = await supabase.rpc("bootstrap_user_workspace", {
+    _org_name: orgName,
+    _full_name: fullName,
   });
-  if (profErr) throw profErr;
-
-  await supabase.from("user_roles").insert({
-    user_id: userId,
-    organization_id: orgData.id,
-    role: "admin",
-  });
-
-  return orgData.id;
+  if (error) throw error;
+  return data as string;
 }
 
 function WelcomePage() {
@@ -74,7 +40,7 @@ function WelcomePage() {
       try {
         const fullName =
           (user.user_metadata?.full_name as string | undefined) ?? null;
-        const orgId = await ensureOrgAndProfile(user.id, user.email ?? "", fullName);
+        const orgId = await ensureOrgAndProfile(fullName);
         await seedDemoData(orgId, user.id).catch((e) =>
           console.error("seedDemoData failed", e),
         );

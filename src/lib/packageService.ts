@@ -69,6 +69,20 @@ export async function upsertPackage(
     if (error) throw error;
   }
 
+  await supabase.from("scenarios").delete().eq("package_id", packageId);
+  if (config.scenarios.length > 0) {
+    const { error } = await supabase.from("scenarios").insert(
+      config.scenarios.map((s, i) => ({
+        package_id: packageId!,
+        label: s.label,
+        target_valuation_m: s.targetValuationM,
+        horizon_years: s.horizonYears,
+        display_order: i,
+      })),
+    );
+    if (error) throw error;
+  }
+
   return packageId!;
 }
 

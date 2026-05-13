@@ -11,8 +11,10 @@ import { SaveIndicator } from "./SaveIndicator";
 import { Step1Fixed } from "./Step1Fixed";
 import { Step2Equity } from "./Step2Equity";
 import { Step3Savings } from "./Step3Savings";
+import { Step4Scenarios } from "./Step4Scenarios";
+import { Step5Preview } from "./Step5Preview";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
-import { validateStep } from "@/lib/packageConfig";
+import { validateScenarios, validateStep } from "@/lib/packageConfig";
 
 export function Configurator() {
   const { config, setConfig, saveDraft, saveState } = usePackageConfig();
@@ -27,6 +29,13 @@ export function Configurator() {
     if (err) {
       toast.error(err);
       return;
+    }
+    if (config.currentStep === 4 && config.equityDevices.length > 0) {
+      const sErr = validateScenarios(config.scenarios);
+      if (sErr) {
+        toast.error(sErr);
+        return;
+      }
     }
     await saveDraft();
     if (config.currentStep < 5) {
@@ -49,12 +58,12 @@ export function Configurator() {
         return <Step2Equity />;
       case 3:
         return <Step3Savings />;
+      case 4:
+        return <Step4Scenarios />;
+      case 5:
+        return <Step5Preview />;
       default:
-        return (
-          <div className="text-[13px] text-grey italic">
-            Étape {config.currentStep} — à venir.
-          </div>
-        );
+        return null;
     }
   }, [config.currentStep]);
 

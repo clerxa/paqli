@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import type { PackageConfig } from "./packageConfig";
-import { defaultBenefits } from "./packageConfig";
+import type { PackageConfig, ScenarioLabel } from "./packageConfig";
+import { defaultBenefits, defaultScenarios } from "./packageConfig";
 
 export async function upsertPackage(
   config: PackageConfig,
@@ -17,6 +17,7 @@ export async function upsertPackage(
     variable_target: config.variableTarget || null,
     benefits: config.benefits as unknown as Json,
     scenario_message: config.scenarioMessage || null,
+    scenario_display: config.scenarioDisplay,
     updated_at: new Date().toISOString(),
   };
 
@@ -68,6 +69,20 @@ export async function upsertPackage(
     if (error) throw error;
   }
 
+  await supabase.from("scenarios").delete().eq("package_id", packageId);
+  if (config.scenarios.length > 0) {
+    const { error } = await supabase.from("scenarios").insert(
+      config.scenarios.map((s, i) => ({
+        package_id: packageId!,
+        label: s.label,
+        target_valuation_m: s.targetValuationM,
+        horizon_years: s.horizonYears,
+        display_order: i,
+      })),
+    );
+    if (error) throw error;
+  }
+
   return packageId!;
 }
 
@@ -87,6 +102,11 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
     .from("savings_devices")
     .select("*")
     .eq("package_id", id);
+  const { data: sc } = await supabase
+    .from("scenarios")
+    .select("*")
+    .eq("package_id", id)
+    .order("display_order", { ascending: true });
 
   const benefits = {
     ...defaultBenefits,
@@ -119,8 +139,16 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
       capAmount: Number(d.cap_amount) || 0,
       avg3y: Number(d.avg_3y) || 0,
     })),
-    scenarios: [],
+    scenarios:
+      sc && sc.length > 0
+        ? sc.map((s) => ({
+            label: s.label as ScenarioLabel,
+            targetValuationM: Number(s.target_valuation_m) || 0,
+            horizonYears: Number(s.horizon_years) || 4,
+          }))
+        : defaultScenarios,
     scenarioMessage: pkg.scenario_message ?? "",
-    scenarioDisplay: "realistic_only",
+    scenarioDisplay:
+      (pkg.scenario_display as PackageConfig["scenarioDisplay"]) ?? "all",
   };
 }

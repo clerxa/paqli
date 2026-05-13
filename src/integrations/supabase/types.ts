@@ -185,6 +185,7 @@ export type Database = {
           gross_salary: number | null
           id: string
           organization_id: string
+          scenario_display: string
           scenario_message: string | null
           status: string
           title: string
@@ -198,6 +199,7 @@ export type Database = {
           gross_salary?: number | null
           id?: string
           organization_id: string
+          scenario_display?: string
           scenario_message?: string | null
           status?: string
           title: string
@@ -211,6 +213,7 @@ export type Database = {
           gross_salary?: number | null
           id?: string
           organization_id?: string
+          scenario_display?: string
           scenario_message?: string | null
           status?: string
           title?: string
@@ -303,6 +306,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "savings_devices_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scenarios: {
+        Row: {
+          created_at: string
+          display_order: number
+          horizon_years: number
+          id: string
+          label: string
+          package_id: string
+          target_valuation_m: number
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          horizon_years?: number
+          id?: string
+          label: string
+          package_id: string
+          target_valuation_m?: number
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          horizon_years?: number
+          id?: string
+          label?: string
+          package_id?: string
+          target_valuation_m?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scenarios_package_id_fkey"
             columns: ["package_id"]
             isOneToOne: false
             referencedRelation: "packages"

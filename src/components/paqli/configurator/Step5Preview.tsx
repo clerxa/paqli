@@ -18,8 +18,6 @@ import {
   formatEur,
 } from "@/lib/packageConfig";
 
-const benefitsLabels: { key: keyof Step1Like; label: string }[] = [];
-type Step1Like = Record<string, never>;
 
 export function Step5Preview() {
   const { config, saveDraft, setConfig } = usePackageConfig();

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
@@ -22,6 +23,11 @@ import { Route as AppPackagesNewRouteImport } from './routes/_app/packages/new'
 import { Route as AppPackagesIdIndexRouteImport } from './routes/_app/packages/$id/index'
 import { Route as AppPackagesIdEditRouteImport } from './routes/_app/packages/$id/edit'
 
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/welcome': typeof WelcomeRoute
   '/candidates': typeof AppCandidatesRoute
   '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/welcome': typeof WelcomeRoute
   '/candidates': typeof AppCandidatesRoute
   '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/welcome': typeof WelcomeRoute
   '/_app/candidates': typeof AppCandidatesRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/welcome'
     | '/candidates'
     | '/dashboard'
     | '/settings'
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/welcome'
     | '/candidates'
     | '/dashboard'
     | '/settings'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/register'
+    | '/welcome'
     | '/_app/candidates'
     | '/_app/dashboard'
     | '/_app/settings'
@@ -171,11 +183,19 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  WelcomeRoute: typeof WelcomeRoute
   PTokenRoute: typeof PTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -290,6 +310,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  WelcomeRoute: WelcomeRoute,
   PTokenRoute: PTokenRoute,
 }
 export const routeTree = rootRouteImport

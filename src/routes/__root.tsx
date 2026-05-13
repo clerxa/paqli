@@ -8,6 +8,8 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
+import { Toaster } from "sonner";
+
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -117,6 +119,18 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: "#2D2640",
+            color: "#FAF8F5",
+            border: "none",
+            borderRadius: 10,
+            fontSize: 13,
+          },
+        }}
+      />
     </QueryClientProvider>
   );
 }

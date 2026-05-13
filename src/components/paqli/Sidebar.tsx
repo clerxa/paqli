@@ -96,12 +96,24 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { user } = useAuth();
+  const { profile, organization, signOut, user } = useAuth();
+  const navigate = useNavigate();
 
-  const initials = (user?.email ?? "RH")
-    .split("@")[0]
-    .slice(0, 2)
-    .toUpperCase();
+  const displayName =
+    profile?.full_name?.trim() || user?.email?.split("@")[0] || "Invité";
+  const initials =
+    (profile?.full_name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ||
+      (user?.email ?? "RH").slice(0, 2).toUpperCase()) ?? "RH";
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: "/login" });
+  };
 
   return (
     <aside
@@ -137,28 +149,30 @@ export function Sidebar() {
       </nav>
 
       <div
-        className="flex items-center gap-3 px-4 py-4 mx-3 mb-3 rounded-lg"
+        className="flex items-center gap-3 px-3 py-3 mx-3 mb-3 rounded-lg"
         style={{ background: "rgba(250,248,245,0.04)" }}
       >
         <div
-          className="flex items-center justify-center rounded-full text-[12px] font-semibold"
-          style={{
-            width: 32,
-            height: 32,
-            background: "#C4A882",
-            color: "#2D2640",
-          }}
+          className="flex items-center justify-center rounded-full text-[12px] font-semibold shrink-0"
+          style={{ width: 32, height: 32, background: "#C4A882", color: "#2D2640" }}
         >
           {initials}
         </div>
-        <div className="min-w-0">
-          <div className="text-[12px] text-lin truncate">
-            {user?.email?.split("@")[0] ?? "Invité"}
-          </div>
-          <div className="text-[10px]" style={{ color: "#B8AECF" }}>
-            Responsable RH
+        <div className="min-w-0 flex-1">
+          <div className="text-[12px] text-lin truncate">{displayName}</div>
+          <div className="text-[10px] truncate" style={{ color: "#B8AECF" }}>
+            {organization?.name ?? "—"}
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          title="Se déconnecter"
+          className="p-1.5 rounded-md transition-colors hover:bg-[rgba(250,248,245,0.08)]"
+          style={{ color: "#B8AECF" }}
+        >
+          <LogOut size={14} />
+        </button>
       </div>
     </aside>
   );

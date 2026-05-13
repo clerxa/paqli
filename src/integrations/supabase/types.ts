@@ -68,6 +68,53 @@ export type Database = {
           },
         ]
       }
+      equity_devices: {
+        Row: {
+          cliff_months: number
+          created_at: string
+          current_valuation_m: number
+          id: string
+          package_id: string
+          quantity: number
+          special_conditions: string | null
+          strike_price: number
+          type: string
+          vesting_years: number
+        }
+        Insert: {
+          cliff_months?: number
+          created_at?: string
+          current_valuation_m?: number
+          id?: string
+          package_id: string
+          quantity?: number
+          special_conditions?: string | null
+          strike_price?: number
+          type: string
+          vesting_years?: number
+        }
+        Update: {
+          cliff_months?: number
+          created_at?: string
+          current_valuation_m?: number
+          id?: string
+          package_id?: string
+          quantity?: number
+          special_conditions?: string | null
+          strike_price?: number
+          type?: string
+          vesting_years?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equity_devices_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       link_events: {
         Row: {
           created_at: string
@@ -221,6 +268,44 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      savings_devices: {
+        Row: {
+          avg_3y: number | null
+          cap_amount: number | null
+          created_at: string
+          id: string
+          matching_rate: number | null
+          package_id: string
+          type: string
+        }
+        Insert: {
+          avg_3y?: number | null
+          cap_amount?: number | null
+          created_at?: string
+          id?: string
+          matching_rate?: number | null
+          package_id: string
+          type: string
+        }
+        Update: {
+          avg_3y?: number | null
+          cap_amount?: number | null
+          created_at?: string
+          id?: string
+          matching_rate?: number | null
+          package_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "savings_devices_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
             referencedColumns: ["id"]
           },
         ]

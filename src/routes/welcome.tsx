@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Logo } from "@/components/paqli/Logo";
 import { useAuth } from "@/hooks/useAuth";
 import { seedDemoData } from "@/lib/seedDemo";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
 const search = z.object({ name: z.string().optional() });
@@ -13,31 +14,49 @@ export const Route = createFileRoute("/welcome")({
   component: WelcomePage,
 });
 
+async function ensureOrgAndProfile(fullName: string | null) {
+  const orgName = fullName
+    ? `${fullName.split(" ")[0]}'s workspace`
+    : "Mon entreprise";
+  const { data, error } = await supabase.rpc("bootstrap_user_workspace", {
+    _org_name: orgName,
+    _full_name: fullName ?? "",
+  });
+  if (error) throw error;
+  return data as string;
+}
+
 function WelcomePage() {
   const navigate = useNavigate();
   const { name } = Route.useSearch();
-  const { user, organization } = useAuth();
+  const { user, loading } = useAuth();
+  const ranRef = useRef(false);
 
   useEffect(() => {
+    if (loading || !user || ranRef.current) return;
+    ranRef.current = true;
     let cancelled = false;
     (async () => {
-      if (user && organization) {
-        try {
-          await seedDemoData(organization.id, user.id);
-        } catch (e) {
-          console.error("seedDemoData failed", e);
-        }
+      try {
+        const fullName =
+          (user.user_metadata?.full_name as string | undefined) ?? null;
+        const orgId = await ensureOrgAndProfile(fullName);
+        await seedDemoData(orgId, user.id).catch((e) =>
+          console.error("seedDemoData failed", e),
+        );
+      } catch (e) {
+        console.error("welcome setup failed", e);
       }
       if (!cancelled) {
         setTimeout(() => {
           if (!cancelled) navigate({ to: "/dashboard" });
-        }, 1500);
+        }, 1200);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [navigate, user, organization]);
+  }, [navigate, user, loading]);
 
   return (
     <div

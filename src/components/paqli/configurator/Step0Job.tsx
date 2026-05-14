@@ -1,4 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
+import { useJobs } from "@/hooks/useJobs";
+import { applyJobToConfig } from "@/lib/jobsService";
 import {
   Chip,
   EduBanner,

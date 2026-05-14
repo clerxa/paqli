@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/paqli/Button";
+import { AttractivenessScore } from "@/components/paqli/AttractivenessScore";
+import { JobPostingGenerator } from "@/components/paqli/JobPostingGenerator";
 import { Chip, NumberField, TextField, WarnBanner } from "./fields";
 import {
   buildCandidateUrl,

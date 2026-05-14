@@ -187,13 +187,13 @@ function PackageRow({
           </span>
         </div>
       </div>
-      <div className="text-right text-[12px] text-aubergine-light">
+      <div className="hidden sm:block text-right text-[12px] text-aubergine-light">
         <div>{pkg.totalLinks} lien{pkg.totalLinks > 1 ? "s" : ""}</div>
         <div className="text-grey">{pkg.openedLinks} ouvert{pkg.openedLinks > 1 ? "s" : ""}</div>
         <div className="text-grey">{pkg.openRate}% ouv.</div>
       </div>
       {pkg.attractivenessScore !== null && (
-        <div className="flex items-center gap-1.5" title="Score d'attractivité IA">
+        <div className="hidden md:flex items-center gap-1.5" title="Score d'attractivité IA">
           <div className="w-14 h-1.5 bg-[#F0EBE8] rounded-full overflow-hidden">
             <div
               className="h-1.5 rounded-full"

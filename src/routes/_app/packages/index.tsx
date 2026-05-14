@@ -75,7 +75,7 @@ function PackagesPage() {
           </Link>
         }
       />
-      <div className="px-7 py-6 space-y-4">
+      <div className="px-4 sm:px-7 py-4 sm:py-6 space-y-4">
         <div className="flex gap-2">
           {filters.map((f) => (
             <button
@@ -187,13 +187,13 @@ function PackageRow({
           </span>
         </div>
       </div>
-      <div className="text-right text-[12px] text-aubergine-light">
+      <div className="hidden sm:block text-right text-[12px] text-aubergine-light">
         <div>{pkg.totalLinks} lien{pkg.totalLinks > 1 ? "s" : ""}</div>
         <div className="text-grey">{pkg.openedLinks} ouvert{pkg.openedLinks > 1 ? "s" : ""}</div>
         <div className="text-grey">{pkg.openRate}% ouv.</div>
       </div>
       {pkg.attractivenessScore !== null && (
-        <div className="flex items-center gap-1.5" title="Score d'attractivité IA">
+        <div className="hidden md:flex items-center gap-1.5" title="Score d'attractivité IA">
           <div className="w-14 h-1.5 bg-[#F0EBE8] rounded-full overflow-hidden">
             <div
               className="h-1.5 rounded-full"
@@ -213,7 +213,7 @@ function PackageRow({
           </span>
         </div>
       )}
-      <div className="w-20" title={`Profil complété à ${pkg.richness}%`}>
+      <div className="hidden md:block w-20" title={`Profil complété à ${pkg.richness}%`}>
         <div className="text-[10px] uppercase tracking-[0.1em] text-grey mb-1 text-right">
           {pkg.richness}%
         </div>

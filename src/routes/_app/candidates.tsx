@@ -76,7 +76,7 @@ function CandidatesPage() {
           </Button>
         }
       />
-      <div className="px-7 py-6 space-y-4">
+      <div className="px-4 sm:px-7 py-4 sm:py-6 space-y-4">
         <div className="flex gap-2">
           {FILTERS.map((f) => {
             const count =

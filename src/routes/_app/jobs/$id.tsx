@@ -94,7 +94,7 @@ function EditJobPage() {
           </Button>
         }
       />
-      <div className="px-7 py-6 max-w-3xl">
+      <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl">
         <Card>
           {loading ? (
             <div className="space-y-3">

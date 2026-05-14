@@ -71,7 +71,12 @@ export const Route = createFileRoute("/api/public/track-behavior")({
           duration_s: durationS ?? null,
         });
 
-        const updates: Record<string, any> = {};
+        const updates: {
+          opened_at?: string;
+          simulated_at?: string;
+          return_visits?: number;
+          time_on_page_total?: number;
+        } = {};
         if (eventType === "opened" && !link.opened_at) {
           updates.opened_at = new Date().toISOString();
         }

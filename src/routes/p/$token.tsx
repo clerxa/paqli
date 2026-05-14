@@ -345,6 +345,10 @@ function PackageView({
         analyse personnalisée.
       </DisclaimerBlock>
 
+      {pkg.benchmark && (pkg.gross_salary ?? 0) > 0 && (
+        <BenchmarkBar benchmark={pkg.benchmark} gross={pkg.gross_salary ?? 0} />
+      )}
+
       {/* Equity scenarios */}
       {hasEquity && scenariosToShow.length > 0 && (
         <>

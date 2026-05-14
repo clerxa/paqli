@@ -203,11 +203,29 @@ export function CounterOfferModal({ original, onClose, onSent }: Props) {
 
         {/* Message */}
         <div className="mb-5">
-          <label className="text-[12px] font-medium text-aubergine-light block mb-1.5">
-            Message accompagnant la contre-offre
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[12px] font-medium text-aubergine-light">
+              Message accompagnant la contre-offre
+            </label>
+            <button
+              type="button"
+              onClick={() => generateDraft(original.linkId, "counter_offer")}
+              disabled={drafting}
+              className="text-[11px] text-aubergine-light hover:text-aubergine disabled:opacity-50"
+            >
+              {drafting ? "✨ Génération…" : "✨ Générer avec l'IA"}
+            </button>
+          </div>
           <textarea
             value={message}
+            onChange={(e) => setMessage(e.target.value.slice(0, 500))}
+            placeholder="Bonjour, suite à notre échange, nous avons revu notre proposition…"
+            className="w-full border border-[rgba(45,38,64,0.12)] rounded-lg p-3 text-[13px] text-aubergine resize-none h-24 font-light outline-none"
+          />
+          <div className="text-[10px] text-[#B8AECF] text-right mt-1">
+            {message.length}/500
+          </div>
+        </div>
             onChange={(e) => setMessage(e.target.value.slice(0, 500))}
             placeholder="Bonjour, suite à notre échange, nous avons revu notre proposition…"
             className="w-full border border-[rgba(45,38,64,0.12)] rounded-lg p-3 text-[13px] text-aubergine resize-none h-24 font-light outline-none"

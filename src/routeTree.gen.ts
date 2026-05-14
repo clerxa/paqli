@@ -22,6 +22,7 @@ import { Route as AppPackagesIndexRouteImport } from './routes/_app/packages/ind
 import { Route as AppJobsIndexRouteImport } from './routes/_app/jobs/index'
 import { Route as ApiPublicTrackBehaviorRouteImport } from './routes/api/public/track-behavior'
 import { Route as ApiPublicNotifyRhRouteImport } from './routes/api/public/notify-rh'
+import { Route as ApiPublicComputeEngagementRouteImport } from './routes/api/public/compute-engagement'
 import { Route as AppPackagesNewRouteImport } from './routes/_app/packages/new'
 import { Route as AppJobsNewRouteImport } from './routes/_app/jobs/new'
 import { Route as AppJobsIdRouteImport } from './routes/_app/jobs/$id'
@@ -93,6 +94,12 @@ const ApiPublicNotifyRhRoute = ApiPublicNotifyRhRouteImport.update({
   path: '/api/public/notify-rh',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicComputeEngagementRoute =
+  ApiPublicComputeEngagementRouteImport.update({
+    id: '/api/public/compute-engagement',
+    path: '/api/public/compute-engagement',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppPackagesNewRoute = AppPackagesNewRouteImport.update({
   id: '/packages/new',
   path: '/packages/new',
@@ -137,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/jobs/$id': typeof AppJobsIdRoute
   '/jobs/new': typeof AppJobsNewRoute
   '/packages/new': typeof AppPackagesNewRoute
+  '/api/public/compute-engagement': typeof ApiPublicComputeEngagementRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
   '/api/public/track-behavior': typeof ApiPublicTrackBehaviorRoute
   '/jobs/': typeof AppJobsIndexRoute
@@ -157,6 +165,7 @@ export interface FileRoutesByTo {
   '/jobs/$id': typeof AppJobsIdRoute
   '/jobs/new': typeof AppJobsNewRoute
   '/packages/new': typeof AppPackagesNewRoute
+  '/api/public/compute-engagement': typeof ApiPublicComputeEngagementRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
   '/api/public/track-behavior': typeof ApiPublicTrackBehaviorRoute
   '/jobs': typeof AppJobsIndexRoute
@@ -179,6 +188,7 @@ export interface FileRoutesById {
   '/_app/jobs/$id': typeof AppJobsIdRoute
   '/_app/jobs/new': typeof AppJobsNewRoute
   '/_app/packages/new': typeof AppPackagesNewRoute
+  '/api/public/compute-engagement': typeof ApiPublicComputeEngagementRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
   '/api/public/track-behavior': typeof ApiPublicTrackBehaviorRoute
   '/_app/jobs/': typeof AppJobsIndexRoute
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/jobs/new'
     | '/packages/new'
+    | '/api/public/compute-engagement'
     | '/api/public/notify-rh'
     | '/api/public/track-behavior'
     | '/jobs/'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/jobs/new'
     | '/packages/new'
+    | '/api/public/compute-engagement'
     | '/api/public/notify-rh'
     | '/api/public/track-behavior'
     | '/jobs'
@@ -242,6 +254,7 @@ export interface FileRouteTypes {
     | '/_app/jobs/$id'
     | '/_app/jobs/new'
     | '/_app/packages/new'
+    | '/api/public/compute-engagement'
     | '/api/public/notify-rh'
     | '/api/public/track-behavior'
     | '/_app/jobs/'
@@ -258,6 +271,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   WelcomeRoute: typeof WelcomeRoute
   PTokenRoute: typeof PTokenRoute
+  ApiPublicComputeEngagementRoute: typeof ApiPublicComputeEngagementRoute
   ApiPublicNotifyRhRoute: typeof ApiPublicNotifyRhRoute
   ApiPublicTrackBehaviorRoute: typeof ApiPublicTrackBehaviorRoute
   ApiPublicHooksRunRemindersRoute: typeof ApiPublicHooksRunRemindersRoute
@@ -356,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNotifyRhRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/compute-engagement': {
+      id: '/api/public/compute-engagement'
+      path: '/api/public/compute-engagement'
+      fullPath: '/api/public/compute-engagement'
+      preLoaderRoute: typeof ApiPublicComputeEngagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/packages/new': {
       id: '/_app/packages/new'
       path: '/packages/new'
@@ -436,6 +457,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   WelcomeRoute: WelcomeRoute,
   PTokenRoute: PTokenRoute,
+  ApiPublicComputeEngagementRoute: ApiPublicComputeEngagementRoute,
   ApiPublicNotifyRhRoute: ApiPublicNotifyRhRoute,
   ApiPublicTrackBehaviorRoute: ApiPublicTrackBehaviorRoute,
   ApiPublicHooksRunRemindersRoute: ApiPublicHooksRunRemindersRoute,
@@ -443,3 +465,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

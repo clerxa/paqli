@@ -19,6 +19,7 @@ export interface PackageWithStats {
   simulatedLinks: number;
   openRate: number;
   richness: number;
+  attractivenessScore: number | null;
 }
 
 export function usePackages(filter: PackageFilter = "all") {
@@ -35,6 +36,7 @@ export function usePackages(filter: PackageFilter = "all") {
           `id, title, status, gross_salary, variable_target, created_at, updated_at,
            job_summary, missions, stack, remote_policy, location_city,
            team_description, company_values, growth_paths, process_steps,
+           attractiveness_score,
            equity_devices (type),
            savings_devices (type),
            candidate_links (id, opened_at, simulated_at)`,
@@ -100,6 +102,10 @@ function enrich(pkg: any): PackageWithStats {
       gross_salary: pkg.gross_salary,
       equity_devices: pkg.equity_devices,
     }),
+    attractivenessScore:
+      typeof pkg.attractiveness_score === "number"
+        ? pkg.attractiveness_score
+        : null,
   };
 }
 

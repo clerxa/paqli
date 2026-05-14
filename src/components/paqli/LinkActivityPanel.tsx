@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
@@ -8,6 +8,8 @@ import {
   type MessageRow,
 } from "@/hooks/useLinkActivity";
 import { sendRhMessage } from "@/lib/sendMessage.functions";
+import { toggleLinkReminders } from "@/lib/toggleReminders.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { timeAgo } from "@/hooks/useDashboard";
 
 const EVENT_CONFIG: Record<

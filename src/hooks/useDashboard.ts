@@ -44,6 +44,11 @@ export interface TodoItem {
   severity: "warning" | "info";
 }
 
+export interface DeclineStat {
+  category: string;
+  count: number;
+}
+
 export function useDashboard() {
   const { organization } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);

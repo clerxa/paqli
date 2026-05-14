@@ -44,6 +44,9 @@ interface CandidateLinkRow {
   status: string;
   decline_category: string | null;
   decline_reason: string | null;
+  engagement_score: number | null;
+  engagement_label: string | null;
+  intent_prediction: string | null;
 }
 
 function PackageDetail() {
@@ -63,7 +66,7 @@ function PackageDetail() {
       loadPackage(id),
       supabase
         .from("candidate_links")
-        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category, decline_reason")
+        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category, decline_reason, engagement_score, engagement_label, intent_prediction")
         .eq("package_id", id)
         .order("created_at", { ascending: false }),
     ]);
@@ -284,6 +287,15 @@ function PackageDetail() {
                         </div>
                         <DecisionBadge status={l.status} />
                       </div>
+                      {l.engagement_score != null && (
+                        <div className="mt-1.5">
+                          <EngagementBadge
+                            score={l.engagement_score}
+                            label={l.engagement_label}
+                            intent={l.intent_prediction}
+                          />
+                        </div>
+                      )}
                       {l.status === "declined" && l.decline_category && (
                         <div className="text-[10px] text-[#A32D2D] mt-1">
                           {DECLINE_LABELS[l.decline_category]}
@@ -339,11 +351,12 @@ function PackageDetail() {
                         </div>
                       </div>
                       {isExpanded && (
-                        <div className="mt-3 pt-3 border-t border-[rgba(45,38,64,0.06)]">
+                        <div className="mt-3 pt-3 border-t border-[rgba(45,38,64,0.06)] space-y-5">
                           <LinkActivityPanel
                             linkId={l.id}
                             candidateName={l.candidate_name || "ce candidat"}
                           />
+                          <BehaviorView linkId={l.id} />
                         </div>
                       )}
                     </div>

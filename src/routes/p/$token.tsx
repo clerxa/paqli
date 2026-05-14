@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Lock, Info, Calendar, Sparkles, Send, Loader2 } from "lucide-react";
+import { Lock, Info, Calendar, Sparkles, Send, Loader2, MapPin, Users, TrendingUp, ListChecks, ExternalLink, Clock } from "lucide-react";
 import { Logo } from "@/components/paqli/Logo";
 import {
   useCandidateLink,

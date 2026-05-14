@@ -395,6 +395,27 @@ function DashboardPage() {
           </div>
         </div>
       </div>
+      {counterAlert && counterPkg && (
+        <CounterOfferModal
+          original={{
+            linkId: counterAlert.linkId,
+            candidateName: counterAlert.candidateName,
+            declineCategory: counterAlert.declineCategory ?? null,
+            declineReason: null,
+            packageTitle: counterPkg.title,
+            grossSalary: counterPkg.grossSalary,
+            variableTarget: counterPkg.variableTarget ?? null,
+            remotePolicy: (counterPkg as any).remotePolicy ?? null,
+            remoteDays: (counterPkg as any).remoteDays ?? null,
+            bspceQuantity:
+              counterPkg.equityDevices.find((d) => d.type === "bspce")?.quantity ?? null,
+          }}
+          onClose={() => {
+            setCounterAlert(null);
+            setCounterPkg(null);
+          }}
+        />
+      )}
     </>
   );
 }

@@ -358,3 +358,50 @@ export function validateScenarios(scenarios: ScenarioForm[]): string | null {
     return "Le scénario optimiste doit être supérieur au réaliste.";
   return null;
 }
+
+export function computeRichness(c: PackageConfig): number {
+  let score = 0;
+  if (c.jobSummary && c.jobSummary.trim().length >= 10) score += 10;
+  if (c.missions.filter((m) => m.trim()).length >= 3) score += 15;
+  if (c.stack.length > 0) score += 5;
+  if (c.remotePolicy) score += 10;
+  if (c.locationCity) score += 5;
+  if (c.teamDescription && c.teamDescription.trim().length >= 20) score += 10;
+  if (c.companyValues.length >= 3) score += 10;
+  if (c.growthPaths.length >= 1) score += 10;
+  if (c.processSteps.length >= 2) score += 10;
+  if (c.grossSalary > 0) score += 10;
+  if (c.equityDevices.length > 0) score += 5;
+  return Math.min(score, 100);
+}
+
+export function computeRichnessFromRow(pkg: {
+  job_summary?: string | null;
+  missions?: unknown;
+  stack?: string[] | null;
+  remote_policy?: string | null;
+  location_city?: string | null;
+  team_description?: string | null;
+  company_values?: string[] | null;
+  growth_paths?: unknown;
+  process_steps?: unknown;
+  gross_salary?: number | null;
+  equity_devices?: unknown[];
+}): number {
+  const missions = Array.isArray(pkg.missions) ? (pkg.missions as string[]) : [];
+  const growth = Array.isArray(pkg.growth_paths) ? (pkg.growth_paths as unknown[]) : [];
+  const steps = Array.isArray(pkg.process_steps) ? (pkg.process_steps as unknown[]) : [];
+  let score = 0;
+  if (pkg.job_summary && pkg.job_summary.trim().length >= 10) score += 10;
+  if (missions.filter((m) => typeof m === "string" && m.trim()).length >= 3) score += 15;
+  if (pkg.stack && pkg.stack.length > 0) score += 5;
+  if (pkg.remote_policy) score += 10;
+  if (pkg.location_city) score += 5;
+  if (pkg.team_description && pkg.team_description.trim().length >= 20) score += 10;
+  if (pkg.company_values && pkg.company_values.length >= 3) score += 10;
+  if (growth.length >= 1) score += 10;
+  if (steps.length >= 2) score += 10;
+  if ((pkg.gross_salary ?? 0) > 0) score += 10;
+  if (pkg.equity_devices && pkg.equity_devices.length > 0) score += 5;
+  return Math.min(score, 100);
+}

@@ -1131,7 +1131,7 @@ function JobSections({ pkg, onExternalLink }: { pkg: PackageData; onExternalLink
       {hasTeam && (
         <>
           <SectionTitle>L'équipe & la culture</SectionTitle>
-          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-3">
+          <div data-section="equipe_culture" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-3">
             {(pkg.team_size || pkg.manager_style) && (
               <div className="flex flex-wrap gap-2 text-[12px]">
                 {pkg.team_size ? (
@@ -1182,6 +1182,7 @@ function JobSections({ pkg, onExternalLink }: { pkg: PackageData; onExternalLink
                     href={pkg.glassdoor_url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => onExternalLink?.(pkg.glassdoor_url!)}
                     className="inline-flex items-center gap-1 text-aubergine underline"
                   >
                     Glassdoor <ExternalLink size={11} />
@@ -1192,6 +1193,7 @@ function JobSections({ pkg, onExternalLink }: { pkg: PackageData; onExternalLink
                     href={pkg.wtj_url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => onExternalLink?.(pkg.wtj_url!)}
                     className="inline-flex items-center gap-1 text-aubergine underline"
                   >
                     Welcome to the Jungle <ExternalLink size={11} />

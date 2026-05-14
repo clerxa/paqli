@@ -83,7 +83,8 @@ const PROCESS_TEMPLATES: Record<string, ProcessStep[]> = {
 };
 
 export function Step0Job() {
-  const { config, patch } = usePackageConfig();
+  const { config, setConfig, patch } = usePackageConfig();
+  const { jobs } = useJobs();
 
   function setMission(i: number, value: string) {
     const next = [...config.missions];
@@ -155,6 +156,53 @@ export function Step0Job() {
           fait pour lui — avant même de regarder le package financier.
         </p>
       </header>
+
+      {/* Importer depuis une offre */}
+      <div
+        className="rounded-lg p-4 border"
+        style={{ background: "#F5F2FA", borderColor: "rgba(139,127,168,0.3)" }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <span style={{ fontSize: 16 }}>💼</span>
+          <span className="text-[12px] font-medium text-aubergine">
+            Pré-remplir depuis une offre d'emploi
+          </span>
+        </div>
+        <p className="text-[11px] text-aubergine-light mb-3 leading-relaxed">
+          Sélectionnez une offre existante pour copier toutes les informations
+          du poste. Vous pourrez ensuite tout modifier librement pour ce package.
+        </p>
+        <div className="flex flex-wrap gap-2 items-center">
+          <select
+            value=""
+            onChange={(e) => {
+              const job = jobs.find((j) => j.id === e.target.value);
+              if (!job) return;
+              setConfig((prev) => applyJobToConfig(prev, job));
+            }}
+            disabled={jobs.length === 0}
+            className="flex-1 min-w-[200px] text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white disabled:opacity-50"
+          >
+            <option value="">
+              {jobs.length === 0
+                ? "Aucune offre — créez-en une d'abord"
+                : "Choisir une offre…"}
+            </option>
+            {jobs.map((j) => (
+              <option key={j.id} value={j.id}>
+                {j.title}
+                {j.location_city ? ` — ${j.location_city}` : ""}
+              </option>
+            ))}
+          </select>
+          <Link
+            to="/jobs/new"
+            className="text-[12px] text-aubergine hover:underline whitespace-nowrap"
+          >
+            + Nouvelle offre
+          </Link>
+        </div>
+      </div>
 
       {/* Titre + Accroche */}
       <Section title="Identité">

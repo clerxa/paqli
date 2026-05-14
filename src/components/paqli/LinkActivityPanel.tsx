@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
@@ -8,6 +8,8 @@ import {
   type MessageRow,
 } from "@/hooks/useLinkActivity";
 import { sendRhMessage } from "@/lib/sendMessage.functions";
+import { toggleLinkReminders } from "@/lib/toggleReminders.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { timeAgo } from "@/hooks/useDashboard";
 
 const EVENT_CONFIG: Record<
@@ -133,6 +135,72 @@ export function LinkActivityPanel({
           onSent={(msg) => setMessages((prev) => [...prev, msg])}
         />
       </div>
+
+      <div className="mt-4 pt-3 border-t border-[rgba(45,38,64,0.06)]">
+        <RemindersToggle linkId={linkId} />
+      </div>
+    </div>
+  );
+}
+
+function RemindersToggle({ linkId }: { linkId: string }) {
+  const [enabled, setEnabled] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+  const toggle = useServerFn(toggleLinkReminders);
+
+  useEffect(() => {
+    let cancelled = false;
+    void supabase
+      .from("candidate_links")
+      .select("reminders_enabled")
+      .eq("id", linkId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setEnabled(data?.reminders_enabled ?? true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [linkId]);
+
+  async function handleToggle() {
+    if (enabled === null || busy) return;
+    setBusy(true);
+    const next = !enabled;
+    try {
+      await toggle({ data: { linkId, enabled: next } });
+      setEnabled(next);
+      toast.success(next ? "Relances activées" : "Relances désactivées");
+    } catch {
+      toast.error("Action impossible");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="text-[12px] text-aubergine font-medium">
+          Relances automatiques
+        </div>
+        <div className="text-[10px] text-grey">
+          Email envoyé après 48h d'inactivité, puis 24h
+        </div>
+      </div>
+      <button
+        onClick={handleToggle}
+        disabled={enabled === null || busy}
+        className={`relative w-10 h-6 rounded-full transition-colors ${
+          enabled ? "bg-[#2D2640]" : "bg-[rgba(45,38,64,0.2)]"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+            enabled ? "translate-x-4" : ""
+          }`}
+        />
+      </button>
     </div>
   );
 }

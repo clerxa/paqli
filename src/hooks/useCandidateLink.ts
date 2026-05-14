@@ -11,6 +11,14 @@ export interface PublicMessage {
   created_at: string;
 }
 
+export interface CounterOfferInfo {
+  id: string;
+  changes: any;
+  message: string | null;
+  createdAt: string;
+  originalToken: string | null;
+}
+
 export interface CandidateLinkData {
   id: string;
   token: string;
@@ -19,6 +27,7 @@ export interface CandidateLinkData {
   opened_at: string | null;
   offerStatus: string;
   statusUpdatedAt: string | null;
+  counterOffer: CounterOfferInfo | null;
   messages: PublicMessage[];
   packages: PackageData;
 }
@@ -48,6 +57,7 @@ export function useCandidateLink(token: string) {
           opened_at: res.openedAt,
           offerStatus: res.offerStatus,
           statusUpdatedAt: res.statusUpdatedAt,
+          counterOffer: (res as any).counterOffer ?? null,
           messages: res.messages,
           packages: res.package as unknown as PackageData,
         });

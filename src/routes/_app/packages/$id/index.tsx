@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/paqli/Skeleton";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
 import { Chip, TextField } from "@/components/paqli/configurator/fields";
 import { LinkActivityPanel } from "@/components/paqli/LinkActivityPanel";
+import { CounterOfferModal, type CounterOfferOriginal } from "@/components/paqli/CounterOfferModal";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +41,7 @@ interface CandidateLinkRow {
   simulated_at: string | null;
   status: string;
   decline_category: string | null;
+  decline_reason: string | null;
 }
 
 function PackageDetail() {
@@ -52,13 +54,14 @@ function PackageDetail() {
   const [showSendModal, setShowSendModal] = useState(false);
   const [deleteLinkId, setDeleteLinkId] = useState<string | null>(null);
   const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
+  const [counterOfferFor, setCounterOfferFor] = useState<CounterOfferOriginal | null>(null);
 
   async function reload() {
     const [p, l] = await Promise.all([
       loadPackage(id),
       supabase
         .from("candidate_links")
-        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category")
+        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category, decline_reason")
         .eq("package_id", id)
         .order("created_at", { ascending: false }),
     ]);
@@ -288,7 +291,29 @@ function PackageDetail() {
                         <span className="text-[11px] text-aubergine-light">
                           {activityStatus}
                         </span>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap justify-end">
+                          {l.status === "declined" && (
+                            <button
+                              onClick={() => {
+                                const bspce = pkg!.equityDevices.find((d) => d.type === "bspce");
+                                setCounterOfferFor({
+                                  linkId: l.id,
+                                  candidateName: l.candidate_name || "ce candidat",
+                                  declineCategory: l.decline_category,
+                                  declineReason: l.decline_reason,
+                                  packageTitle: pkg!.title,
+                                  grossSalary: pkg!.grossSalary,
+                                  variableTarget: pkg!.variableTarget,
+                                  remotePolicy: pkg!.remotePolicy ?? null,
+                                  remoteDays: pkg!.remoteDays ?? null,
+                                  bspceQuantity: bspce?.quantity ?? null,
+                                });
+                              }}
+                              className="text-[11px] text-[#3B6D11] font-medium hover:underline"
+                            >
+                              Contre-offre
+                            </button>
+                          )}
                           <button
                             onClick={() =>
                               setExpandedLinkId(isExpanded ? null : l.id)
@@ -348,6 +373,17 @@ function PackageDetail() {
           confirmVariant="danger"
           onConfirm={handleDeleteLink}
           onCancel={() => setDeleteLinkId(null)}
+        />
+      )}
+
+      {counterOfferFor && (
+        <CounterOfferModal
+          original={counterOfferFor}
+          onClose={() => setCounterOfferFor(null)}
+          onSent={() => {
+            setCounterOfferFor(null);
+            reload();
+          }}
         />
       )}
     </>

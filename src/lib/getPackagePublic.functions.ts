@@ -58,6 +58,36 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       .eq("link_id", link.id)
       .order("created_at", { ascending: true });
 
+    // Counter-offer detection: is this link the *new* link of a counter-offer?
+    const { data: counterOfferRow } = await supabaseAdmin
+      .from("counter_offers")
+      .select("id, changes, message, created_at, original_link_id")
+      .eq("new_link_id", link.id)
+      .maybeSingle();
+
+    let counterOffer: {
+      id: string;
+      changes: any;
+      message: string | null;
+      createdAt: string;
+      originalToken: string | null;
+    } | null = null;
+
+    if (counterOfferRow) {
+      const { data: origLink } = await supabaseAdmin
+        .from("candidate_links")
+        .select("token")
+        .eq("id", counterOfferRow.original_link_id)
+        .maybeSingle();
+      counterOffer = {
+        id: counterOfferRow.id,
+        changes: counterOfferRow.changes,
+        message: counterOfferRow.message,
+        createdAt: counterOfferRow.created_at,
+        originalToken: origLink?.token ?? null,
+      };
+    }
+
     const pkg = link.packages as any;
     const scenarios = (pkg.scenarios ?? []).slice().sort(
       (a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0),
@@ -96,6 +126,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       expiresAt: link.expires_at as string | null,
       offerStatus: (link.status ?? "pending") as string,
       statusUpdatedAt: link.status_updated_at as string | null,
+      counterOffer,
       messages: (messages ?? []) as Array<{
         id: string;
         sender: "candidate" | "rh";

@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const NOTIFY_EVENTS = new Set(["simulated", "question", "rdv_click"]);
+const NOTIFY_EVENTS = new Set([
+  "simulated",
+  "question",
+  "rdv_click",
+  "message_candidate",
+  "offer_accepted",
+  "offer_declined",
+  "decision_changed",
+]);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -76,6 +84,10 @@ export const Route = createFileRoute("/api/public/notify-rh")({
           simulated: `${candidate} vient de lancer une simulation sur le package "${pkg?.title}".`,
           question: `${candidate} vient de poser une question via l'assistant IA sur le package "${pkg?.title}".`,
           rdv_click: `${candidate} vient de cliquer sur "Prendre rendez-vous" pour le package "${pkg?.title}".`,
+          message_candidate: `${candidate} vous a envoyé un message concernant "${pkg?.title}".`,
+          offer_accepted: `🎉 ${candidate} a accepté l'offre pour le poste "${pkg?.title}".`,
+          offer_declined: `${candidate} a décliné l'offre pour le poste "${pkg?.title}".`,
+          decision_changed: `${candidate} a modifié sa décision sur le package "${pkg?.title}".`,
         };
         const message = messages[record.event_type];
 

@@ -1,4 +1,6 @@
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
+import { usePackageCoach } from "@/hooks/usePackageCoach";
+import { CoachTipInline } from "@/components/paqli/CoachTipInline";
 import { Chip, NumberField, TextField } from "./fields";
 import type { BenefitsConfig } from "@/lib/packageConfig";
 
@@ -20,10 +22,14 @@ const teletravailOptions = [
 
 export function Step1Fixed() {
   const { config, patch } = usePackageConfig();
+  const { tips, checkField } = usePackageCoach();
   const b = config.benefits;
 
   const setBenefit = (key: keyof BenefitsConfig, value: BenefitsConfig[keyof BenefitsConfig]) => {
     patch({ benefits: { ...b, [key]: value } as BenefitsConfig });
+    if (key === "teletravail" && typeof value === "number") {
+      checkField("remote_days", value, {});
+    }
   };
   const toggle = (key: keyof BenefitsConfig) =>
     setBenefit(key, !b[key] as never);
@@ -48,14 +54,20 @@ export function Step1Fixed() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <NumberField
-          label="Salaire brut annuel"
-          required
-          suffix="€"
-          value={config.grossSalary}
-          onChange={(v) => patch({ grossSalary: v })}
-          placeholder="75 000"
-        />
+        <div>
+          <NumberField
+            label="Salaire brut annuel"
+            required
+            suffix="€"
+            value={config.grossSalary}
+            onChange={(v) => {
+              patch({ grossSalary: v });
+              checkField("gross_salary", v, { title: config.title });
+            }}
+            placeholder="75 000"
+          />
+          <CoachTipInline tip={tips.gross_salary} />
+        </div>
         <NumberField
           label="Variable cible annuel"
           suffix="€"
@@ -64,6 +76,8 @@ export function Step1Fixed() {
           placeholder="8 000"
         />
       </div>
+
+      <CoachTipInline tip={tips.remote_days} />
 
       <div>
         <div className="text-[11px] text-grey uppercase tracking-wider mb-2">

@@ -16,6 +16,7 @@ import {
   type PackageSummary,
   type TodoItem,
 } from "@/hooks/useDashboard";
+import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: DashboardPage,

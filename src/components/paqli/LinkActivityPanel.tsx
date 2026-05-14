@@ -11,6 +11,7 @@ import { sendRhMessage } from "@/lib/sendMessage.functions";
 import { toggleLinkReminders } from "@/lib/toggleReminders.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { timeAgo } from "@/hooks/useDashboard";
+import { useMessageDraft } from "@/hooks/useMessageDraft";
 
 const EVENT_CONFIG: Record<
   string,

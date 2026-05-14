@@ -257,7 +257,14 @@ function RhMessageComposer({
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
   const send = useServerFn(sendRhMessage);
-  const { loading: drafting, generateDraft } = useMessageDraft();
+  const { loading: drafting, generateDraft, draft, setDraft } = useMessageDraft();
+
+  useEffect(() => {
+    if (draft) {
+      setReply(draft);
+      setDraft(null);
+    }
+  }, [draft, setDraft]);
 
   async function submit() {
     const content = reply.trim();
@@ -280,32 +287,12 @@ function RhMessageComposer({
     }
   }
 
-  async function handleAiDraft() {
-    try {
-      const { draftMessageFn } = await import("@/lib/aiAssistant.functions");
-      // direct serverFn call via top-level import would be cleaner, but reuse hook:
-      void draftMessageFn;
-    } catch {}
-    try {
-      await generateDraft(linkId, "general");
-    } catch {}
-  }
-
-  // sync hook draft into textarea
-  const { draft, setDraft } = useMessageDraft();
-  // NOTE: above creates a separate instance; instead use single hook:
-
   return (
     <div className="space-y-2">
       <div className="flex justify-end">
         <button
           type="button"
-          onClick={async () => {
-            const r = await import("@/lib/aiAssistant.functions").then((m) =>
-              m.draftMessageFn({ data: { linkId, alertType: "general" } }),
-            );
-            setReply(r.draft);
-          }}
+          onClick={() => generateDraft(linkId, "general")}
           disabled={drafting}
           className="text-[11px] text-aubergine-light hover:text-aubergine disabled:opacity-50"
         >

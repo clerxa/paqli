@@ -55,6 +55,9 @@ export function useDashboard() {
   const [packages, setPackages] = useState<PackageSummary[]>([]);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [declineStats, setDeclineStats] = useState<DeclineStat[]>([]);
+  const [acceptedCount, setAcceptedCount] = useState(0);
+  const [declinedCount, setDeclinedCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

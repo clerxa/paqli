@@ -76,9 +76,23 @@ function DashboardPage() {
     declineStats,
     acceptedCount,
     declinedCount,
+    followUpAlerts,
     loading,
   } = useDashboard();
   const navigate = useNavigate();
+  const [counterAlert, setCounterAlert] = useState<FollowUpAlert | null>(null);
+  const [counterPkg, setCounterPkg] = useState<PackageConfig | null>(null);
+
+  async function openCounterOffer(alert: FollowUpAlert) {
+    try {
+      const pkg = await loadPackage(alert.packageId);
+      if (!pkg) return;
+      setCounterPkg(pkg);
+      setCounterAlert(alert);
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   useEffect(() => {
     if (user && organization && !loading && packages.length === 0 && metrics?.totalLinks === 0) {
@@ -228,6 +242,10 @@ function DashboardPage() {
 
           {/* Right column */}
           <div className="space-y-4">
+            <FollowUpAlertsCard
+              alerts={followUpAlerts}
+              onCounterOffer={openCounterOffer}
+            />
             <Card>
               <h2
                 className="font-display text-aubergine mb-4"

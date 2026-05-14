@@ -213,7 +213,7 @@ function PackageRow({
           </span>
         </div>
       )}
-      <div className="w-20" title={`Profil complété à ${pkg.richness}%`}>
+      <div className="hidden md:block w-20" title={`Profil complété à ${pkg.richness}%`}>
         <div className="text-[10px] uppercase tracking-[0.1em] text-grey mb-1 text-right">
           {pkg.richness}%
         </div>

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Package as PackageIcon, ArrowUpRight } from "lucide-react";
 import { Topbar } from "@/components/paqli/Topbar";
 import { MetricCard } from "@/components/paqli/MetricCard";
@@ -7,6 +7,8 @@ import { Card } from "@/components/paqli/Card";
 import { StatusPill, type PillStatus } from "@/components/paqli/StatusPill";
 import { Button } from "@/components/paqli/Button";
 import { Skeleton } from "@/components/paqli/Skeleton";
+import { FollowUpAlertsCard } from "@/components/paqli/FollowUpAlertsCard";
+import { CounterOfferModal } from "@/components/paqli/CounterOfferModal";
 import { useAuth } from "@/hooks/useAuth";
 import { seedDemoData } from "@/lib/seedDemo";
 import {
@@ -15,8 +17,11 @@ import {
   type ActivityType,
   type PackageSummary,
   type TodoItem,
+  type FollowUpAlert,
 } from "@/hooks/useDashboard";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
+import { loadPackage } from "@/lib/packageService";
+import type { PackageConfig } from "@/lib/packageConfig";
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: DashboardPage,

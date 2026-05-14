@@ -155,6 +155,7 @@ function PackageView({
       )}
       {/* Hero */}
       <section
+        data-section="hero"
         className="rounded-2xl p-7 mb-6"
         style={{ background: "#2D2640" }}
       >

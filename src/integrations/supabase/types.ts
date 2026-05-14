@@ -14,65 +14,124 @@ export type Database = {
   }
   public: {
     Tables: {
+      behavior_events: {
+        Row: {
+          created_at: string
+          duration_s: number | null
+          event_type: string
+          id: string
+          link_id: string
+          section: string | null
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_s?: number | null
+          event_type: string
+          id?: string
+          link_id: string
+          section?: string | null
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_s?: number | null
+          event_type?: string
+          id?: string
+          link_id?: string
+          section?: string | null
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "behavior_events_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_links: {
         Row: {
+          behavior_data: Json | null
           candidate_email: string | null
           candidate_name: string | null
           counter_offer_id: string | null
           created_at: string
           decline_category: string | null
           decline_reason: string | null
+          engagement_label: string | null
+          engagement_score: number | null
           expires_at: string | null
           id: string
+          intent_computed_at: string | null
+          intent_prediction: string | null
           last_reminder_at: string | null
           opened_at: string | null
           organization_id: string
           package_id: string
           reminder_count: number
           reminders_enabled: boolean
+          return_visits: number
           simulated_at: string | null
           status: string
           status_updated_at: string | null
+          time_on_page_total: number
           token: string
         }
         Insert: {
+          behavior_data?: Json | null
           candidate_email?: string | null
           candidate_name?: string | null
           counter_offer_id?: string | null
           created_at?: string
           decline_category?: string | null
           decline_reason?: string | null
+          engagement_label?: string | null
+          engagement_score?: number | null
           expires_at?: string | null
           id?: string
+          intent_computed_at?: string | null
+          intent_prediction?: string | null
           last_reminder_at?: string | null
           opened_at?: string | null
           organization_id: string
           package_id: string
           reminder_count?: number
           reminders_enabled?: boolean
+          return_visits?: number
           simulated_at?: string | null
           status?: string
           status_updated_at?: string | null
+          time_on_page_total?: number
           token?: string
         }
         Update: {
+          behavior_data?: Json | null
           candidate_email?: string | null
           candidate_name?: string | null
           counter_offer_id?: string | null
           created_at?: string
           decline_category?: string | null
           decline_reason?: string | null
+          engagement_label?: string | null
+          engagement_score?: number | null
           expires_at?: string | null
           id?: string
+          intent_computed_at?: string | null
+          intent_prediction?: string | null
           last_reminder_at?: string | null
           opened_at?: string | null
           organization_id?: string
           package_id?: string
           reminder_count?: number
           reminders_enabled?: boolean
+          return_visits?: number
           simulated_at?: string | null
           status?: string
           status_updated_at?: string | null
+          time_on_page_total?: number
           token?: string
         }
         Relationships: [

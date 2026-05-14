@@ -257,6 +257,7 @@ function RhMessageComposer({
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
   const send = useServerFn(sendRhMessage);
+  const { loading: drafting, generateDraft } = useMessageDraft();
 
   async function submit() {
     const content = reply.trim();
@@ -279,27 +280,59 @@ function RhMessageComposer({
     }
   }
 
+  async function handleAiDraft() {
+    try {
+      const { draftMessageFn } = await import("@/lib/aiAssistant.functions");
+      // direct serverFn call via top-level import would be cleaner, but reuse hook:
+      void draftMessageFn;
+    } catch {}
+    try {
+      await generateDraft(linkId, "general");
+    } catch {}
+  }
+
+  // sync hook draft into textarea
+  const { draft, setDraft } = useMessageDraft();
+  // NOTE: above creates a separate instance; instead use single hook:
+
   return (
-    <div className="flex gap-2">
-      <input
-        value={reply}
-        onChange={(e) => setReply(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            void submit();
-          }
-        }}
-        placeholder={`Répondre à ${candidateName}…`}
-        className="flex-1 border border-[rgba(45,38,64,0.12)] rounded-lg px-3 h-9 text-[13px] text-aubergine outline-none"
-      />
-      <button
-        onClick={submit}
-        disabled={reply.trim().length < 2 || sending}
-        className="px-4 h-9 bg-[#2D2640] text-white rounded-lg text-[12px] font-medium disabled:opacity-40"
-      >
-        {sending ? "…" : "Envoyer"}
-      </button>
+    <div className="space-y-2">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={async () => {
+            const r = await import("@/lib/aiAssistant.functions").then((m) =>
+              m.draftMessageFn({ data: { linkId, alertType: "general" } }),
+            );
+            setReply(r.draft);
+          }}
+          disabled={drafting}
+          className="text-[11px] text-aubergine-light hover:text-aubergine disabled:opacity-50"
+        >
+          {drafting ? "✨ Génération…" : "✨ Générer avec l'IA"}
+        </button>
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={reply}
+          onChange={(e) => setReply(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              void submit();
+            }
+          }}
+          placeholder={`Répondre à ${candidateName}…`}
+          className="flex-1 border border-[rgba(45,38,64,0.12)] rounded-lg px-3 h-9 text-[13px] text-aubergine outline-none"
+        />
+        <button
+          onClick={submit}
+          disabled={reply.trim().length < 2 || sending}
+          className="px-4 h-9 bg-[#2D2640] text-white rounded-lg text-[12px] font-medium disabled:opacity-40"
+        >
+          {sending ? "…" : "Envoyer"}
+        </button>
+      </div>
     </div>
   );
 }

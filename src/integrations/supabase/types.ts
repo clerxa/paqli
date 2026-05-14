@@ -18,14 +18,18 @@ export type Database = {
         Row: {
           candidate_email: string | null
           candidate_name: string | null
+          counter_offer_id: string | null
           created_at: string
           decline_category: string | null
           decline_reason: string | null
           expires_at: string | null
           id: string
+          last_reminder_at: string | null
           opened_at: string | null
           organization_id: string
           package_id: string
+          reminder_count: number
+          reminders_enabled: boolean
           simulated_at: string | null
           status: string
           status_updated_at: string | null
@@ -34,14 +38,18 @@ export type Database = {
         Insert: {
           candidate_email?: string | null
           candidate_name?: string | null
+          counter_offer_id?: string | null
           created_at?: string
           decline_category?: string | null
           decline_reason?: string | null
           expires_at?: string | null
           id?: string
+          last_reminder_at?: string | null
           opened_at?: string | null
           organization_id: string
           package_id: string
+          reminder_count?: number
+          reminders_enabled?: boolean
           simulated_at?: string | null
           status?: string
           status_updated_at?: string | null
@@ -50,14 +58,18 @@ export type Database = {
         Update: {
           candidate_email?: string | null
           candidate_name?: string | null
+          counter_offer_id?: string | null
           created_at?: string
           decline_category?: string | null
           decline_reason?: string | null
           expires_at?: string | null
           id?: string
+          last_reminder_at?: string | null
           opened_at?: string | null
           organization_id?: string
           package_id?: string
+          reminder_count?: number
+          reminders_enabled?: boolean
           simulated_at?: string | null
           status?: string
           status_updated_at?: string | null
@@ -76,6 +88,67 @@ export type Database = {
             columns: ["package_id"]
             isOneToOne: false
             referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      counter_offers: {
+        Row: {
+          changes: Json
+          created_at: string
+          created_by: string
+          id: string
+          message: string | null
+          new_link_id: string | null
+          organization_id: string
+          original_link_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          changes?: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          message?: string | null
+          new_link_id?: string | null
+          organization_id: string
+          original_link_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          changes?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          message?: string | null
+          new_link_id?: string | null
+          organization_id?: string
+          original_link_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "counter_offers_new_link_id_fkey"
+            columns: ["new_link_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "counter_offers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "counter_offers_original_link_id_fkey"
+            columns: ["original_link_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_links"
             referencedColumns: ["id"]
           },
         ]
@@ -489,6 +562,41 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reminders: {
+        Row: {
+          created_at: string
+          email_sent: boolean
+          id: string
+          link_id: string
+          sent_at: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          email_sent?: boolean
+          id?: string
+          link_id: string
+          sent_at?: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          email_sent?: boolean
+          id?: string
+          link_id?: string
+          sent_at?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminders_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_links"
             referencedColumns: ["id"]
           },
         ]

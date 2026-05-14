@@ -8,6 +8,8 @@ import { StatusPill } from "@/components/paqli/StatusPill";
 import { Skeleton } from "@/components/paqli/Skeleton";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
 import { Chip, TextField } from "@/components/paqli/configurator/fields";
+import { LinkActivityPanel } from "@/components/paqli/LinkActivityPanel";
+import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,6 +38,8 @@ interface CandidateLinkRow {
   created_at: string;
   opened_at: string | null;
   simulated_at: string | null;
+  status: string;
+  decline_category: string | null;
 }
 
 function PackageDetail() {
@@ -53,7 +57,7 @@ function PackageDetail() {
       loadPackage(id),
       supabase
         .from("candidate_links")
-        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at")
+        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category")
         .eq("package_id", id)
         .order("created_at", { ascending: false }),
     ]);

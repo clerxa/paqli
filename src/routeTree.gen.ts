@@ -20,7 +20,9 @@ import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppCandidatesRouteImport } from './routes/_app/candidates'
 import { Route as AppPackagesIndexRouteImport } from './routes/_app/packages/index'
 import { Route as AppJobsIndexRouteImport } from './routes/_app/jobs/index'
+import { Route as ApiPublicTrackBehaviorRouteImport } from './routes/api/public/track-behavior'
 import { Route as ApiPublicNotifyRhRouteImport } from './routes/api/public/notify-rh'
+import { Route as ApiPublicComputeEngagementRouteImport } from './routes/api/public/compute-engagement'
 import { Route as AppPackagesNewRouteImport } from './routes/_app/packages/new'
 import { Route as AppJobsNewRouteImport } from './routes/_app/jobs/new'
 import { Route as AppJobsIdRouteImport } from './routes/_app/jobs/$id'
@@ -82,11 +84,22 @@ const AppJobsIndexRoute = AppJobsIndexRouteImport.update({
   path: '/jobs/',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicTrackBehaviorRoute = ApiPublicTrackBehaviorRouteImport.update({
+  id: '/api/public/track-behavior',
+  path: '/api/public/track-behavior',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicNotifyRhRoute = ApiPublicNotifyRhRouteImport.update({
   id: '/api/public/notify-rh',
   path: '/api/public/notify-rh',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicComputeEngagementRoute =
+  ApiPublicComputeEngagementRouteImport.update({
+    id: '/api/public/compute-engagement',
+    path: '/api/public/compute-engagement',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppPackagesNewRoute = AppPackagesNewRouteImport.update({
   id: '/packages/new',
   path: '/packages/new',
@@ -131,7 +144,9 @@ export interface FileRoutesByFullPath {
   '/jobs/$id': typeof AppJobsIdRoute
   '/jobs/new': typeof AppJobsNewRoute
   '/packages/new': typeof AppPackagesNewRoute
+  '/api/public/compute-engagement': typeof ApiPublicComputeEngagementRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
+  '/api/public/track-behavior': typeof ApiPublicTrackBehaviorRoute
   '/jobs/': typeof AppJobsIndexRoute
   '/packages/': typeof AppPackagesIndexRoute
   '/packages/$id/edit': typeof AppPackagesIdEditRoute
@@ -150,7 +165,9 @@ export interface FileRoutesByTo {
   '/jobs/$id': typeof AppJobsIdRoute
   '/jobs/new': typeof AppJobsNewRoute
   '/packages/new': typeof AppPackagesNewRoute
+  '/api/public/compute-engagement': typeof ApiPublicComputeEngagementRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
+  '/api/public/track-behavior': typeof ApiPublicTrackBehaviorRoute
   '/jobs': typeof AppJobsIndexRoute
   '/packages': typeof AppPackagesIndexRoute
   '/packages/$id/edit': typeof AppPackagesIdEditRoute
@@ -171,7 +188,9 @@ export interface FileRoutesById {
   '/_app/jobs/$id': typeof AppJobsIdRoute
   '/_app/jobs/new': typeof AppJobsNewRoute
   '/_app/packages/new': typeof AppPackagesNewRoute
+  '/api/public/compute-engagement': typeof ApiPublicComputeEngagementRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
+  '/api/public/track-behavior': typeof ApiPublicTrackBehaviorRoute
   '/_app/jobs/': typeof AppJobsIndexRoute
   '/_app/packages/': typeof AppPackagesIndexRoute
   '/_app/packages/$id/edit': typeof AppPackagesIdEditRoute
@@ -192,7 +211,9 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/jobs/new'
     | '/packages/new'
+    | '/api/public/compute-engagement'
     | '/api/public/notify-rh'
+    | '/api/public/track-behavior'
     | '/jobs/'
     | '/packages/'
     | '/packages/$id/edit'
@@ -211,7 +232,9 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/jobs/new'
     | '/packages/new'
+    | '/api/public/compute-engagement'
     | '/api/public/notify-rh'
+    | '/api/public/track-behavior'
     | '/jobs'
     | '/packages'
     | '/packages/$id/edit'
@@ -231,7 +254,9 @@ export interface FileRouteTypes {
     | '/_app/jobs/$id'
     | '/_app/jobs/new'
     | '/_app/packages/new'
+    | '/api/public/compute-engagement'
     | '/api/public/notify-rh'
+    | '/api/public/track-behavior'
     | '/_app/jobs/'
     | '/_app/packages/'
     | '/_app/packages/$id/edit'
@@ -246,7 +271,9 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   WelcomeRoute: typeof WelcomeRoute
   PTokenRoute: typeof PTokenRoute
+  ApiPublicComputeEngagementRoute: typeof ApiPublicComputeEngagementRoute
   ApiPublicNotifyRhRoute: typeof ApiPublicNotifyRhRoute
+  ApiPublicTrackBehaviorRoute: typeof ApiPublicTrackBehaviorRoute
   ApiPublicHooksRunRemindersRoute: typeof ApiPublicHooksRunRemindersRoute
 }
 
@@ -329,11 +356,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppJobsIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/track-behavior': {
+      id: '/api/public/track-behavior'
+      path: '/api/public/track-behavior'
+      fullPath: '/api/public/track-behavior'
+      preLoaderRoute: typeof ApiPublicTrackBehaviorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/notify-rh': {
       id: '/api/public/notify-rh'
       path: '/api/public/notify-rh'
       fullPath: '/api/public/notify-rh'
       preLoaderRoute: typeof ApiPublicNotifyRhRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/compute-engagement': {
+      id: '/api/public/compute-engagement'
+      path: '/api/public/compute-engagement'
+      fullPath: '/api/public/compute-engagement'
+      preLoaderRoute: typeof ApiPublicComputeEngagementRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/packages/new': {
@@ -416,7 +457,9 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   WelcomeRoute: WelcomeRoute,
   PTokenRoute: PTokenRoute,
+  ApiPublicComputeEngagementRoute: ApiPublicComputeEngagementRoute,
   ApiPublicNotifyRhRoute: ApiPublicNotifyRhRoute,
+  ApiPublicTrackBehaviorRoute: ApiPublicTrackBehaviorRoute,
   ApiPublicHooksRunRemindersRoute: ApiPublicHooksRunRemindersRoute,
 }
 export const routeTree = rootRouteImport

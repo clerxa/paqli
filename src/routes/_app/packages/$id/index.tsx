@@ -10,6 +10,8 @@ import { ConfirmModal } from "@/components/paqli/ConfirmModal";
 import { Chip, TextField } from "@/components/paqli/configurator/fields";
 import { LinkActivityPanel } from "@/components/paqli/LinkActivityPanel";
 import { CounterOfferModal, type CounterOfferOriginal } from "@/components/paqli/CounterOfferModal";
+import { EngagementBadge } from "@/components/paqli/EngagementBadge";
+import { BehaviorView } from "@/components/paqli/BehaviorView";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
 import { supabase } from "@/integrations/supabase/client";

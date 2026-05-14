@@ -49,6 +49,25 @@ export interface DeclineStat {
   count: number;
 }
 
+export type FollowUpAlertType =
+  | "sim_no_response"
+  | "opened_not_sim"
+  | "not_opened_72h"
+  | "declined_can_counter";
+
+export interface FollowUpAlert {
+  type: FollowUpAlertType;
+  priority: "high" | "medium" | "low";
+  linkId: string;
+  token: string;
+  candidateName: string;
+  packageTitle: string;
+  packageId: string;
+  message: string;
+  cta: string;
+  declineCategory?: string | null;
+}
+
 export function useDashboard() {
   const { organization } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -58,6 +77,7 @@ export function useDashboard() {
   const [declineStats, setDeclineStats] = useState<DeclineStat[]>([]);
   const [acceptedCount, setAcceptedCount] = useState(0);
   const [declinedCount, setDeclinedCount] = useState(0);
+  const [followUpAlerts, setFollowUpAlerts] = useState<FollowUpAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -110,6 +130,7 @@ export function useDashboard() {
       setPackages(pkgList);
       setRecentActivity(activity);
       setTodos(buildTodos(pkgList));
+      setFollowUpAlerts(buildFollowUpAlerts(links));
 
       const accepted = links.filter((l) => l.status === "accepted").length;
       const declined = links.filter((l) => l.status === "declined");
@@ -135,7 +156,7 @@ export function useDashboard() {
     const { data } = await supabase
       .from("candidate_links")
       .select(
-        "id, candidate_name, package_id, opened_at, simulated_at, status, decline_category",
+        "id, token, candidate_name, package_id, created_at, opened_at, simulated_at, status, decline_category, packages (title)",
       )
       .eq("organization_id", orgId);
     return data ?? [];
@@ -242,8 +263,100 @@ export function useDashboard() {
     declineStats,
     acceptedCount,
     declinedCount,
+    followUpAlerts,
     loading,
   };
+}
+
+const COUNTERABLE_CATEGORIES = new Set(["salary", "equity", "location"]);
+
+function buildFollowUpAlerts(
+  links: Array<{
+    id: string;
+    token: string;
+    candidate_name: string | null;
+    package_id: string;
+    created_at: string;
+    opened_at: string | null;
+    simulated_at: string | null;
+    status: string;
+    decline_category: string | null;
+    packages?: { title: string } | null;
+  }>,
+): FollowUpAlert[] {
+  const now = Date.now();
+  const alerts: FollowUpAlert[] = [];
+
+  for (const l of links) {
+    const candidateName = l.candidate_name ?? "Candidat";
+    const packageTitle = l.packages?.title ?? "";
+
+    if (l.status === "declined" && l.decline_category && COUNTERABLE_CATEGORIES.has(l.decline_category)) {
+      alerts.push({
+        type: "declined_can_counter",
+        priority: "high",
+        linkId: l.id,
+        token: l.token,
+        candidateName,
+        packageTitle,
+        packageId: l.package_id,
+        message: "A décliné — contre-offre possible",
+        cta: "Faire une contre-offre",
+        declineCategory: l.decline_category,
+      });
+      continue;
+    }
+
+    if (l.status !== "pending") continue;
+
+    const created = new Date(l.created_at).getTime();
+    const opened = l.opened_at ? new Date(l.opened_at).getTime() : null;
+    const sim = l.simulated_at ? new Date(l.simulated_at).getTime() : null;
+    const hCreated = (now - created) / 3600000;
+    const hOpened = opened ? (now - opened) / 3600000 : null;
+    const hSim = sim ? (now - sim) / 3600000 : null;
+
+    if (sim && hSim! >= 48) {
+      alerts.push({
+        type: "sim_no_response",
+        priority: "high",
+        linkId: l.id,
+        token: l.token,
+        candidateName,
+        packageTitle,
+        packageId: l.package_id,
+        message: `A simulé il y a ${Math.round(hSim!)}h sans répondre`,
+        cta: "Envoyer un message",
+      });
+    } else if (opened && !sim && hOpened! >= 24) {
+      alerts.push({
+        type: "opened_not_sim",
+        priority: "medium",
+        linkId: l.id,
+        token: l.token,
+        candidateName,
+        packageTitle,
+        packageId: l.package_id,
+        message: `A ouvert il y a ${Math.round(hOpened!)}h sans simuler`,
+        cta: "Voir le lien",
+      });
+    } else if (!opened && hCreated >= 72) {
+      alerts.push({
+        type: "not_opened_72h",
+        priority: "low",
+        linkId: l.id,
+        token: l.token,
+        candidateName,
+        packageTitle,
+        packageId: l.package_id,
+        message: `Lien non ouvert depuis ${Math.round(hCreated / 24)} jours`,
+        cta: "Vérifier l'email",
+      });
+    }
+  }
+
+  const order = { high: 0, medium: 1, low: 2 } as const;
+  return alerts.sort((a, b) => order[a.priority] - order[b.priority]);
 }
 
 export function timeAgo(date: string): string {

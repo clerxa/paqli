@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Package as PackageIcon, ArrowUpRight } from "lucide-react";
 import { Topbar } from "@/components/paqli/Topbar";
 import { MetricCard } from "@/components/paqli/MetricCard";
@@ -7,6 +7,8 @@ import { Card } from "@/components/paqli/Card";
 import { StatusPill, type PillStatus } from "@/components/paqli/StatusPill";
 import { Button } from "@/components/paqli/Button";
 import { Skeleton } from "@/components/paqli/Skeleton";
+import { FollowUpAlertsCard } from "@/components/paqli/FollowUpAlertsCard";
+import { CounterOfferModal } from "@/components/paqli/CounterOfferModal";
 import { useAuth } from "@/hooks/useAuth";
 import { seedDemoData } from "@/lib/seedDemo";
 import {
@@ -15,8 +17,11 @@ import {
   type ActivityType,
   type PackageSummary,
   type TodoItem,
+  type FollowUpAlert,
 } from "@/hooks/useDashboard";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
+import { loadPackage } from "@/lib/packageService";
+import type { PackageConfig } from "@/lib/packageConfig";
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: DashboardPage,
@@ -71,9 +76,23 @@ function DashboardPage() {
     declineStats,
     acceptedCount,
     declinedCount,
+    followUpAlerts,
     loading,
   } = useDashboard();
   const navigate = useNavigate();
+  const [counterAlert, setCounterAlert] = useState<FollowUpAlert | null>(null);
+  const [counterPkg, setCounterPkg] = useState<PackageConfig | null>(null);
+
+  async function openCounterOffer(alert: FollowUpAlert) {
+    try {
+      const pkg = await loadPackage(alert.packageId);
+      if (!pkg) return;
+      setCounterPkg(pkg);
+      setCounterAlert(alert);
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   useEffect(() => {
     if (user && organization && !loading && packages.length === 0 && metrics?.totalLinks === 0) {
@@ -223,6 +242,10 @@ function DashboardPage() {
 
           {/* Right column */}
           <div className="space-y-4">
+            <FollowUpAlertsCard
+              alerts={followUpAlerts}
+              onCounterOffer={openCounterOffer}
+            />
             <Card>
               <h2
                 className="font-display text-aubergine mb-4"
@@ -372,6 +395,27 @@ function DashboardPage() {
           </div>
         </div>
       </div>
+      {counterAlert && counterPkg && (
+        <CounterOfferModal
+          original={{
+            linkId: counterAlert.linkId,
+            candidateName: counterAlert.candidateName,
+            declineCategory: counterAlert.declineCategory ?? null,
+            declineReason: null,
+            packageTitle: counterPkg.title,
+            grossSalary: counterPkg.grossSalary,
+            variableTarget: counterPkg.variableTarget ?? null,
+            remotePolicy: (counterPkg as any).remotePolicy ?? null,
+            remoteDays: (counterPkg as any).remoteDays ?? null,
+            bspceQuantity:
+              counterPkg.equityDevices.find((d) => d.type === "bspce")?.quantity ?? null,
+          }}
+          onClose={() => {
+            setCounterAlert(null);
+            setCounterPkg(null);
+          }}
+        />
+      )}
     </>
   );
 }

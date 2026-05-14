@@ -25,6 +25,7 @@ import { Route as AppPackagesNewRouteImport } from './routes/_app/packages/new'
 import { Route as AppJobsNewRouteImport } from './routes/_app/jobs/new'
 import { Route as AppJobsIdRouteImport } from './routes/_app/jobs/$id'
 import { Route as AppPackagesIdIndexRouteImport } from './routes/_app/packages/$id/index'
+import { Route as ApiPublicHooksRunRemindersRouteImport } from './routes/api/public/hooks/run-reminders'
 import { Route as AppPackagesIdEditRouteImport } from './routes/_app/packages/$id/edit'
 
 const WelcomeRoute = WelcomeRouteImport.update({
@@ -106,6 +107,12 @@ const AppPackagesIdIndexRoute = AppPackagesIdIndexRouteImport.update({
   path: '/packages/$id/',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicHooksRunRemindersRoute =
+  ApiPublicHooksRunRemindersRouteImport.update({
+    id: '/api/public/hooks/run-reminders',
+    path: '/api/public/hooks/run-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppPackagesIdEditRoute = AppPackagesIdEditRouteImport.update({
   id: '/packages/$id/edit',
   path: '/packages/$id/edit',
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/jobs/': typeof AppJobsIndexRoute
   '/packages/': typeof AppPackagesIndexRoute
   '/packages/$id/edit': typeof AppPackagesIdEditRoute
+  '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
   '/packages/$id/': typeof AppPackagesIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -146,6 +154,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof AppJobsIndexRoute
   '/packages': typeof AppPackagesIndexRoute
   '/packages/$id/edit': typeof AppPackagesIdEditRoute
+  '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
   '/packages/$id': typeof AppPackagesIdIndexRoute
 }
 export interface FileRoutesById {
@@ -166,6 +175,7 @@ export interface FileRoutesById {
   '/_app/jobs/': typeof AppJobsIndexRoute
   '/_app/packages/': typeof AppPackagesIndexRoute
   '/_app/packages/$id/edit': typeof AppPackagesIdEditRoute
+  '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
   '/_app/packages/$id/': typeof AppPackagesIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/jobs/'
     | '/packages/'
     | '/packages/$id/edit'
+    | '/api/public/hooks/run-reminders'
     | '/packages/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/packages'
     | '/packages/$id/edit'
+    | '/api/public/hooks/run-reminders'
     | '/packages/$id'
   id:
     | '__root__'
@@ -223,6 +235,7 @@ export interface FileRouteTypes {
     | '/_app/jobs/'
     | '/_app/packages/'
     | '/_app/packages/$id/edit'
+    | '/api/public/hooks/run-reminders'
     | '/_app/packages/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -234,6 +247,7 @@ export interface RootRouteChildren {
   WelcomeRoute: typeof WelcomeRoute
   PTokenRoute: typeof PTokenRoute
   ApiPublicNotifyRhRoute: typeof ApiPublicNotifyRhRoute
+  ApiPublicHooksRunRemindersRoute: typeof ApiPublicHooksRunRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -350,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackagesIdIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/hooks/run-reminders': {
+      id: '/api/public/hooks/run-reminders'
+      path: '/api/public/hooks/run-reminders'
+      fullPath: '/api/public/hooks/run-reminders'
+      preLoaderRoute: typeof ApiPublicHooksRunRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/packages/$id/edit': {
       id: '/_app/packages/$id/edit'
       path: '/packages/$id/edit'
@@ -396,17 +417,8 @@ const rootRouteChildren: RootRouteChildren = {
   WelcomeRoute: WelcomeRoute,
   PTokenRoute: PTokenRoute,
   ApiPublicNotifyRhRoute: ApiPublicNotifyRhRoute,
+  ApiPublicHooksRunRemindersRoute: ApiPublicHooksRunRemindersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

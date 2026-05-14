@@ -19,8 +19,11 @@ import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppCandidatesRouteImport } from './routes/_app/candidates'
 import { Route as AppPackagesIndexRouteImport } from './routes/_app/packages/index'
+import { Route as AppJobsIndexRouteImport } from './routes/_app/jobs/index'
 import { Route as ApiPublicNotifyRhRouteImport } from './routes/api/public/notify-rh'
 import { Route as AppPackagesNewRouteImport } from './routes/_app/packages/new'
+import { Route as AppJobsNewRouteImport } from './routes/_app/jobs/new'
+import { Route as AppJobsIdRouteImport } from './routes/_app/jobs/$id'
 import { Route as AppPackagesIdIndexRouteImport } from './routes/_app/packages/$id/index'
 import { Route as AppPackagesIdEditRouteImport } from './routes/_app/packages/$id/edit'
 
@@ -73,6 +76,11 @@ const AppPackagesIndexRoute = AppPackagesIndexRouteImport.update({
   path: '/packages/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppJobsIndexRoute = AppJobsIndexRouteImport.update({
+  id: '/jobs/',
+  path: '/jobs/',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiPublicNotifyRhRoute = ApiPublicNotifyRhRouteImport.update({
   id: '/api/public/notify-rh',
   path: '/api/public/notify-rh',
@@ -81,6 +89,16 @@ const ApiPublicNotifyRhRoute = ApiPublicNotifyRhRouteImport.update({
 const AppPackagesNewRoute = AppPackagesNewRouteImport.update({
   id: '/packages/new',
   path: '/packages/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppJobsNewRoute = AppJobsNewRouteImport.update({
+  id: '/jobs/new',
+  path: '/jobs/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppJobsIdRoute = AppJobsIdRouteImport.update({
+  id: '/jobs/$id',
+  path: '/jobs/$id',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPackagesIdIndexRoute = AppPackagesIdIndexRouteImport.update({
@@ -103,8 +121,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
+  '/jobs/$id': typeof AppJobsIdRoute
+  '/jobs/new': typeof AppJobsNewRoute
   '/packages/new': typeof AppPackagesNewRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
+  '/jobs/': typeof AppJobsIndexRoute
   '/packages/': typeof AppPackagesIndexRoute
   '/packages/$id/edit': typeof AppPackagesIdEditRoute
   '/packages/$id/': typeof AppPackagesIdIndexRoute
@@ -118,8 +139,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
+  '/jobs/$id': typeof AppJobsIdRoute
+  '/jobs/new': typeof AppJobsNewRoute
   '/packages/new': typeof AppPackagesNewRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
+  '/jobs': typeof AppJobsIndexRoute
   '/packages': typeof AppPackagesIndexRoute
   '/packages/$id/edit': typeof AppPackagesIdEditRoute
   '/packages/$id': typeof AppPackagesIdIndexRoute
@@ -135,8 +159,11 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
+  '/_app/jobs/$id': typeof AppJobsIdRoute
+  '/_app/jobs/new': typeof AppJobsNewRoute
   '/_app/packages/new': typeof AppPackagesNewRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
+  '/_app/jobs/': typeof AppJobsIndexRoute
   '/_app/packages/': typeof AppPackagesIndexRoute
   '/_app/packages/$id/edit': typeof AppPackagesIdEditRoute
   '/_app/packages/$id/': typeof AppPackagesIdIndexRoute
@@ -152,8 +179,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/p/$token'
+    | '/jobs/$id'
+    | '/jobs/new'
     | '/packages/new'
     | '/api/public/notify-rh'
+    | '/jobs/'
     | '/packages/'
     | '/packages/$id/edit'
     | '/packages/$id/'
@@ -167,8 +197,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/p/$token'
+    | '/jobs/$id'
+    | '/jobs/new'
     | '/packages/new'
     | '/api/public/notify-rh'
+    | '/jobs'
     | '/packages'
     | '/packages/$id/edit'
     | '/packages/$id'
@@ -183,8 +216,11 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/settings'
     | '/p/$token'
+    | '/_app/jobs/$id'
+    | '/_app/jobs/new'
     | '/_app/packages/new'
     | '/api/public/notify-rh'
+    | '/_app/jobs/'
     | '/_app/packages/'
     | '/_app/packages/$id/edit'
     | '/_app/packages/$id/'
@@ -272,6 +308,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackagesIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/jobs/': {
+      id: '/_app/jobs/'
+      path: '/jobs'
+      fullPath: '/jobs/'
+      preLoaderRoute: typeof AppJobsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/public/notify-rh': {
       id: '/api/public/notify-rh'
       path: '/api/public/notify-rh'
@@ -284,6 +327,20 @@ declare module '@tanstack/react-router' {
       path: '/packages/new'
       fullPath: '/packages/new'
       preLoaderRoute: typeof AppPackagesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/jobs/new': {
+      id: '/_app/jobs/new'
+      path: '/jobs/new'
+      fullPath: '/jobs/new'
+      preLoaderRoute: typeof AppJobsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/jobs/$id': {
+      id: '/_app/jobs/$id'
+      path: '/jobs/$id'
+      fullPath: '/jobs/$id'
+      preLoaderRoute: typeof AppJobsIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/packages/$id/': {
@@ -307,7 +364,10 @@ interface AppRouteChildren {
   AppCandidatesRoute: typeof AppCandidatesRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppJobsIdRoute: typeof AppJobsIdRoute
+  AppJobsNewRoute: typeof AppJobsNewRoute
   AppPackagesNewRoute: typeof AppPackagesNewRoute
+  AppJobsIndexRoute: typeof AppJobsIndexRoute
   AppPackagesIndexRoute: typeof AppPackagesIndexRoute
   AppPackagesIdEditRoute: typeof AppPackagesIdEditRoute
   AppPackagesIdIndexRoute: typeof AppPackagesIdIndexRoute
@@ -317,7 +377,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppCandidatesRoute: AppCandidatesRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppJobsIdRoute: AppJobsIdRoute,
+  AppJobsNewRoute: AppJobsNewRoute,
   AppPackagesNewRoute: AppPackagesNewRoute,
+  AppJobsIndexRoute: AppJobsIndexRoute,
   AppPackagesIndexRoute: AppPackagesIndexRoute,
   AppPackagesIdEditRoute: AppPackagesIdEditRoute,
   AppPackagesIdIndexRoute: AppPackagesIdIndexRoute,

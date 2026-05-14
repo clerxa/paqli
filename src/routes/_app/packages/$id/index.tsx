@@ -41,6 +41,7 @@ interface CandidateLinkRow {
   simulated_at: string | null;
   status: string;
   decline_category: string | null;
+  decline_reason: string | null;
 }
 
 function PackageDetail() {
@@ -53,6 +54,7 @@ function PackageDetail() {
   const [showSendModal, setShowSendModal] = useState(false);
   const [deleteLinkId, setDeleteLinkId] = useState<string | null>(null);
   const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
+  const [counterOfferFor, setCounterOfferFor] = useState<CounterOfferOriginal | null>(null);
 
   async function reload() {
     const [p, l] = await Promise.all([

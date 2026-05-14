@@ -127,6 +127,105 @@ export type Database = {
           },
         ]
       }
+      jobs: {
+        Row: {
+          company_values: string[] | null
+          contract_type: string | null
+          created_at: string
+          created_by: string
+          culture_note: string | null
+          flexible_hours: boolean | null
+          glassdoor_url: string | null
+          growth_paths: Json | null
+          id: string
+          job_summary: string | null
+          location_city: string | null
+          location_details: string | null
+          manager_style: string | null
+          missions: Json | null
+          onboarding_note: string | null
+          organization_id: string
+          process_duration: string | null
+          process_steps: Json | null
+          remote_days: number | null
+          remote_guaranteed: boolean | null
+          remote_policy: string | null
+          stack: string[] | null
+          start_date: string | null
+          status: string
+          team_description: string | null
+          team_size: number | null
+          title: string
+          training_budget: number | null
+          updated_at: string
+          wtj_url: string | null
+        }
+        Insert: {
+          company_values?: string[] | null
+          contract_type?: string | null
+          created_at?: string
+          created_by: string
+          culture_note?: string | null
+          flexible_hours?: boolean | null
+          glassdoor_url?: string | null
+          growth_paths?: Json | null
+          id?: string
+          job_summary?: string | null
+          location_city?: string | null
+          location_details?: string | null
+          manager_style?: string | null
+          missions?: Json | null
+          onboarding_note?: string | null
+          organization_id: string
+          process_duration?: string | null
+          process_steps?: Json | null
+          remote_days?: number | null
+          remote_guaranteed?: boolean | null
+          remote_policy?: string | null
+          stack?: string[] | null
+          start_date?: string | null
+          status?: string
+          team_description?: string | null
+          team_size?: number | null
+          title: string
+          training_budget?: number | null
+          updated_at?: string
+          wtj_url?: string | null
+        }
+        Update: {
+          company_values?: string[] | null
+          contract_type?: string | null
+          created_at?: string
+          created_by?: string
+          culture_note?: string | null
+          flexible_hours?: boolean | null
+          glassdoor_url?: string | null
+          growth_paths?: Json | null
+          id?: string
+          job_summary?: string | null
+          location_city?: string | null
+          location_details?: string | null
+          manager_style?: string | null
+          missions?: Json | null
+          onboarding_note?: string | null
+          organization_id?: string
+          process_duration?: string | null
+          process_steps?: Json | null
+          remote_days?: number | null
+          remote_guaranteed?: boolean | null
+          remote_policy?: string | null
+          stack?: string[] | null
+          start_date?: string | null
+          status?: string
+          team_description?: string | null
+          team_size?: number | null
+          title?: string
+          training_budget?: number | null
+          updated_at?: string
+          wtj_url?: string | null
+        }
+        Relationships: []
+      }
       link_events: {
         Row: {
           created_at: string

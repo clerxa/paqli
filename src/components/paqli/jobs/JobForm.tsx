@@ -1,14 +1,11 @@
-import { Link } from "@tanstack/react-router";
-import { usePackageConfig } from "@/contexts/PackageConfigContext";
-import { useJobs } from "@/hooks/useJobs";
-import { applyJobToConfig } from "@/lib/jobsService";
 import {
   Chip,
   EduBanner,
   NumberField,
   TextArea,
   TextField,
-} from "./fields";
+} from "@/components/paqli/configurator/fields";
+import type { JobInput } from "@/lib/jobsService";
 import type {
   ContractType,
   GrowthPath,
@@ -82,61 +79,66 @@ const PROCESS_TEMPLATES: Record<string, ProcessStep[]> = {
   ],
 };
 
-export function Step0Job() {
-  const { config, setConfig, patch } = usePackageConfig();
-  const { jobs } = useJobs();
+export function JobForm({
+  value,
+  onChange,
+}: {
+  value: JobInput;
+  onChange: (next: JobInput) => void;
+}) {
+  const patch = (p: Partial<JobInput>) => onChange({ ...value, ...p });
 
-  function setMission(i: number, value: string) {
-    const next = [...config.missions];
-    next[i] = value;
+  function setMission(i: number, v: string) {
+    const next = [...value.missions];
+    next[i] = v;
     patch({ missions: next });
   }
   function addMission() {
-    if (config.missions.length >= 5) return;
-    patch({ missions: [...config.missions, ""] });
+    if (value.missions.length >= 5) return;
+    patch({ missions: [...value.missions, ""] });
   }
   function removeMission(i: number) {
-    patch({ missions: config.missions.filter((_, j) => j !== i) });
+    patch({ missions: value.missions.filter((_, j) => j !== i) });
   }
 
   function toggleValue(v: string) {
-    const exists = config.companyValues.includes(v);
+    const exists = value.companyValues.includes(v);
     const next = exists
-      ? config.companyValues.filter((x) => x !== v)
-      : config.companyValues.length < 5
-        ? [...config.companyValues, v]
-        : config.companyValues;
+      ? value.companyValues.filter((x) => x !== v)
+      : value.companyValues.length < 5
+        ? [...value.companyValues, v]
+        : value.companyValues;
     patch({ companyValues: next });
   }
 
   function setGrowth(i: number, p: Partial<GrowthPath>) {
-    const next = [...config.growthPaths];
+    const next = [...value.growthPaths];
     next[i] = { ...next[i], ...p };
     patch({ growthPaths: next });
   }
   function addGrowth() {
-    if (config.growthPaths.length >= 3) return;
+    if (value.growthPaths.length >= 3) return;
     patch({
-      growthPaths: [...config.growthPaths, { horizon: "1 an", path: "" }],
+      growthPaths: [...value.growthPaths, { horizon: "1 an", path: "" }],
     });
   }
   function removeGrowth(i: number) {
-    patch({ growthPaths: config.growthPaths.filter((_, j) => j !== i) });
+    patch({ growthPaths: value.growthPaths.filter((_, j) => j !== i) });
   }
 
   function setStep(i: number, p: Partial<ProcessStep>) {
-    const next = [...config.processSteps];
+    const next = [...value.processSteps];
     next[i] = { ...next[i], ...p };
     patch({ processSteps: next });
   }
   function addStep() {
-    if (config.processSteps.length >= 6) return;
+    if (value.processSteps.length >= 6) return;
     patch({
-      processSteps: [...config.processSteps, { step: "", duration: "" }],
+      processSteps: [...value.processSteps, { step: "", duration: "" }],
     });
   }
   function removeStep(i: number) {
-    patch({ processSteps: config.processSteps.filter((_, j) => j !== i) });
+    patch({ processSteps: value.processSteps.filter((_, j) => j !== i) });
   }
   function loadTemplate(t: keyof typeof PROCESS_TEMPLATES) {
     patch({ processSteps: PROCESS_TEMPLATES[t] });
@@ -144,72 +146,12 @@ export function Step0Job() {
 
   return (
     <div className="space-y-7">
-      <header>
-        <h2
-          className="font-display text-aubergine"
-          style={{ fontSize: 22, lineHeight: 1.2 }}
-        >
-          Le poste
-        </h2>
-        <p className="text-[12px] text-aubergine-light mt-1.5 leading-relaxed">
-          Ces informations aident le candidat à comprendre pourquoi ce rôle est
-          fait pour lui — avant même de regarder le package financier.
-        </p>
-      </header>
-
-      {/* Importer depuis une offre */}
-      <div
-        className="rounded-lg p-4 border"
-        style={{ background: "#F5F2FA", borderColor: "rgba(139,127,168,0.3)" }}
-      >
-        <div className="flex items-center gap-2 mb-2">
-          <span style={{ fontSize: 16 }}>💼</span>
-          <span className="text-[12px] font-medium text-aubergine">
-            Pré-remplir depuis une offre d'emploi
-          </span>
-        </div>
-        <p className="text-[11px] text-aubergine-light mb-3 leading-relaxed">
-          Sélectionnez une offre existante pour copier toutes les informations
-          du poste. Vous pourrez ensuite tout modifier librement pour ce package.
-        </p>
-        <div className="flex flex-wrap gap-2 items-center">
-          <select
-            value=""
-            onChange={(e) => {
-              const job = jobs.find((j) => j.id === e.target.value);
-              if (!job) return;
-              setConfig((prev) => applyJobToConfig(prev, job));
-            }}
-            disabled={jobs.length === 0}
-            className="flex-1 min-w-[200px] text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white disabled:opacity-50"
-          >
-            <option value="">
-              {jobs.length === 0
-                ? "Aucune offre — créez-en une d'abord"
-                : "Choisir une offre…"}
-            </option>
-            {jobs.map((j) => (
-              <option key={j.id} value={j.id}>
-                {j.title}
-                {j.location_city ? ` — ${j.location_city}` : ""}
-              </option>
-            ))}
-          </select>
-          <Link
-            to="/jobs/new"
-            className="text-[12px] text-aubergine hover:underline whitespace-nowrap"
-          >
-            + Nouvelle offre
-          </Link>
-        </div>
-      </div>
-
-      {/* Titre + Accroche */}
+      {/* Identité */}
       <Section title="Identité">
         <TextField
           label="Intitulé du poste"
           required
-          value={config.title}
+          value={value.title}
           onChange={(v) => patch({ title: v })}
           placeholder="Lead Engineer · Série B"
         />
@@ -219,17 +161,15 @@ export function Step0Job() {
               Accroche du poste<span className="text-danger"> *</span>
             </span>
             <textarea
-              value={config.jobSummary}
-              onChange={(e) =>
-                patch({ jobSummary: e.target.value.slice(0, 200) })
-              }
+              value={value.jobSummary}
+              onChange={(e) => patch({ jobSummary: e.target.value.slice(0, 200) })}
               placeholder="Rejoignez une équipe de 6 engineers qui construit l'infrastructure data de la prochaine licorne française."
               rows={3}
               className="w-full text-[13px] mt-1 px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white resize-none"
             />
           </label>
           <div className="text-[11px] text-grey mt-1 text-right">
-            {config.jobSummary.length}/200
+            {value.jobSummary.length}/200
           </div>
         </div>
       </Section>
@@ -242,7 +182,7 @@ export function Step0Job() {
             {CONTRACT_OPTIONS.map((o) => (
               <Chip
                 key={o.value}
-                selected={config.contractType === o.value}
+                selected={value.contractType === o.value}
                 onClick={() => patch({ contractType: o.value })}
               >
                 {o.label}
@@ -257,7 +197,7 @@ export function Step0Job() {
             3 à 5 missions, max 5
           </div>
           <div className="space-y-2">
-            {config.missions.map((m, i) => (
+            {value.missions.map((m, i) => (
               <div key={i} className="flex gap-2 items-start">
                 <span className="text-[11px] text-grey mt-2.5 w-4 text-right shrink-0">
                   {i + 1}.
@@ -279,7 +219,7 @@ export function Step0Job() {
                 </button>
               </div>
             ))}
-            {config.missions.length < 5 && (
+            {value.missions.length < 5 && (
               <button
                 type="button"
                 onClick={addMission}
@@ -294,7 +234,7 @@ export function Step0Job() {
         <div>
           <SubLabel>Stack / Environnement</SubLabel>
           <TagInput
-            tags={config.stack}
+            tags={value.stack}
             onChange={(stack) => patch({ stack })}
             placeholder="React, TypeScript, Supabase…"
           />
@@ -309,7 +249,7 @@ export function Step0Job() {
             {REMOTE_OPTIONS.map((o) => (
               <CardChoice
                 key={o.value}
-                selected={config.remotePolicy === o.value}
+                selected={value.remotePolicy === o.value}
                 icon={o.icon}
                 label={o.label}
                 desc={o.desc}
@@ -319,7 +259,7 @@ export function Step0Job() {
           </div>
         </div>
 
-        {config.remotePolicy === "hybrid" && (
+        {value.remotePolicy === "hybrid" && (
           <>
             <div>
               <SubLabel>Jours de télétravail / semaine</SubLabel>
@@ -327,7 +267,7 @@ export function Step0Job() {
                 {[1, 2, 3, 4].map((d) => (
                   <Chip
                     key={d}
-                    selected={config.remoteDays === d}
+                    selected={value.remoteDays === d}
                     onClick={() => patch({ remoteDays: d })}
                   >
                     {d}j
@@ -338,7 +278,7 @@ export function Step0Job() {
             <Toggle
               label="Télétravail garanti dans le contrat ?"
               hint="Un accord écrit rassure davantage les candidats"
-              value={config.remoteGuaranteed}
+              value={value.remoteGuaranteed}
               onChange={(v) => patch({ remoteGuaranteed: v })}
             />
           </>
@@ -346,7 +286,7 @@ export function Step0Job() {
 
         <Toggle
           label="Horaires flexibles ?"
-          value={config.flexibleHours}
+          value={value.flexibleHours}
           onChange={(v) => patch({ flexibleHours: v })}
         />
       </Section>
@@ -356,20 +296,20 @@ export function Step0Job() {
         <TextField
           label="Ville / lieu de travail"
           required
-          value={config.locationCity}
+          value={value.locationCity}
           onChange={(v) => patch({ locationCity: v })}
           placeholder="Paris 9e"
         />
         <TextArea
           label="Précisions localisation"
-          value={config.locationDetails}
+          value={value.locationDetails}
           onChange={(v) => patch({ locationDetails: v })}
           placeholder="Bureaux à 5 min de la station Nation. Déplacements client 1 fois / mois à prévoir."
           maxLength={300}
         />
       </Section>
 
-      {/* Équipe & management */}
+      {/* Équipe */}
       <Section title="Équipe & management">
         <div>
           <SubLabel>Taille de l'équipe directe</SubLabel>
@@ -377,7 +317,7 @@ export function Step0Job() {
             {TEAM_SIZE_OPTIONS.map((o) => (
               <Chip
                 key={o.v}
-                selected={config.teamSize === o.v}
+                selected={value.teamSize === o.v}
                 onClick={() => patch({ teamSize: o.v })}
               >
                 {o.l}
@@ -388,9 +328,9 @@ export function Step0Job() {
 
         <TextArea
           label="Description de l'équipe"
-          value={config.teamDescription}
+          value={value.teamDescription}
           onChange={(v) => patch({ teamDescription: v })}
-          placeholder="Une équipe de 6 engineers, 2 PM et 1 designer. Environnement bienveillant, feedback régulier."
+          placeholder="Une équipe de 6 engineers, 2 PM et 1 designer."
           maxLength={300}
         />
 
@@ -400,7 +340,7 @@ export function Step0Job() {
             {MANAGER_OPTIONS.map((o) => (
               <CardChoice
                 key={o.value}
-                selected={config.managerStyle === o.value}
+                selected={value.managerStyle === o.value}
                 icon={o.icon}
                 label={o.label}
                 desc={o.desc}
@@ -411,18 +351,18 @@ export function Step0Job() {
         </div>
       </Section>
 
-      {/* Culture & valeurs */}
+      {/* Culture */}
       <Section title="Culture & valeurs">
         <div>
           <SubLabel>Valeurs de l'entreprise</SubLabel>
           <div className="text-[11px] text-grey mt-0.5 mb-2">
-            Sélectionnez jusqu'à 5 valeurs ({config.companyValues.length}/5)
+            Sélectionnez jusqu'à 5 valeurs ({value.companyValues.length}/5)
           </div>
           <div className="flex flex-wrap gap-2">
             {VALUE_SUGGESTIONS.map((v) => (
               <Chip
                 key={v}
-                selected={config.companyValues.includes(v)}
+                selected={value.companyValues.includes(v)}
                 onClick={() => toggleValue(v)}
               >
                 {v}
@@ -433,40 +373,39 @@ export function Step0Job() {
 
         <TextArea
           label="Note culture"
-          value={config.cultureNote}
+          value={value.cultureNote}
           onChange={(v) => patch({ cultureNote: v })}
-          placeholder="Réunion d'équipe hebdomadaire, off-site 2x/an, budget team building, pas de réunions après 18h."
+          placeholder="Réunion d'équipe hebdomadaire, off-site 2x/an, pas de réunions après 18h."
           maxLength={300}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <TextField
             label="Glassdoor (URL)"
-            value={config.glassdoorUrl}
+            value={value.glassdoorUrl}
             onChange={(v) => patch({ glassdoorUrl: v })}
             placeholder="https://glassdoor.com/..."
             maxLength={500}
           />
           <TextField
             label="Welcome to the Jungle (URL)"
-            value={config.wtjUrl}
+            value={value.wtjUrl}
             onChange={(v) => patch({ wtjUrl: v })}
             placeholder="https://welcometothejungle.com/..."
             maxLength={500}
           />
         </div>
         <EduBanner>
-          Ces liens permettent au candidat de vérifier les avis avant de
-          décider.
+          Ces liens permettent au candidat de vérifier les avis avant de décider.
         </EduBanner>
       </Section>
 
-      {/* Perspectives d'évolution */}
+      {/* Évolution */}
       <Section title="Perspectives d'évolution">
         <div>
           <SubLabel>Évolutions possibles (max 3)</SubLabel>
           <div className="space-y-2 mt-2">
-            {config.growthPaths.map((g, i) => (
+            {value.growthPaths.map((g, i) => (
               <div key={i} className="flex flex-wrap gap-2 items-start">
                 <select
                   value={g.horizon}
@@ -495,7 +434,7 @@ export function Step0Job() {
                 </button>
               </div>
             ))}
-            {config.growthPaths.length < 3 && (
+            {value.growthPaths.length < 3 && (
               <button
                 type="button"
                 onClick={addGrowth}
@@ -509,7 +448,7 @@ export function Step0Job() {
 
         <NumberField
           label="Budget formation annuel"
-          value={config.trainingBudget ?? 0}
+          value={value.trainingBudget ?? 0}
           onChange={(v) => patch({ trainingBudget: v || null })}
           placeholder="2000"
           suffix="€"
@@ -518,9 +457,9 @@ export function Step0Job() {
 
         <TextArea
           label="Note onboarding"
-          value={config.onboardingNote}
+          value={value.onboardingNote}
           onChange={(v) => patch({ onboardingNote: v })}
-          placeholder="Onboarding structuré sur 3 mois avec buddy dédié, accès à toute la documentation interne dès J1."
+          placeholder="Onboarding structuré sur 3 mois avec buddy dédié."
           maxLength={300}
         />
       </Section>
@@ -544,7 +483,7 @@ export function Step0Job() {
             </div>
           </div>
           <div className="space-y-2 mt-2">
-            {config.processSteps.map((s, i) => (
+            {value.processSteps.map((s, i) => (
               <div key={i} className="flex gap-2 items-start">
                 <span className="text-[11px] text-grey mt-2.5 w-4 text-right shrink-0">
                   {i + 1}.
@@ -572,7 +511,7 @@ export function Step0Job() {
                 </button>
               </div>
             ))}
-            {config.processSteps.length < 6 && (
+            {value.processSteps.length < 6 && (
               <button
                 type="button"
                 onClick={addStep}
@@ -587,13 +526,13 @@ export function Step0Job() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <TextField
             label="Durée totale du processus"
-            value={config.processDuration}
+            value={value.processDuration}
             onChange={(v) => patch({ processDuration: v })}
             placeholder="2 à 3 semaines"
           />
           <TextField
             label="Date de démarrage souhaitée"
-            value={config.startDate}
+            value={value.startDate}
             onChange={(v) => patch({ startDate: v })}
             placeholder="Dès que possible"
           />
@@ -601,6 +540,18 @@ export function Step0Job() {
       </Section>
     </div>
   );
+}
+
+export function validateJob(j: JobInput): string | null {
+  if (!j.title || j.title.trim().length < 3)
+    return "L'intitulé du poste est obligatoire (min. 3 caractères).";
+  if (!j.jobSummary || j.jobSummary.trim().length < 10)
+    return "L'accroche du poste est obligatoire (min. 10 caractères).";
+  if (!j.missions.filter((m) => m.trim()).length)
+    return "Ajoutez au moins une mission principale.";
+  if (!j.locationCity || !j.locationCity.trim())
+    return "Indiquez la ville / lieu de travail.";
+  return null;
 }
 
 function Section({

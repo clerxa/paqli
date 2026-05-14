@@ -2,6 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Package,
+  Briefcase,
   Link as LinkIcon,
   Users,
   GraduationCap,
@@ -23,6 +24,7 @@ interface NavItem {
 
 const main: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/jobs", label: "Offres d'emploi", icon: Briefcase },
   { to: "/packages", label: "Packages", icon: Package, badge: 4 },
   { to: "/candidates", label: "Liens envoyés", icon: LinkIcon },
   { to: "/candidates", label: "Candidats", icon: Users },

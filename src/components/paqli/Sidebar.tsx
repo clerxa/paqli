@@ -103,6 +103,24 @@ export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { profile, organization, signOut, user } = useAuth();
   const navigate = useNavigate();
+  const { open, setOpen } = useMobileNav();
+
+  // Auto-close drawer on route change (mobile)
+  useEffect(() => {
+    setOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  // Lock body scroll when drawer open
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [open]);
 
   const displayName =
     profile?.full_name?.trim() || user?.email?.split("@")[0] || "Invité";
@@ -121,64 +139,83 @@ export function Sidebar() {
   };
 
   return (
-    <aside
-      className="flex flex-col shrink-0"
-      style={{ width: 220, background: "#2D2640", minHeight: "100vh" }}
-    >
-      <div className="px-5 pt-6 pb-2">
-        <Logo variant="light" />
-      </div>
-
-      <nav className="flex-1 px-3 pt-6 overflow-y-auto">
-        {main.map((item) => (
-          <NavLink
-            key={item.label}
-            item={item}
-            active={!!item.to && pathname.startsWith(item.to)}
-          />
-        ))}
-
-        <SectionLabel>Formation</SectionLabel>
-        {formation.map((item) => (
-          <NavLink key={item.label} item={item} active={false} />
-        ))}
-
-        <SectionLabel>Compte</SectionLabel>
-        {tertiary.map((item) => (
-          <NavLink
-            key={item.label}
-            item={item}
-            active={!!item.to && pathname.startsWith(item.to)}
-          />
-        ))}
-      </nav>
-
-      <div
-        className="flex items-center gap-3 px-3 py-3 mx-3 mb-3 rounded-lg"
-        style={{ background: "rgba(250,248,245,0.04)" }}
-      >
+    <>
+      {/* Mobile backdrop */}
+      {open && (
         <div
-          className="flex items-center justify-center rounded-full text-[12px] font-semibold shrink-0"
-          style={{ width: 32, height: 32, background: "#C4A882", color: "#2D2640" }}
-        >
-          {initials}
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+        />
+      )}
+      <aside
+        className={`flex flex-col shrink-0 fixed md:static inset-y-0 left-0 z-50 transition-transform md:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+        style={{ width: 220, background: "#2D2640", minHeight: "100vh" }}
+      >
+        <div className="px-5 pt-6 pb-2 flex items-center justify-between">
+          <Logo variant="light" />
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="md:hidden p-1.5 rounded-md text-[#B8AECF] hover:bg-[rgba(250,248,245,0.08)]"
+            aria-label="Fermer le menu"
+          >
+            <X size={16} />
+          </button>
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-[12px] text-lin truncate">{displayName}</div>
-          <div className="text-[10px] truncate" style={{ color: "#B8AECF" }}>
-            {organization?.name ?? "—"}
+
+        <nav className="flex-1 px-3 pt-6 overflow-y-auto">
+          {main.map((item) => (
+            <NavLink
+              key={item.label}
+              item={item}
+              active={!!item.to && pathname.startsWith(item.to)}
+            />
+          ))}
+
+          <SectionLabel>Formation</SectionLabel>
+          {formation.map((item) => (
+            <NavLink key={item.label} item={item} active={false} />
+          ))}
+
+          <SectionLabel>Compte</SectionLabel>
+          {tertiary.map((item) => (
+            <NavLink
+              key={item.label}
+              item={item}
+              active={!!item.to && pathname.startsWith(item.to)}
+            />
+          ))}
+        </nav>
+
+        <div
+          className="flex items-center gap-3 px-3 py-3 mx-3 mb-3 rounded-lg"
+          style={{ background: "rgba(250,248,245,0.04)" }}
+        >
+          <div
+            className="flex items-center justify-center rounded-full text-[12px] font-semibold shrink-0"
+            style={{ width: 32, height: 32, background: "#C4A882", color: "#2D2640" }}
+          >
+            {initials}
           </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[12px] text-lin truncate">{displayName}</div>
+            <div className="text-[10px] truncate" style={{ color: "#B8AECF" }}>
+              {organization?.name ?? "—"}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            title="Se déconnecter"
+            className="p-1.5 rounded-md transition-colors hover:bg-[rgba(250,248,245,0.08)]"
+            style={{ color: "#B8AECF" }}
+          >
+            <LogOut size={14} />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          title="Se déconnecter"
-          className="p-1.5 rounded-md transition-colors hover:bg-[rgba(250,248,245,0.08)]"
-          style={{ color: "#B8AECF" }}
-        >
-          <LogOut size={14} />
-        </button>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

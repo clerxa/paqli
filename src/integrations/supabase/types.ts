@@ -227,45 +227,117 @@ export type Database = {
       packages: {
         Row: {
           benefits: Json | null
+          company_values: string[] | null
+          contract_type: string | null
           created_at: string
           created_by: string
+          culture_note: string | null
+          flexible_hours: boolean | null
+          glassdoor_url: string | null
           gross_salary: number | null
+          growth_paths: Json | null
           id: string
+          job_summary: string | null
+          job_type: string | null
+          location_city: string | null
+          location_details: string | null
+          manager_style: string | null
+          missions: Json | null
+          onboarding_note: string | null
           organization_id: string
+          process_duration: string | null
+          process_steps: Json | null
+          remote_days: number | null
+          remote_guaranteed: boolean | null
+          remote_policy: string | null
           scenario_display: string
           scenario_message: string | null
+          stack: string[] | null
+          start_date: string | null
           status: string
+          team_description: string | null
+          team_size: number | null
           title: string
+          training_budget: number | null
           updated_at: string
           variable_target: number | null
+          wtj_url: string | null
         }
         Insert: {
           benefits?: Json | null
+          company_values?: string[] | null
+          contract_type?: string | null
           created_at?: string
           created_by: string
+          culture_note?: string | null
+          flexible_hours?: boolean | null
+          glassdoor_url?: string | null
           gross_salary?: number | null
+          growth_paths?: Json | null
           id?: string
+          job_summary?: string | null
+          job_type?: string | null
+          location_city?: string | null
+          location_details?: string | null
+          manager_style?: string | null
+          missions?: Json | null
+          onboarding_note?: string | null
           organization_id: string
+          process_duration?: string | null
+          process_steps?: Json | null
+          remote_days?: number | null
+          remote_guaranteed?: boolean | null
+          remote_policy?: string | null
           scenario_display?: string
           scenario_message?: string | null
+          stack?: string[] | null
+          start_date?: string | null
           status?: string
+          team_description?: string | null
+          team_size?: number | null
           title: string
+          training_budget?: number | null
           updated_at?: string
           variable_target?: number | null
+          wtj_url?: string | null
         }
         Update: {
           benefits?: Json | null
+          company_values?: string[] | null
+          contract_type?: string | null
           created_at?: string
           created_by?: string
+          culture_note?: string | null
+          flexible_hours?: boolean | null
+          glassdoor_url?: string | null
           gross_salary?: number | null
+          growth_paths?: Json | null
           id?: string
+          job_summary?: string | null
+          job_type?: string | null
+          location_city?: string | null
+          location_details?: string | null
+          manager_style?: string | null
+          missions?: Json | null
+          onboarding_note?: string | null
           organization_id?: string
+          process_duration?: string | null
+          process_steps?: Json | null
+          remote_days?: number | null
+          remote_guaranteed?: boolean | null
+          remote_policy?: string | null
           scenario_display?: string
           scenario_message?: string | null
+          stack?: string[] | null
+          start_date?: string | null
           status?: string
+          team_description?: string | null
+          team_size?: number | null
           title?: string
+          training_budget?: number | null
           updated_at?: string
           variable_target?: number | null
+          wtj_url?: string | null
         }
         Relationships: [
           {
@@ -321,6 +393,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      salary_benchmarks: {
+        Row: {
+          id: string
+          job_family: string
+          location: string
+          p25: number
+          p50: number
+          p75: number
+          seniority: string
+          source: string | null
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          id?: string
+          job_family: string
+          location?: string
+          p25: number
+          p50: number
+          p75: number
+          seniority: string
+          source?: string | null
+          updated_at: string
+          version?: string
+        }
+        Update: {
+          id?: string
+          job_family?: string
+          location?: string
+          p25?: number
+          p50?: number
+          p75?: number
+          seniority?: string
+          source?: string | null
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
       }
       savings_devices: {
         Row: {

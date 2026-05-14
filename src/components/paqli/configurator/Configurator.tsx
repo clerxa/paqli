@@ -8,6 +8,7 @@ import { LegalNotice } from "@/components/paqli/LegalNotice";
 import { Stepper } from "./Stepper";
 import { PreviewPanel } from "./PreviewPanel";
 import { SaveIndicator } from "./SaveIndicator";
+import { Step0Job } from "./Step0Job";
 import { Step1Fixed } from "./Step1Fixed";
 import { Step2Equity } from "./Step2Equity";
 import { Step3Savings } from "./Step3Savings";
@@ -47,11 +48,13 @@ export function Configurator() {
     }
   };
   const goPrev = () => {
-    if (config.currentStep > 1) setStep(config.currentStep - 1);
+    if (config.currentStep > 0) setStep(config.currentStep - 1);
   };
 
   const stepNode = useMemo(() => {
     switch (config.currentStep) {
+      case 0:
+        return <Step0Job />;
       case 1:
         return <Step1Fixed />;
       case 2:

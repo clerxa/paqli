@@ -23,13 +23,13 @@ function EditPackage() {
 
   if (loading) {
     return (
-      <div className="px-7 py-6 text-[13px] text-grey">Chargement…</div>
+      <div className="px-4 sm:px-7 py-4 sm:py-6 text-[13px] text-grey">Chargement…</div>
     );
   }
 
   if (!initial) {
     return (
-      <div className="px-7 py-6 text-[13px] text-grey">
+      <div className="px-4 sm:px-7 py-4 sm:py-6 text-[13px] text-grey">
         Package introuvable.
       </div>
     );

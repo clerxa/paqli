@@ -62,7 +62,7 @@ function NewJobPage() {
           </Button>
         }
       />
-      <div className="px-7 py-6 max-w-3xl">
+      <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl">
         <Card>
           <JobForm value={value} onChange={setValue} />
           <div className="flex items-center justify-end gap-3 mt-8 pt-5 border-t border-[rgba(45,38,64,0.06)]">

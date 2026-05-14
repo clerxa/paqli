@@ -84,7 +84,7 @@ function PackageDetail() {
     return (
       <>
         <Topbar title="Chargement…" />
-        <div className="px-7 py-6">
+        <div className="px-4 sm:px-7 py-4 sm:py-6">
           <Skeleton className="h-64 w-full" />
         </div>
       </>
@@ -95,7 +95,7 @@ function PackageDetail() {
     return (
       <>
         <Topbar title="Package introuvable" />
-        <div className="px-7 py-6 text-grey text-[13px]">
+        <div className="px-4 sm:px-7 py-4 sm:py-6 text-grey text-[13px]">
           Ce package n'existe pas ou a été supprimé.
         </div>
       </>
@@ -158,7 +158,7 @@ function PackageDetail() {
         }
       />
 
-      <div className="px-7 py-6 grid grid-cols-12 gap-5">
+      <div className="px-4 sm:px-7 py-4 sm:py-6 grid grid-cols-12 gap-5">
         <div className="col-span-12 lg:col-span-8 space-y-5">
           <Card>
             <div className="flex items-center justify-between mb-4">

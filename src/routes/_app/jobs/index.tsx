@@ -40,7 +40,7 @@ function JobsPage() {
           </Link>
         }
       />
-      <div className="px-7 py-6 space-y-4">
+      <div className="px-4 sm:px-7 py-4 sm:py-6 space-y-4">
         {loading ? (
           <Card className="space-y-3">
             <Skeleton className="h-12 w-full" />

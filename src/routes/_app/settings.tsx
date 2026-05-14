@@ -25,7 +25,7 @@ function SettingsPage() {
   return (
     <>
       <Topbar title="Paramètres" actions={<Button>Enregistrer</Button>} />
-      <div className="px-7 py-6 max-w-3xl">
+      <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl">
         <Card>
           <h2 className="font-display text-aubergine mb-1" style={{ fontSize: 20 }}>
             Informations entreprise

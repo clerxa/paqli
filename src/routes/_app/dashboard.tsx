@@ -290,6 +290,85 @@ function DashboardPage() {
                 </ul>
               )}
             </Card>
+
+            {(declinedCount > 0 || acceptedCount > 0) && (
+              <Card>
+                <div className="flex items-center justify-between mb-3">
+                  <h2
+                    className="font-display text-aubergine"
+                    style={{ fontSize: 18 }}
+                  >
+                    Décisions candidats
+                  </h2>
+                </div>
+                <div className="flex gap-2 mb-4">
+                  <div
+                    className="flex-1 rounded-md px-3 py-2"
+                    style={{ background: "#EAF3DE" }}
+                  >
+                    <div className="text-[10px] uppercase tracking-wider" style={{ color: "#27500A" }}>
+                      Acceptés
+                    </div>
+                    <div className="text-[18px] font-display" style={{ color: "#27500A" }}>
+                      {acceptedCount}
+                    </div>
+                  </div>
+                  <div
+                    className="flex-1 rounded-md px-3 py-2"
+                    style={{ background: "#FCEBEB" }}
+                  >
+                    <div className="text-[10px] uppercase tracking-wider" style={{ color: "#A32D2D" }}>
+                      Déclinés
+                    </div>
+                    <div className="text-[18px] font-display" style={{ color: "#A32D2D" }}>
+                      {declinedCount}
+                    </div>
+                  </div>
+                </div>
+
+                {declineStats.length > 0 && (
+                  <>
+                    <div className="text-[11px] uppercase tracking-wider text-grey mb-2">
+                      Raisons de refus
+                    </div>
+                    <ul className="space-y-2">
+                      {declineStats.map((d) => {
+                        const pct = Math.round(
+                          (d.count / Math.max(declinedCount, 1)) * 100,
+                        );
+                        return (
+                          <li
+                            key={d.category}
+                            className="grid grid-cols-[1fr_30px] items-center gap-2"
+                          >
+                            <div>
+                              <div className="text-[12px] text-aubergine-light">
+                                {DECLINE_LABELS[d.category] ?? d.category}
+                              </div>
+                              <div
+                                className="rounded-[3px] overflow-hidden mt-1"
+                                style={{ background: "#F0EBE8", height: 4 }}
+                              >
+                                <div
+                                  style={{
+                                    width: `${pct}%`,
+                                    background: "#B85A6A",
+                                    height: "100%",
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <span className="text-[11px] text-grey text-right">
+                              {d.count}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </>
+                )}
+              </Card>
+            )}
           </div>
         </div>
       </div>

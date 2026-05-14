@@ -195,11 +195,11 @@ function PackageView({
       </section>
 
       {/* Le poste */}
-      <JobSections pkg={pkg} />
+      <JobSections pkg={pkg} onExternalLink={behavior.trackExternalLink} />
 
       {/* Votre situation */}
       <SectionTitle>Votre situation</SectionTitle>
-      <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-5">
+      <div data-section="simulation" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-5">
         <Field
           label="Votre tranche marginale d'imposition"
           info="Votre TMI est le taux d'imposition qui s'applique à la dernière tranche de vos revenus. Pour un salaire de 50 000 € net, elle est généralement de 30 %."
@@ -362,9 +362,13 @@ function PackageView({
           <SectionTitle className="mt-8">
             Equity — scénarios de valorisation
           </SectionTitle>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div data-section="equity_scenarios" className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             {scenariosToShow.map((s) => (
-              <ScenarioCard key={s.label} scenario={s} />
+              <ScenarioCard
+                key={s.label}
+                scenario={s}
+                onView={() => behavior.trackScenarioView(s.label)}
+              />
             ))}
           </div>
           {pkg.scenario_message && (
@@ -390,7 +394,7 @@ function PackageView({
       {hasSavings && (
         <>
           <SectionTitle className="mt-8">Épargne salariale</SectionTitle>
-          <div className="space-y-3 mb-4">
+          <div data-section="epargne" className="space-y-3 mb-4">
             {peeDevice && (
               <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
                 <div className="font-display text-aubergine" style={{ fontSize: 18 }}>
@@ -442,32 +446,40 @@ function PackageView({
 
       {/* FAQ */}
       <SectionTitle className="mt-8">Questions fréquentes</SectionTitle>
-      <FAQ hasEquity={hasEquity} hasPee={!!peeDevice} />
+      <div data-section="faq">
+        <FAQ hasEquity={hasEquity} hasPee={!!peeDevice} />
+      </div>
 
       {/* Assistant */}
       <SectionTitle className="mt-8">
         <Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?
       </SectionTitle>
-      <Assistant token={data.token} pkg={pkg} params={params} />
+      <div data-section="assistant_ia">
+        <Assistant token={data.token} pkg={pkg} params={params} />
+      </div>
 
       {/* Messagerie candidat ↔ RH */}
-      <CandidateMessagingBlock
-        token={data.token}
-        orgName={org?.name ?? "l'entreprise"}
-        initialMessages={data.messages}
-      />
+      <div data-section="messagerie">
+        <CandidateMessagingBlock
+          token={data.token}
+          orgName={org?.name ?? "l'entreprise"}
+          initialMessages={data.messages}
+        />
+      </div>
 
       {/* Décision candidat */}
-      <DecisionBlock
-        data={data}
-        orgName={org?.name ?? "l'entreprise"}
-        pkgTitle={pkg.title}
-        onStatusChange={(status, statusUpdatedAt) =>
-          setData((prev) =>
-            prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev,
-          )
-        }
-      />
+      <div data-section="decision">
+        <DecisionBlock
+          data={data}
+          orgName={org?.name ?? "l'entreprise"}
+          pkgTitle={pkg.title}
+          onStatusChange={(status, statusUpdatedAt) =>
+            setData((prev) =>
+              prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev,
+            )
+          }
+        />
+      </div>
 
       {/* CTA */}
       <div
@@ -638,6 +650,7 @@ function DetailLine({
 
 function ScenarioCard({
   scenario,
+  onView,
 }: {
   scenario: {
     label: string;
@@ -646,6 +659,7 @@ function ScenarioCard({
     horizonYears: number;
     taxRate: number;
   };
+  onView?: () => void;
 }) {
   const palette: Record<string, { bg: string; fg: string }> = {
     pessimiste: { bg: "#FAEEDA", fg: "#7A3F0E" },
@@ -659,7 +673,12 @@ function ScenarioCard({
     optimiste: "Optimiste",
   };
   return (
-    <div className="rounded-[12px] p-4" style={{ background: p.bg }}>
+    <div
+      onMouseEnter={onView}
+      onClick={onView}
+      className="rounded-[12px] p-4 cursor-pointer"
+      style={{ background: p.bg }}
+    >
       <div
         className="text-[10px] uppercase tracking-[0.15em] font-medium"
         style={{ color: p.fg }}
@@ -994,7 +1013,7 @@ const SENIORITY_LABEL: Record<string, string> = {
   lead: "Lead",
 };
 
-function JobSections({ pkg }: { pkg: PackageData }) {
+function JobSections({ pkg, onExternalLink }: { pkg: PackageData; onExternalLink?: (url: string) => void }) {
   const hasJobOverview =
     !!pkg.job_summary || !!pkg.location_city || !!pkg.remote_policy;
   const missions = (pkg.missions ?? []).filter((m) => m && m.trim());
@@ -1021,7 +1040,7 @@ function JobSections({ pkg }: { pkg: PackageData }) {
       {hasJobOverview && (
         <>
           <SectionTitle>Le poste</SectionTitle>
-          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-4">
+          <div data-section="poste" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-4">
             {pkg.job_summary && (
               <p className="text-[14px] text-aubergine leading-relaxed">
                 {pkg.job_summary}
@@ -1112,7 +1131,7 @@ function JobSections({ pkg }: { pkg: PackageData }) {
       {hasTeam && (
         <>
           <SectionTitle>L'équipe & la culture</SectionTitle>
-          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-3">
+          <div data-section="equipe_culture" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-3">
             {(pkg.team_size || pkg.manager_style) && (
               <div className="flex flex-wrap gap-2 text-[12px]">
                 {pkg.team_size ? (
@@ -1163,6 +1182,7 @@ function JobSections({ pkg }: { pkg: PackageData }) {
                     href={pkg.glassdoor_url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => onExternalLink?.(pkg.glassdoor_url!)}
                     className="inline-flex items-center gap-1 text-aubergine underline"
                   >
                     Glassdoor <ExternalLink size={11} />
@@ -1173,6 +1193,7 @@ function JobSections({ pkg }: { pkg: PackageData }) {
                     href={pkg.wtj_url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => onExternalLink?.(pkg.wtj_url!)}
                     className="inline-flex items-center gap-1 text-aubergine underline"
                   >
                     Welcome to the Jungle <ExternalLink size={11} />

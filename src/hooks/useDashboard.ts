@@ -234,7 +234,16 @@ export function useDashboard() {
     return todos;
   }
 
-  return { metrics, packages, recentActivity, todos, loading };
+  return {
+    metrics,
+    packages,
+    recentActivity,
+    todos,
+    declineStats,
+    acceptedCount,
+    declinedCount,
+    loading,
+  };
 }
 
 export function timeAgo(date: string): string {

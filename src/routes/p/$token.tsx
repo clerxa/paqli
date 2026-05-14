@@ -1322,3 +1322,90 @@ export function BenchmarkBar({
   );
 }
 
+function CounterOfferBanner({
+  info,
+}: {
+  info: NonNullable<CandidateLinkData["counterOffer"]>;
+}) {
+  const [showCompare, setShowCompare] = useState(false);
+  const c = info.changes ?? {};
+  const fmtEur = (v: number) => `${v.toLocaleString("fr-FR")} €`;
+  const items: Array<{ label: string; value: string }> = [];
+  if (c.grossSalary != null)
+    items.push({ label: "Nouveau fixe", value: fmtEur(c.grossSalary) });
+  if (c.variableTarget != null)
+    items.push({ label: "Variable cible", value: fmtEur(c.variableTarget) });
+  if (c.remoteDays != null)
+    items.push({ label: "Télétravail", value: `${c.remoteDays} j/semaine` });
+  if (c.equityQuantity != null)
+    items.push({
+      label: "Equity",
+      value: `${(c.equityQuantity as number).toLocaleString("fr-FR")} bons`,
+    });
+
+  return (
+    <section
+      className="rounded-2xl p-5 mb-5"
+      style={{
+        background: "linear-gradient(135deg, #EAF3DE 0%, #F5F0E0 100%)",
+        border: "1px solid rgba(59,109,17,0.2)",
+      }}
+    >
+      <div className="flex items-start gap-3">
+        <Sparkles size={20} className="text-[#3B6D11] flex-shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <div className="font-display text-aubergine text-[18px] mb-1">
+            ✨ Nouvelle proposition pour vous
+          </div>
+          <p className="text-[12px] text-aubergine-light leading-relaxed">
+            L'entreprise a revu son offre suite à votre échange. Voici ce qui a
+            évolué&nbsp;:
+          </p>
+          {items.length > 0 && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {items.map((it) => (
+                <div
+                  key={it.label}
+                  className="bg-white/60 rounded-lg px-3 py-2"
+                >
+                  <div className="text-[10px] uppercase tracking-wide text-grey">
+                    {it.label}
+                  </div>
+                  <div className="text-[14px] font-medium text-aubergine">
+                    {it.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {info.message && (
+            <div className="mt-3 text-[12px] italic text-aubergine-light bg-white/40 rounded-lg p-3">
+              « {info.message} »
+            </div>
+          )}
+          {info.originalToken && (
+            <div className="mt-3">
+              <button
+                onClick={() => setShowCompare((v) => !v)}
+                className="text-[11px] text-aubergine font-medium hover:underline"
+              >
+                {showCompare ? "Masquer" : "Comparer avec l'offre initiale"}
+              </button>
+              {showCompare && (
+                <a
+                  href={`/p/${info.originalToken}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-3 inline-flex items-center gap-1 text-[11px] text-aubergine underline"
+                >
+                  Ouvrir l'offre initiale <ExternalLink size={10} />
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+

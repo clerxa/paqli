@@ -44,6 +44,20 @@ export interface ScenarioRow {
   display_order: number;
 }
 
+export interface SalaryBenchmark {
+  job_family: string;
+  seniority: string;
+  location: string;
+  p25: number;
+  p50: number;
+  p75: number;
+  version: string;
+  source: string | null;
+}
+
+export interface GrowthPathRow { horizon: string; path: string }
+export interface ProcessStepRow { step: string; duration: string }
+
 export interface PackageData {
   id: string;
   title: string;
@@ -52,6 +66,34 @@ export interface PackageData {
   benefits: Record<string, any> | null;
   scenario_message: string | null;
   scenario_display: "all" | "realistic_only" | "realistic_optimistic";
+
+  // Step 0 — job content
+  job_summary?: string | null;
+  missions?: string[];
+  stack?: string[];
+  contract_type?: string | null;
+  job_type?: string | null;
+  remote_policy?: string | null;
+  remote_days?: number | null;
+  remote_guaranteed?: boolean;
+  flexible_hours?: boolean;
+  location_city?: string | null;
+  location_details?: string | null;
+  team_size?: number | null;
+  team_description?: string | null;
+  manager_style?: string | null;
+  company_values?: string[];
+  culture_note?: string | null;
+  glassdoor_url?: string | null;
+  wtj_url?: string | null;
+  growth_paths?: GrowthPathRow[];
+  training_budget?: number | null;
+  onboarding_note?: string | null;
+  process_steps?: ProcessStepRow[];
+  process_duration?: string | null;
+  start_date?: string | null;
+  benchmark?: SalaryBenchmark | null;
+
   organizations: { name: string; logo_url: string | null } | null;
   equity_devices: EquityDeviceRow[];
   savings_devices: SavingsDeviceRow[];

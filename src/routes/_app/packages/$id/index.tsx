@@ -291,7 +291,29 @@ function PackageDetail() {
                         <span className="text-[11px] text-aubergine-light">
                           {activityStatus}
                         </span>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap justify-end">
+                          {l.status === "declined" && (
+                            <button
+                              onClick={() => {
+                                const bspce = pkg!.equityDevices.find((d) => d.type === "bspce");
+                                setCounterOfferFor({
+                                  linkId: l.id,
+                                  candidateName: l.candidate_name || "ce candidat",
+                                  declineCategory: l.decline_category,
+                                  declineReason: l.decline_reason,
+                                  packageTitle: pkg!.title,
+                                  grossSalary: pkg!.grossSalary,
+                                  variableTarget: pkg!.variableTarget ?? null,
+                                  remotePolicy: pkg!.remotePolicy ?? null,
+                                  remoteDays: pkg!.remoteDays ?? null,
+                                  bspceQuantity: bspce?.quantity ?? null,
+                                });
+                              }}
+                              className="text-[11px] text-[#3B6D11] font-medium hover:underline"
+                            >
+                              Contre-offre
+                            </button>
+                          )}
                           <button
                             onClick={() =>
                               setExpandedLinkId(isExpanded ? null : l.id)

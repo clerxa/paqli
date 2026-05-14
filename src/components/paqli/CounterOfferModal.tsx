@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { sendCounterOffer } from "@/lib/sendCounterOffer.functions";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
+import { useMessageDraft } from "@/hooks/useMessageDraft";
 
 export interface CounterOfferOriginal {
   linkId: string;
@@ -35,6 +36,14 @@ export function CounterOfferModal({ original, onClose, onSent }: Props) {
   const [bspce, setBspce] = useState<number | null>(original.bspceQuantity);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const { loading: drafting, generateDraft, draft, setDraft } = useMessageDraft();
+
+  useEffect(() => {
+    if (draft) {
+      setMessage(draft.slice(0, 500));
+      setDraft(null);
+    }
+  }, [draft, setDraft]);
 
   const deltas = useMemo(
     () => ({
@@ -194,9 +203,19 @@ export function CounterOfferModal({ original, onClose, onSent }: Props) {
 
         {/* Message */}
         <div className="mb-5">
-          <label className="text-[12px] font-medium text-aubergine-light block mb-1.5">
-            Message accompagnant la contre-offre
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[12px] font-medium text-aubergine-light">
+              Message accompagnant la contre-offre
+            </label>
+            <button
+              type="button"
+              onClick={() => generateDraft(original.linkId, "counter_offer")}
+              disabled={drafting}
+              className="text-[11px] text-aubergine-light hover:text-aubergine disabled:opacity-50"
+            >
+              {drafting ? "✨ Génération…" : "✨ Générer avec l'IA"}
+            </button>
+          </div>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value.slice(0, 500))}

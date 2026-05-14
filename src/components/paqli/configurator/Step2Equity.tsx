@@ -98,6 +98,7 @@ function EquityBlock({
   const isOptionLike =
     device.type === "bspce" || device.type === "stock_options";
   const isShareLike = device.type === "aga" || device.type === "rsu";
+  const { tips, checkField } = usePackageCoach();
 
   return (
     <div className="rounded-[12px] border border-[rgba(45,38,64,0.08)] p-5 space-y-4 bg-[#FAF8F5]">
@@ -164,13 +165,17 @@ function EquityBlock({
                 <Chip
                   key={y}
                   selected={device.vestingYears === y}
-                  onClick={() => onChange({ vestingYears: y })}
+                  onClick={() => {
+                    onChange({ vestingYears: y });
+                    checkField("vesting_years", y);
+                  }}
                 >
                   {y} an{y > 1 ? "s" : ""}
                 </Chip>
               ),
             )}
           </div>
+          <CoachTipInline tip={tips["vesting_years"]} />
         </div>
         <div>
           <div className="text-[12px] text-aubergine-light font-medium mb-1">
@@ -192,12 +197,16 @@ function EquityBlock({
               <Chip
                 key={c.v}
                 selected={device.cliffMonths === c.v}
-                onClick={() => onChange({ cliffMonths: c.v })}
+                onClick={() => {
+                  onChange({ cliffMonths: c.v });
+                  checkField("cliff_months", c.v);
+                }}
               >
                 {c.l}
               </Chip>
             ))}
           </div>
+          <CoachTipInline tip={tips["cliff_months"]} />
         </div>
       </div>
 

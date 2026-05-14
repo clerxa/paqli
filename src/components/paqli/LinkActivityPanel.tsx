@@ -11,6 +11,7 @@ import { sendRhMessage } from "@/lib/sendMessage.functions";
 import { toggleLinkReminders } from "@/lib/toggleReminders.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { timeAgo } from "@/hooks/useDashboard";
+import { useMessageDraft } from "@/hooks/useMessageDraft";
 
 const EVENT_CONFIG: Record<
   string,
@@ -256,6 +257,14 @@ function RhMessageComposer({
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
   const send = useServerFn(sendRhMessage);
+  const { loading: drafting, generateDraft, draft, setDraft } = useMessageDraft();
+
+  useEffect(() => {
+    if (draft) {
+      setReply(draft);
+      setDraft(null);
+    }
+  }, [draft, setDraft]);
 
   async function submit() {
     const content = reply.trim();
@@ -279,26 +288,38 @@ function RhMessageComposer({
   }
 
   return (
-    <div className="flex gap-2">
-      <input
-        value={reply}
-        onChange={(e) => setReply(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            void submit();
-          }
-        }}
-        placeholder={`Répondre à ${candidateName}…`}
-        className="flex-1 border border-[rgba(45,38,64,0.12)] rounded-lg px-3 h-9 text-[13px] text-aubergine outline-none"
-      />
-      <button
-        onClick={submit}
-        disabled={reply.trim().length < 2 || sending}
-        className="px-4 h-9 bg-[#2D2640] text-white rounded-lg text-[12px] font-medium disabled:opacity-40"
-      >
-        {sending ? "…" : "Envoyer"}
-      </button>
+    <div className="space-y-2">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => generateDraft(linkId, "general")}
+          disabled={drafting}
+          className="text-[11px] text-aubergine-light hover:text-aubergine disabled:opacity-50"
+        >
+          {drafting ? "✨ Génération…" : "✨ Générer avec l'IA"}
+        </button>
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={reply}
+          onChange={(e) => setReply(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              void submit();
+            }
+          }}
+          placeholder={`Répondre à ${candidateName}…`}
+          className="flex-1 border border-[rgba(45,38,64,0.12)] rounded-lg px-3 h-9 text-[13px] text-aubergine outline-none"
+        />
+        <button
+          onClick={submit}
+          disabled={reply.trim().length < 2 || sending}
+          className="px-4 h-9 bg-[#2D2640] text-white rounded-lg text-[12px] font-medium disabled:opacity-40"
+        >
+          {sending ? "…" : "Envoyer"}
+        </button>
+      </div>
     </div>
   );
 }

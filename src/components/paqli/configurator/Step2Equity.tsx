@@ -209,7 +209,6 @@ function EquityBlock({
           <CoachTipInline tip={tips["cliff_months"]} />
         </div>
       </div>
-      </div>
 
       <TextArea
         label="Conditions particulières"

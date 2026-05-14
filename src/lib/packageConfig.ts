@@ -50,6 +50,28 @@ export interface SavingsDeviceForm {
   avg3y: number;
 }
 
+export type ContractType = "cdi" | "cdd" | "freelance" | "alternance" | "stage";
+export type RemotePolicy =
+  | "full_remote"
+  | "hybrid"
+  | "office_first"
+  | "on_site";
+export type ManagerStyle =
+  | "autonomy"
+  | "coaching"
+  | "structured"
+  | "collaborative";
+
+export interface GrowthPath {
+  horizon: string; // "6 mois" | "1 an" | "2 ans" | "3 ans+"
+  path: string;
+}
+
+export interface ProcessStep {
+  step: string;
+  duration: string;
+}
+
 export interface PackageConfig {
   packageId: string | null;
   status: "draft" | "active";
@@ -57,6 +79,33 @@ export interface PackageConfig {
   isDirty: boolean;
 
   title: string;
+
+  // Step 0 — Le poste
+  jobSummary: string;
+  missions: string[];
+  stack: string[];
+  contractType: ContractType;
+  remotePolicy: RemotePolicy;
+  remoteDays: number | null;
+  remoteGuaranteed: boolean;
+  flexibleHours: boolean;
+  locationCity: string;
+  locationDetails: string;
+  teamSize: number | null;
+  teamDescription: string;
+  managerStyle: ManagerStyle | null;
+  companyValues: string[];
+  cultureNote: string;
+  glassdoorUrl: string;
+  wtjUrl: string;
+  growthPaths: GrowthPath[];
+  trainingBudget: number | null;
+  onboardingNote: string;
+  processSteps: ProcessStep[];
+  processDuration: string;
+  startDate: string;
+
+  // Steps 1-3
   grossSalary: number;
   variableTarget: number;
   benefits: BenefitsConfig;
@@ -86,9 +135,34 @@ export const defaultScenarios: ScenarioForm[] = [
 export const emptyConfig: PackageConfig = {
   packageId: null,
   status: "draft",
-  currentStep: 1,
+  currentStep: 0,
   isDirty: false,
   title: "",
+
+  jobSummary: "",
+  missions: [],
+  stack: [],
+  contractType: "cdi",
+  remotePolicy: "hybrid",
+  remoteDays: 2,
+  remoteGuaranteed: false,
+  flexibleHours: false,
+  locationCity: "",
+  locationDetails: "",
+  teamSize: null,
+  teamDescription: "",
+  managerStyle: null,
+  companyValues: [],
+  cultureNote: "",
+  glassdoorUrl: "",
+  wtjUrl: "",
+  growthPaths: [],
+  trainingBudget: null,
+  onboardingNote: "",
+  processSteps: [],
+  processDuration: "",
+  startDate: "",
+
   grossSalary: 0,
   variableTarget: 0,
   benefits: defaultBenefits,

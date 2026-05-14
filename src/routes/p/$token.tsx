@@ -195,11 +195,11 @@ function PackageView({
       </section>
 
       {/* Le poste */}
-      <JobSections pkg={pkg} />
+      <JobSections pkg={pkg} onExternalLink={behavior.trackExternalLink} />
 
       {/* Votre situation */}
       <SectionTitle>Votre situation</SectionTitle>
-      <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-5">
+      <div data-section="simulation" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-5">
         <Field
           label="Votre tranche marginale d'imposition"
           info="Votre TMI est le taux d'imposition qui s'applique à la dernière tranche de vos revenus. Pour un salaire de 50 000 € net, elle est généralement de 30 %."

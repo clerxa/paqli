@@ -1,4 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import {
   LayoutDashboard,
   Package,
@@ -9,10 +10,12 @@ import {
   Award,
   Settings,
   LogOut,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { useAuth } from "@/hooks/useAuth";
+import { useMobileNav } from "./MobileNav";
 
 interface NavItem {
   to?: string;

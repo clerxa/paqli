@@ -303,7 +303,7 @@ function PackageDetail() {
                                   declineReason: l.decline_reason,
                                   packageTitle: pkg!.title,
                                   grossSalary: pkg!.grossSalary,
-                                  variableTarget: pkg!.variableTarget ?? null,
+                                  variableTarget: pkg!.variableTarget,
                                   remotePolicy: pkg!.remotePolicy ?? null,
                                   remoteDays: pkg!.remoteDays ?? null,
                                   bspceQuantity: bspce?.quantity ?? null,

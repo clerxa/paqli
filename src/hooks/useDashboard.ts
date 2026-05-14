@@ -134,7 +134,9 @@ export function useDashboard() {
   async function loadLinks(orgId: string) {
     const { data } = await supabase
       .from("candidate_links")
-      .select("id, candidate_name, package_id, opened_at, simulated_at")
+      .select(
+        "id, candidate_name, package_id, opened_at, simulated_at, status, decline_category",
+      )
       .eq("organization_id", orgId);
     return data ?? [];
   }

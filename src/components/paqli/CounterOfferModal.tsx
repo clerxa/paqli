@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { sendCounterOffer } from "@/lib/sendCounterOffer.functions";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
+import { useMessageDraft } from "@/hooks/useMessageDraft";
 
 export interface CounterOfferOriginal {
   linkId: string;

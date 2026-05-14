@@ -362,9 +362,13 @@ function PackageView({
           <SectionTitle className="mt-8">
             Equity — scénarios de valorisation
           </SectionTitle>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div data-section="equity_scenarios" className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             {scenariosToShow.map((s) => (
-              <ScenarioCard key={s.label} scenario={s} />
+              <ScenarioCard
+                key={s.label}
+                scenario={s}
+                onView={() => behavior.trackScenarioView(s.label)}
+              />
             ))}
           </div>
           {pkg.scenario_message && (
@@ -390,7 +394,7 @@ function PackageView({
       {hasSavings && (
         <>
           <SectionTitle className="mt-8">Épargne salariale</SectionTitle>
-          <div className="space-y-3 mb-4">
+          <div data-section="epargne" className="space-y-3 mb-4">
             {peeDevice && (
               <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
                 <div className="font-display text-aubergine" style={{ fontSize: 18 }}>
@@ -442,32 +446,40 @@ function PackageView({
 
       {/* FAQ */}
       <SectionTitle className="mt-8">Questions fréquentes</SectionTitle>
-      <FAQ hasEquity={hasEquity} hasPee={!!peeDevice} />
+      <div data-section="faq">
+        <FAQ hasEquity={hasEquity} hasPee={!!peeDevice} />
+      </div>
 
       {/* Assistant */}
       <SectionTitle className="mt-8">
         <Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?
       </SectionTitle>
-      <Assistant token={data.token} pkg={pkg} params={params} />
+      <div data-section="assistant_ia">
+        <Assistant token={data.token} pkg={pkg} params={params} />
+      </div>
 
       {/* Messagerie candidat ↔ RH */}
-      <CandidateMessagingBlock
-        token={data.token}
-        orgName={org?.name ?? "l'entreprise"}
-        initialMessages={data.messages}
-      />
+      <div data-section="messagerie">
+        <CandidateMessagingBlock
+          token={data.token}
+          orgName={org?.name ?? "l'entreprise"}
+          initialMessages={data.messages}
+        />
+      </div>
 
       {/* Décision candidat */}
-      <DecisionBlock
-        data={data}
-        orgName={org?.name ?? "l'entreprise"}
-        pkgTitle={pkg.title}
-        onStatusChange={(status, statusUpdatedAt) =>
-          setData((prev) =>
-            prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev,
-          )
-        }
-      />
+      <div data-section="decision">
+        <DecisionBlock
+          data={data}
+          orgName={org?.name ?? "l'entreprise"}
+          pkgTitle={pkg.title}
+          onStatusChange={(status, statusUpdatedAt) =>
+            setData((prev) =>
+              prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev,
+            )
+          }
+        />
+      </div>
 
       {/* CTA */}
       <div
@@ -994,7 +1006,7 @@ const SENIORITY_LABEL: Record<string, string> = {
   lead: "Lead",
 };
 
-function JobSections({ pkg }: { pkg: PackageData }) {
+function JobSections({ pkg, onExternalLink }: { pkg: PackageData; onExternalLink?: (url: string) => void }) {
   const hasJobOverview =
     !!pkg.job_summary || !!pkg.location_city || !!pkg.remote_policy;
   const missions = (pkg.missions ?? []).filter((m) => m && m.trim());

@@ -61,7 +61,7 @@ function PackageDetail() {
       loadPackage(id),
       supabase
         .from("candidate_links")
-        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category")
+        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category, decline_reason")
         .eq("package_id", id)
         .order("created_at", { ascending: false }),
     ]);

@@ -147,6 +147,9 @@ function PackageView({
 
   return (
     <PageShell>
+      {data.counterOffer && (
+        <CounterOfferBanner info={data.counterOffer} />
+      )}
       {/* Hero */}
       <section
         className="rounded-2xl p-7 mb-6"

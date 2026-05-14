@@ -650,6 +650,7 @@ function DetailLine({
 
 function ScenarioCard({
   scenario,
+  onView,
 }: {
   scenario: {
     label: string;
@@ -658,6 +659,7 @@ function ScenarioCard({
     horizonYears: number;
     taxRate: number;
   };
+  onView?: () => void;
 }) {
   const palette: Record<string, { bg: string; fg: string }> = {
     pessimiste: { bg: "#FAEEDA", fg: "#7A3F0E" },
@@ -671,7 +673,12 @@ function ScenarioCard({
     optimiste: "Optimiste",
   };
   return (
-    <div className="rounded-[12px] p-4" style={{ background: p.bg }}>
+    <div
+      onMouseEnter={onView}
+      onClick={onView}
+      className="rounded-[12px] p-4 cursor-pointer"
+      style={{ background: p.bg }}
+    >
       <div
         className="text-[10px] uppercase tracking-[0.15em] font-medium"
         style={{ color: p.fg }}

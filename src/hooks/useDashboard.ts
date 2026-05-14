@@ -110,6 +110,22 @@ export function useDashboard() {
       setPackages(pkgList);
       setRecentActivity(activity);
       setTodos(buildTodos(pkgList));
+
+      const accepted = links.filter((l) => l.status === "accepted").length;
+      const declined = links.filter((l) => l.status === "declined");
+      setAcceptedCount(accepted);
+      setDeclinedCount(declined.length);
+
+      const counts = new Map<string, number>();
+      for (const l of declined) {
+        const key = l.decline_category || "other";
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+      setDeclineStats(
+        Array.from(counts.entries())
+          .map(([category, count]) => ({ category, count }))
+          .sort((a, b) => b.count - a.count),
+      );
     } finally {
       setLoading(false);
     }

@@ -436,6 +436,25 @@ function PackageView({
       </SectionTitle>
       <Assistant token={data.token} pkg={pkg} params={params} />
 
+      {/* Messagerie candidat ↔ RH */}
+      <CandidateMessagingBlock
+        token={data.token}
+        orgName={org?.name ?? "l'entreprise"}
+        initialMessages={data.messages}
+      />
+
+      {/* Décision candidat */}
+      <DecisionBlock
+        data={data}
+        orgName={org?.name ?? "l'entreprise"}
+        pkgTitle={pkg.title}
+        onStatusChange={(status, statusUpdatedAt) =>
+          setData((prev) =>
+            prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev,
+          )
+        }
+      />
+
       {/* CTA */}
       <div
         className="rounded-2xl p-6 mt-8 mb-6 text-center"

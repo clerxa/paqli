@@ -31,13 +31,13 @@ const SENIORITY_OPTIONS: Array<1 | 2 | 3 | 5> = [1, 2, 3, 5];
 
 function PublicPackagePage() {
   const { token } = Route.useParams();
-  const { data, loading, error } = useCandidateLink(token);
+  const { data, loading, error, setData } = useCandidateLink(token);
 
   if (loading) return <LoadingState />;
   if (error === "expired") return <ErrorState kind="expired" />;
   if (error || !data) return <ErrorState kind="not_found" />;
 
-  return <PackageView data={data} />;
+  return <PackageView data={data} setData={setData} />;
 }
 
 /* -------------------- Shells -------------------- */
@@ -95,7 +95,13 @@ function ErrorState({ kind }: { kind: "not_found" | "expired" }) {
 
 /* -------------------- Main view -------------------- */
 
-function PackageView({ data }: { data: CandidateLinkData }) {
+function PackageView({
+  data,
+  setData,
+}: {
+  data: CandidateLinkData;
+  setData: React.Dispatch<React.SetStateAction<CandidateLinkData | null>>;
+}) {
   const pkg = data.packages;
   const org = pkg.organizations;
 

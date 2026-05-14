@@ -6,6 +6,7 @@ interface Step {
 }
 
 const steps: Step[] = [
+  { n: 0, label: "Le poste" },
   { n: 1, label: "Rémunération fixe" },
   { n: 2, label: "Equity" },
   { n: 3, label: "Épargne salariale" },
@@ -45,27 +46,15 @@ export function Stepper({
                 style={{
                   width: 22,
                   height: 22,
-                  background: done
-                    ? "#2D2640"
-                    : active
-                      ? "#C4A882"
-                      : "#F0EBE8",
-                  color: done
-                    ? "#FAF8F5"
-                    : active
-                      ? "#2D2640"
-                      : "#9B97A0",
+                  background: done ? "#2D2640" : active ? "#C4A882" : "#F0EBE8",
+                  color: done ? "#FAF8F5" : active ? "#2D2640" : "#9B97A0",
                 }}
               >
                 {done ? "✓" : s.n}
               </span>
               <span
                 style={{
-                  color: active
-                    ? "#2D2640"
-                    : done
-                      ? "#524970"
-                      : "#9B97A0",
+                  color: active ? "#2D2640" : done ? "#524970" : "#9B97A0",
                   fontWeight: active ? 600 : 400,
                 }}
               >

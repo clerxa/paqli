@@ -1,7 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import type { PackageConfig, ScenarioLabel } from "./packageConfig";
-import { defaultBenefits, defaultScenarios } from "./packageConfig";
+import type {
+  ContractType,
+  GrowthPath,
+  ManagerStyle,
+  PackageConfig,
+  ProcessStep,
+  RemotePolicy,
+  ScenarioLabel,
+} from "./packageConfig";
+import { defaultBenefits, defaultScenarios, emptyConfig } from "./packageConfig";
 
 export async function upsertPackage(
   config: PackageConfig,
@@ -19,6 +27,34 @@ export async function upsertPackage(
     scenario_message: config.scenarioMessage || null,
     scenario_display: config.scenarioDisplay,
     updated_at: new Date().toISOString(),
+
+    // Step 0
+    job_summary: config.jobSummary || null,
+    missions: (config.missions ?? []) as unknown as Json,
+    stack: config.stack && config.stack.length > 0 ? config.stack : null,
+    contract_type: config.contractType,
+    remote_policy: config.remotePolicy,
+    remote_days: config.remoteDays ?? null,
+    remote_guaranteed: config.remoteGuaranteed,
+    flexible_hours: config.flexibleHours,
+    location_city: config.locationCity || null,
+    location_details: config.locationDetails || null,
+    team_size: config.teamSize ?? null,
+    team_description: config.teamDescription || null,
+    manager_style: config.managerStyle ?? null,
+    company_values:
+      config.companyValues && config.companyValues.length > 0
+        ? config.companyValues
+        : null,
+    culture_note: config.cultureNote || null,
+    glassdoor_url: config.glassdoorUrl || null,
+    wtj_url: config.wtjUrl || null,
+    growth_paths: (config.growthPaths ?? []) as unknown as Json,
+    training_budget: config.trainingBudget ?? null,
+    onboarding_note: config.onboardingNote || null,
+    process_steps: (config.processSteps ?? []) as unknown as Json,
+    process_duration: config.processDuration || null,
+    start_date: config.startDate || null,
   };
 
   let packageId = config.packageId;
@@ -113,12 +149,60 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
     ...((pkg.benefits as Record<string, unknown>) ?? {}),
   } as PackageConfig["benefits"];
 
+  const missions = Array.isArray(pkg.missions)
+    ? (pkg.missions as unknown[]).filter((m): m is string => typeof m === "string")
+    : [];
+  const growthPaths = Array.isArray(pkg.growth_paths)
+    ? (pkg.growth_paths as unknown[]).filter(
+        (g): g is GrowthPath =>
+          typeof g === "object" &&
+          g !== null &&
+          "horizon" in g &&
+          "path" in g,
+      )
+    : [];
+  const processSteps = Array.isArray(pkg.process_steps)
+    ? (pkg.process_steps as unknown[]).filter(
+        (s): s is ProcessStep =>
+          typeof s === "object" &&
+          s !== null &&
+          "step" in s &&
+          "duration" in s,
+      )
+    : [];
+
   return {
+    ...emptyConfig,
     packageId: pkg.id,
     status: (pkg.status as "draft" | "active") ?? "draft",
-    currentStep: 1,
+    currentStep: 0,
     isDirty: false,
     title: pkg.title ?? "",
+
+    jobSummary: pkg.job_summary ?? "",
+    missions,
+    stack: (pkg.stack as string[] | null) ?? [],
+    contractType: ((pkg.contract_type as ContractType) ?? "cdi") as ContractType,
+    remotePolicy: ((pkg.remote_policy as RemotePolicy) ?? "hybrid") as RemotePolicy,
+    remoteDays: pkg.remote_days ?? null,
+    remoteGuaranteed: !!pkg.remote_guaranteed,
+    flexibleHours: !!pkg.flexible_hours,
+    locationCity: pkg.location_city ?? "",
+    locationDetails: pkg.location_details ?? "",
+    teamSize: pkg.team_size ?? null,
+    teamDescription: pkg.team_description ?? "",
+    managerStyle: (pkg.manager_style as ManagerStyle | null) ?? null,
+    companyValues: (pkg.company_values as string[] | null) ?? [],
+    cultureNote: pkg.culture_note ?? "",
+    glassdoorUrl: pkg.glassdoor_url ?? "",
+    wtjUrl: pkg.wtj_url ?? "",
+    growthPaths,
+    trainingBudget: pkg.training_budget ?? null,
+    onboardingNote: pkg.onboarding_note ?? "",
+    processSteps,
+    processDuration: pkg.process_duration ?? "",
+    startDate: pkg.start_date ?? "",
+
     grossSalary: Number(pkg.gross_salary) || 0,
     variableTarget: Number(pkg.variable_target) || 0,
     benefits,

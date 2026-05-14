@@ -50,6 +50,28 @@ export interface SavingsDeviceForm {
   avg3y: number;
 }
 
+export type ContractType = "cdi" | "cdd" | "freelance" | "alternance" | "stage";
+export type RemotePolicy =
+  | "full_remote"
+  | "hybrid"
+  | "office_first"
+  | "on_site";
+export type ManagerStyle =
+  | "autonomy"
+  | "coaching"
+  | "structured"
+  | "collaborative";
+
+export interface GrowthPath {
+  horizon: string; // "6 mois" | "1 an" | "2 ans" | "3 ans+"
+  path: string;
+}
+
+export interface ProcessStep {
+  step: string;
+  duration: string;
+}
+
 export interface PackageConfig {
   packageId: string | null;
   status: "draft" | "active";
@@ -57,6 +79,33 @@ export interface PackageConfig {
   isDirty: boolean;
 
   title: string;
+
+  // Step 0 — Le poste
+  jobSummary: string;
+  missions: string[];
+  stack: string[];
+  contractType: ContractType;
+  remotePolicy: RemotePolicy;
+  remoteDays: number | null;
+  remoteGuaranteed: boolean;
+  flexibleHours: boolean;
+  locationCity: string;
+  locationDetails: string;
+  teamSize: number | null;
+  teamDescription: string;
+  managerStyle: ManagerStyle | null;
+  companyValues: string[];
+  cultureNote: string;
+  glassdoorUrl: string;
+  wtjUrl: string;
+  growthPaths: GrowthPath[];
+  trainingBudget: number | null;
+  onboardingNote: string;
+  processSteps: ProcessStep[];
+  processDuration: string;
+  startDate: string;
+
+  // Steps 1-3
   grossSalary: number;
   variableTarget: number;
   benefits: BenefitsConfig;
@@ -86,9 +135,34 @@ export const defaultScenarios: ScenarioForm[] = [
 export const emptyConfig: PackageConfig = {
   packageId: null,
   status: "draft",
-  currentStep: 1,
+  currentStep: 0,
   isDirty: false,
   title: "",
+
+  jobSummary: "",
+  missions: [],
+  stack: [],
+  contractType: "cdi",
+  remotePolicy: "hybrid",
+  remoteDays: 2,
+  remoteGuaranteed: false,
+  flexibleHours: false,
+  locationCity: "",
+  locationDetails: "",
+  teamSize: null,
+  teamDescription: "",
+  managerStyle: null,
+  companyValues: [],
+  cultureNote: "",
+  glassdoorUrl: "",
+  wtjUrl: "",
+  growthPaths: [],
+  trainingBudget: null,
+  onboardingNote: "",
+  processSteps: [],
+  processDuration: "",
+  startDate: "",
+
   grossSalary: 0,
   variableTarget: 0,
   benefits: defaultBenefits,
@@ -178,6 +252,18 @@ export function calcStep3Preview(c: PackageConfig) {
 }
 
 export function validateStep(c: PackageConfig, step: number): string | null {
+  if (step === 0) {
+    if (!c.title || c.title.trim().length < 3)
+      return "L'intitulé du poste est obligatoire (min. 3 caractères).";
+    if (!c.jobSummary || c.jobSummary.trim().length < 10)
+      return "L'accroche du poste est obligatoire (min. 10 caractères).";
+    if (!c.missions.filter((m) => m.trim()).length)
+      return "Ajoutez au moins une mission principale.";
+    if (!c.remotePolicy) return "Choisissez une politique de télétravail.";
+    if (!c.locationCity || !c.locationCity.trim())
+      return "Indiquez la ville / lieu de travail.";
+    return null;
+  }
   if (step === 1) {
     if (!c.title || c.title.trim().length < 3)
       return "L'intitulé du poste est obligatoire (min. 3 caractères).";
@@ -271,4 +357,51 @@ export function validateScenarios(scenarios: ScenarioForm[]): string | null {
   if (opti <= real)
     return "Le scénario optimiste doit être supérieur au réaliste.";
   return null;
+}
+
+export function computeRichness(c: PackageConfig): number {
+  let score = 0;
+  if (c.jobSummary && c.jobSummary.trim().length >= 10) score += 10;
+  if (c.missions.filter((m) => m.trim()).length >= 3) score += 15;
+  if (c.stack.length > 0) score += 5;
+  if (c.remotePolicy) score += 10;
+  if (c.locationCity) score += 5;
+  if (c.teamDescription && c.teamDescription.trim().length >= 20) score += 10;
+  if (c.companyValues.length >= 3) score += 10;
+  if (c.growthPaths.length >= 1) score += 10;
+  if (c.processSteps.length >= 2) score += 10;
+  if (c.grossSalary > 0) score += 10;
+  if (c.equityDevices.length > 0) score += 5;
+  return Math.min(score, 100);
+}
+
+export function computeRichnessFromRow(pkg: {
+  job_summary?: string | null;
+  missions?: unknown;
+  stack?: string[] | null;
+  remote_policy?: string | null;
+  location_city?: string | null;
+  team_description?: string | null;
+  company_values?: string[] | null;
+  growth_paths?: unknown;
+  process_steps?: unknown;
+  gross_salary?: number | null;
+  equity_devices?: unknown[];
+}): number {
+  const missions = Array.isArray(pkg.missions) ? (pkg.missions as string[]) : [];
+  const growth = Array.isArray(pkg.growth_paths) ? (pkg.growth_paths as unknown[]) : [];
+  const steps = Array.isArray(pkg.process_steps) ? (pkg.process_steps as unknown[]) : [];
+  let score = 0;
+  if (pkg.job_summary && pkg.job_summary.trim().length >= 10) score += 10;
+  if (missions.filter((m) => typeof m === "string" && m.trim()).length >= 3) score += 15;
+  if (pkg.stack && pkg.stack.length > 0) score += 5;
+  if (pkg.remote_policy) score += 10;
+  if (pkg.location_city) score += 5;
+  if (pkg.team_description && pkg.team_description.trim().length >= 20) score += 10;
+  if (pkg.company_values && pkg.company_values.length >= 3) score += 10;
+  if (growth.length >= 1) score += 10;
+  if (steps.length >= 2) score += 10;
+  if ((pkg.gross_salary ?? 0) > 0) score += 10;
+  if (pkg.equity_devices && pkg.equity_devices.length > 0) score += 5;
+  return Math.min(score, 100);
 }

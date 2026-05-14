@@ -36,6 +36,14 @@ export function CounterOfferModal({ original, onClose, onSent }: Props) {
   const [bspce, setBspce] = useState<number | null>(original.bspceQuantity);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const { loading: drafting, generateDraft, draft, setDraft } = useMessageDraft();
+
+  useEffect(() => {
+    if (draft) {
+      setMessage(draft.slice(0, 500));
+      setDraft(null);
+    }
+  }, [draft, setDraft]);
 
   const deltas = useMemo(
     () => ({

@@ -63,7 +63,16 @@ function statusToPill(status: string): PillStatus {
 
 function DashboardPage() {
   const { user, profile, organization } = useAuth();
-  const { metrics, packages, recentActivity, todos, loading } = useDashboard();
+  const {
+    metrics,
+    packages,
+    recentActivity,
+    todos,
+    declineStats,
+    acceptedCount,
+    declinedCount,
+    loading,
+  } = useDashboard();
   const navigate = useNavigate();
 
   useEffect(() => {

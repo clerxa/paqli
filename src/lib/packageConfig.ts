@@ -252,6 +252,18 @@ export function calcStep3Preview(c: PackageConfig) {
 }
 
 export function validateStep(c: PackageConfig, step: number): string | null {
+  if (step === 0) {
+    if (!c.title || c.title.trim().length < 3)
+      return "L'intitulé du poste est obligatoire (min. 3 caractères).";
+    if (!c.jobSummary || c.jobSummary.trim().length < 10)
+      return "L'accroche du poste est obligatoire (min. 10 caractères).";
+    if (!c.missions.filter((m) => m.trim()).length)
+      return "Ajoutez au moins une mission principale.";
+    if (!c.remotePolicy) return "Choisissez une politique de télétravail.";
+    if (!c.locationCity || !c.locationCity.trim())
+      return "Indiquez la ville / lieu de travail.";
+    return null;
+  }
   if (step === 1) {
     if (!c.title || c.title.trim().length < 3)
       return "L'intitulé du poste est obligatoire (min. 3 caractères).";

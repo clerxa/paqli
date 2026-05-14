@@ -107,6 +107,7 @@ function PackageView({
   const org = pkg.organizations;
 
   const track = useServerFn(trackLink);
+  const behavior = useBehaviorTracker(data.token);
   const trackEvent = (
     eventType: "simulated" | "question" | "rdv_click",
     metadata?: Record<string, unknown>,
@@ -130,6 +131,7 @@ function PackageView({
   function update<K extends keyof CandidateParams>(key: K, value: CandidateParams[K]) {
     setParams((p) => ({ ...p, [key]: value }));
     scheduleTrack(key, value);
+    behavior.trackSimulationChange(key, value as string | number | boolean);
   }
 
   const estimate = useMemo(() => calcPackageEstimate(pkg, params), [pkg, params]);

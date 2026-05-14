@@ -1040,7 +1040,7 @@ function JobSections({ pkg, onExternalLink }: { pkg: PackageData; onExternalLink
       {hasJobOverview && (
         <>
           <SectionTitle>Le poste</SectionTitle>
-          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-4">
+          <div data-section="poste" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-4">
             {pkg.job_summary && (
               <p className="text-[14px] text-aubergine leading-relaxed">
                 {pkg.job_summary}

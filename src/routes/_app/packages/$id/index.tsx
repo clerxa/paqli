@@ -375,6 +375,17 @@ function PackageDetail() {
           onCancel={() => setDeleteLinkId(null)}
         />
       )}
+
+      {counterOfferFor && (
+        <CounterOfferModal
+          original={counterOfferFor}
+          onClose={() => setCounterOfferFor(null)}
+          onSent={() => {
+            setCounterOfferFor(null);
+            reload();
+          }}
+        />
+      )}
     </>
   );
 }

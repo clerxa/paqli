@@ -98,6 +98,7 @@ function EquityBlock({
   const isOptionLike =
     device.type === "bspce" || device.type === "stock_options";
   const isShareLike = device.type === "aga" || device.type === "rsu";
+  const { tips, checkField } = usePackageCoach();
 
   return (
     <div className="rounded-[12px] border border-[rgba(45,38,64,0.08)] p-5 space-y-4 bg-[#FAF8F5]">

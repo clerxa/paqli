@@ -13,6 +13,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       .from("candidate_links")
       .select(
         `id, token, candidate_name, expires_at, opened_at,
+         status, status_updated_at,
          packages (
            id, title, gross_salary, variable_target, benefits,
            scenario_message, scenario_display,
@@ -43,6 +44,12 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       });
     }
 
+    const { data: messages } = await supabaseAdmin
+      .from("messages")
+      .select("id, sender, content, created_at")
+      .eq("link_id", link.id)
+      .order("created_at", { ascending: true });
+
     const pkg = link.packages as any;
     const scenarios = (pkg.scenarios ?? []).slice().sort(
       (a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0),
@@ -54,6 +61,14 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       candidateName: link.candidate_name as string | null,
       openedAt: link.opened_at as string | null,
       expiresAt: link.expires_at as string | null,
+      offerStatus: (link.status ?? "pending") as string,
+      statusUpdatedAt: link.status_updated_at as string | null,
+      messages: (messages ?? []) as Array<{
+        id: string;
+        sender: "candidate" | "rh";
+        content: string;
+        created_at: string;
+      }>,
       package: {
         id: pkg.id,
         title: pkg.title,

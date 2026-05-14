@@ -4,12 +4,22 @@ import { getPackagePublic } from "@/lib/getPackagePublic.functions";
 import { trackLink } from "@/lib/trackLink.functions";
 import type { PackageData } from "@/lib/clientCalc";
 
+export interface PublicMessage {
+  id: string;
+  sender: "candidate" | "rh";
+  content: string;
+  created_at: string;
+}
+
 export interface CandidateLinkData {
   id: string;
   token: string;
   candidate_name: string | null;
   expires_at: string | null;
   opened_at: string | null;
+  offerStatus: string;
+  statusUpdatedAt: string | null;
+  messages: PublicMessage[];
   packages: PackageData;
 }
 
@@ -36,6 +46,9 @@ export function useCandidateLink(token: string) {
           candidate_name: res.candidateName,
           expires_at: res.expiresAt,
           opened_at: res.openedAt,
+          offerStatus: res.offerStatus,
+          statusUpdatedAt: res.statusUpdatedAt,
+          messages: res.messages,
           packages: res.package as unknown as PackageData,
         });
         setLoading(false);
@@ -51,7 +64,8 @@ export function useCandidateLink(token: string) {
             else kind = "not_found";
           } else {
             const msg = String(e?.message ?? "");
-            if (msg.includes("410") || msg.toLowerCase().includes("expired")) kind = "expired";
+            if (msg.includes("410") || msg.toLowerCase().includes("expired"))
+              kind = "expired";
           }
         } catch {
           // ignore
@@ -66,22 +80,5 @@ export function useCandidateLink(token: string) {
     };
   }, [token, fetchPackage, track]);
 
-  return { data, loading, error };
-}
-
-/**
- * Tracker un événement candidat via le server fn (validation token + service role).
- * Utilisé par la vue candidat pour `simulated`, `question`, `rdv_click`.
- */
-export async function trackEventViaToken(
-  trackFn: ReturnType<typeof useServerFn<typeof trackLink>>,
-  token: string,
-  eventType: "simulated" | "question" | "rdv_click",
-  metadata?: Record<string, unknown>,
-) {
-  try {
-    await trackFn({ data: { token, eventType, metadata } });
-  } catch {
-    // tracking ne doit pas casser l'UX
-  }
+  return { data, loading, error, setData };
 }

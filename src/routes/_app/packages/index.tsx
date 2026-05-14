@@ -192,6 +192,25 @@ function PackageRow({
         <div className="text-grey">{pkg.openedLinks} ouvert{pkg.openedLinks > 1 ? "s" : ""}</div>
         <div className="text-grey">{pkg.openRate}% ouv.</div>
       </div>
+      <div className="w-20" title={`Profil complété à ${pkg.richness}%`}>
+        <div className="text-[10px] uppercase tracking-[0.1em] text-grey mb-1 text-right">
+          {pkg.richness}%
+        </div>
+        <div className="h-1.5 rounded-full" style={{ background: "#F0EBE8" }}>
+          <div
+            className="h-1.5 rounded-full transition-all"
+            style={{
+              width: `${pkg.richness}%`,
+              background:
+                pkg.richness >= 70
+                  ? "#3B6D11"
+                  : pkg.richness >= 40
+                    ? "#C4A882"
+                    : "#A06060",
+            }}
+          />
+        </div>
+      </div>
       <StatusPill status={pkg.status} />
       <div className="relative" onClick={(e) => e.stopPropagation()}>
         <button

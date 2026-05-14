@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { computeRichnessFromRow } from "@/lib/packageConfig";
 import { useAuth } from "./useAuth";
 
 export type PackageFilter = "all" | "active" | "draft" | "archived";
@@ -17,6 +18,7 @@ export interface PackageWithStats {
   openedLinks: number;
   simulatedLinks: number;
   openRate: number;
+  richness: number;
 }
 
 export function usePackages(filter: PackageFilter = "all") {
@@ -31,6 +33,8 @@ export function usePackages(filter: PackageFilter = "all") {
         .from("packages")
         .select(
           `id, title, status, gross_salary, variable_target, created_at, updated_at,
+           job_summary, missions, stack, remote_policy, location_city,
+           team_description, company_values, growth_paths, process_steps,
            equity_devices (type),
            savings_devices (type),
            candidate_links (id, opened_at, simulated_at)`,
@@ -83,6 +87,19 @@ function enrich(pkg: any): PackageWithStats {
     simulatedLinks: links.filter((l: any) => l.simulated_at).length,
     openRate:
       links.length > 0 ? Math.round((opened / links.length) * 100) : 0,
+    richness: computeRichnessFromRow({
+      job_summary: pkg.job_summary,
+      missions: pkg.missions,
+      stack: pkg.stack,
+      remote_policy: pkg.remote_policy,
+      location_city: pkg.location_city,
+      team_description: pkg.team_description,
+      company_values: pkg.company_values,
+      growth_paths: pkg.growth_paths,
+      process_steps: pkg.process_steps,
+      gross_salary: pkg.gross_salary,
+      equity_devices: pkg.equity_devices,
+    }),
   };
 }
 

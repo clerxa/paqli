@@ -226,14 +226,6 @@ export function CounterOfferModal({ original, onClose, onSent }: Props) {
             {message.length}/500
           </div>
         </div>
-            onChange={(e) => setMessage(e.target.value.slice(0, 500))}
-            placeholder="Bonjour, suite à notre échange, nous avons revu notre proposition…"
-            className="w-full border border-[rgba(45,38,64,0.12)] rounded-lg p-3 text-[13px] text-aubergine resize-none h-24 font-light outline-none"
-          />
-          <div className="text-[10px] text-[#B8AECF] text-right mt-1">
-            {message.length}/500
-          </div>
-        </div>
 
         {/* Résumé */}
         <div className="bg-[#F0EBE8] rounded-xl p-4 mb-5">

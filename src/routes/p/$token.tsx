@@ -17,6 +17,10 @@ import {
 } from "@/lib/clientCalc";
 import { askCandidateAssistant } from "@/lib/candidateAssistant.functions";
 import { trackLink } from "@/lib/trackLink.functions";
+import {
+  DecisionBlock,
+  CandidateMessagingBlock,
+} from "@/components/paqli/candidate/DecisionBlocks";
 
 export const Route = createFileRoute("/p/$token")({
   component: PublicPackagePage,

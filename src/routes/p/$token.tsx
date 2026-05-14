@@ -17,6 +17,7 @@ import {
 } from "@/lib/clientCalc";
 import { askCandidateAssistant } from "@/lib/candidateAssistant.functions";
 import { trackLink } from "@/lib/trackLink.functions";
+import { useBehaviorTracker } from "@/hooks/useBehaviorTracker";
 import {
   DecisionBlock,
   CandidateMessagingBlock,

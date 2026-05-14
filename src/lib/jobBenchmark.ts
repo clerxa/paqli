@@ -8,7 +8,7 @@ export type JobFamily =
   | "data_engineer"
   | "product_manager"
   | "designer"
-  | "devops"
+  | "devops_engineer"
   | "engineering_manager"
   | "sales"
   | "marketing"
@@ -20,7 +20,7 @@ const FAMILY_RULES: Array<{ family: JobFamily; rx: RegExp }> = [
   { family: "engineering_manager", rx: /(engineering manager|em|tech lead manager|head of engineering|cto)/i },
   { family: "frontend_engineer", rx: /(front[- ]?end|frontend|react|vue|angular)/i },
   { family: "backend_engineer", rx: /(back[- ]?end|backend|api|node|python|java|go(lang)?|rust|ruby|php)/i },
-  { family: "devops", rx: /(devops|sre|platform|infra|cloud)/i },
+  { family: "devops_engineer", rx: /(devops|sre|platform engineer|infra engineer|cloud engineer)/i },
   { family: "data_engineer", rx: /(data engineer|analytics engineer|etl)/i },
   { family: "data_scientist", rx: /(data scientist|machine learning|ml engineer|ai engineer)/i },
   { family: "designer", rx: /(designer|ux|ui|product design)/i },

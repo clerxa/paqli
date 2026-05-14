@@ -44,12 +44,20 @@ export interface TodoItem {
   severity: "warning" | "info";
 }
 
+export interface DeclineStat {
+  category: string;
+  count: number;
+}
+
 export function useDashboard() {
   const { organization } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [packages, setPackages] = useState<PackageSummary[]>([]);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [declineStats, setDeclineStats] = useState<DeclineStat[]>([]);
+  const [acceptedCount, setAcceptedCount] = useState(0);
+  const [declinedCount, setDeclinedCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -102,6 +110,22 @@ export function useDashboard() {
       setPackages(pkgList);
       setRecentActivity(activity);
       setTodos(buildTodos(pkgList));
+
+      const accepted = links.filter((l) => l.status === "accepted").length;
+      const declined = links.filter((l) => l.status === "declined");
+      setAcceptedCount(accepted);
+      setDeclinedCount(declined.length);
+
+      const counts = new Map<string, number>();
+      for (const l of declined) {
+        const key = l.decline_category || "other";
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+      setDeclineStats(
+        Array.from(counts.entries())
+          .map(([category, count]) => ({ category, count }))
+          .sort((a, b) => b.count - a.count),
+      );
     } finally {
       setLoading(false);
     }
@@ -110,7 +134,9 @@ export function useDashboard() {
   async function loadLinks(orgId: string) {
     const { data } = await supabase
       .from("candidate_links")
-      .select("id, candidate_name, package_id, opened_at, simulated_at")
+      .select(
+        "id, candidate_name, package_id, opened_at, simulated_at, status, decline_category",
+      )
       .eq("organization_id", orgId);
     return data ?? [];
   }
@@ -208,7 +234,16 @@ export function useDashboard() {
     return todos;
   }
 
-  return { metrics, packages, recentActivity, todos, loading };
+  return {
+    metrics,
+    packages,
+    recentActivity,
+    todos,
+    declineStats,
+    acceptedCount,
+    declinedCount,
+    loading,
+  };
 }
 
 export function timeAgo(date: string): string {

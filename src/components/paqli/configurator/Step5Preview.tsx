@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/paqli/Button";
+import { AttractivenessScore } from "@/components/paqli/AttractivenessScore";
+import { JobPostingGenerator } from "@/components/paqli/JobPostingGenerator";
 import { Chip, NumberField, TextField, WarnBanner } from "./fields";
 import {
   buildCandidateUrl,
@@ -218,6 +220,13 @@ export function Step5Preview() {
           </span>
         </div>
       </div>
+
+      <AttractivenessScore packageId={config.packageId} />
+
+      <JobPostingGenerator
+        packageId={config.packageId}
+        packageTitle={config.title || "package"}
+      />
 
       <WarnBanner>
         Ces montants sont des estimations indicatives arrondies, calculées sur

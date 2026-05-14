@@ -398,6 +398,8 @@ export type Database = {
       }
       packages: {
         Row: {
+          attractiveness_computed: string | null
+          attractiveness_score: number | null
           benefits: Json | null
           company_values: string[] | null
           contract_type: string | null
@@ -436,6 +438,8 @@ export type Database = {
           wtj_url: string | null
         }
         Insert: {
+          attractiveness_computed?: string | null
+          attractiveness_score?: number | null
           benefits?: Json | null
           company_values?: string[] | null
           contract_type?: string | null
@@ -474,6 +478,8 @@ export type Database = {
           wtj_url?: string | null
         }
         Update: {
+          attractiveness_computed?: string | null
+          attractiveness_score?: number | null
           benefits?: Json | null
           company_values?: string[] | null
           contract_type?: string | null

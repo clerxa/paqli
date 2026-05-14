@@ -1,4 +1,6 @@
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
+import { usePackageCoach } from "@/hooks/usePackageCoach";
+import { CoachTipInline } from "@/components/paqli/CoachTipInline";
 import {
   Chip,
   EduBanner,

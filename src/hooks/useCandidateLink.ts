@@ -57,6 +57,7 @@ export function useCandidateLink(token: string) {
           opened_at: res.openedAt,
           offerStatus: res.offerStatus,
           statusUpdatedAt: res.statusUpdatedAt,
+          counterOffer: (res as any).counterOffer ?? null,
           messages: res.messages,
           packages: res.package as unknown as PackageData,
         });

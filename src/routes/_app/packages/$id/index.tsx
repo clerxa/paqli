@@ -8,6 +8,8 @@ import { StatusPill } from "@/components/paqli/StatusPill";
 import { Skeleton } from "@/components/paqli/Skeleton";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
 import { Chip, TextField } from "@/components/paqli/configurator/fields";
+import { LinkActivityPanel } from "@/components/paqli/LinkActivityPanel";
+import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,6 +38,8 @@ interface CandidateLinkRow {
   created_at: string;
   opened_at: string | null;
   simulated_at: string | null;
+  status: string;
+  decline_category: string | null;
 }
 
 function PackageDetail() {
@@ -47,13 +51,14 @@ function PackageDetail() {
   const [loading, setLoading] = useState(true);
   const [showSendModal, setShowSendModal] = useState(false);
   const [deleteLinkId, setDeleteLinkId] = useState<string | null>(null);
+  const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
 
   async function reload() {
     const [p, l] = await Promise.all([
       loadPackage(id),
       supabase
         .from("candidate_links")
-        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at")
+        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category")
         .eq("package_id", id)
         .order("created_at", { ascending: false }),
     ]);
@@ -252,27 +257,46 @@ function PackageDetail() {
             ) : (
               <div className="space-y-3">
                 {links.map((l) => {
-                  const status = l.simulated_at
+                  const activityStatus = l.simulated_at
                     ? "Simulé"
                     : l.opened_at
                       ? "Ouvert"
                       : "Non ouvert";
+                  const isExpanded = expandedLinkId === l.id;
                   return (
                     <div
                       key={l.id}
                       className="border-b border-[rgba(45,38,64,0.06)] pb-3 last:border-0"
                     >
-                      <div className="text-[13px] text-aubergine font-medium truncate">
-                        {l.candidate_name || "—"}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[13px] text-aubergine font-medium truncate">
+                            {l.candidate_name || "—"}
+                          </div>
+                          <div className="text-[11px] text-grey truncate">
+                            {l.candidate_email || "Aucun email"}
+                          </div>
+                        </div>
+                        <DecisionBadge status={l.status} />
                       </div>
-                      <div className="text-[11px] text-grey truncate">
-                        {l.candidate_email || "Aucun email"}
-                      </div>
+                      {l.status === "declined" && l.decline_category && (
+                        <div className="text-[10px] text-[#A32D2D] mt-1">
+                          {DECLINE_LABELS[l.decline_category]}
+                        </div>
+                      )}
                       <div className="flex items-center justify-between mt-1.5">
                         <span className="text-[11px] text-aubergine-light">
-                          {status}
+                          {activityStatus}
                         </span>
-                        <div className="flex gap-1">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() =>
+                              setExpandedLinkId(isExpanded ? null : l.id)
+                            }
+                            className="text-[11px] text-aubergine hover:underline"
+                          >
+                            {isExpanded ? "Masquer" : "Activité"}
+                          </button>
                           <button
                             onClick={() => copyToken(l.token)}
                             className="text-[11px] text-aubergine hover:underline"
@@ -281,12 +305,20 @@ function PackageDetail() {
                           </button>
                           <button
                             onClick={() => setDeleteLinkId(l.id)}
-                            className="text-[11px] text-danger hover:underline ml-2"
+                            className="text-[11px] text-danger hover:underline"
                           >
                             Supprimer
                           </button>
                         </div>
                       </div>
+                      {isExpanded && (
+                        <div className="mt-3 pt-3 border-t border-[rgba(45,38,64,0.06)]">
+                          <LinkActivityPanel
+                            linkId={l.id}
+                            candidateName={l.candidate_name || "ce candidat"}
+                          />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -319,6 +351,23 @@ function PackageDetail() {
         />
       )}
     </>
+  );
+}
+
+function DecisionBadge({ status }: { status: string }) {
+  const styles: Record<string, { bg: string; fg: string; label: string }> = {
+    accepted: { bg: "#EAF3DE", fg: "#27500A", label: "● Accepté" },
+    declined: { bg: "#FCEBEB", fg: "#A32D2D", label: "● Décliné" },
+    pending: { bg: "#F0EBE8", fg: "#9B97A0", label: "○ En attente" },
+  };
+  const s = styles[status] ?? styles.pending;
+  return (
+    <span
+      className="text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
+      style={{ background: s.bg, color: s.fg }}
+    >
+      {s.label}
+    </span>
   );
 }
 

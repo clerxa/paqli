@@ -17,6 +17,10 @@ import {
 } from "@/lib/clientCalc";
 import { askCandidateAssistant } from "@/lib/candidateAssistant.functions";
 import { trackLink } from "@/lib/trackLink.functions";
+import {
+  DecisionBlock,
+  CandidateMessagingBlock,
+} from "@/components/paqli/candidate/DecisionBlocks";
 
 export const Route = createFileRoute("/p/$token")({
   component: PublicPackagePage,
@@ -27,13 +31,13 @@ const SENIORITY_OPTIONS: Array<1 | 2 | 3 | 5> = [1, 2, 3, 5];
 
 function PublicPackagePage() {
   const { token } = Route.useParams();
-  const { data, loading, error } = useCandidateLink(token);
+  const { data, loading, error, setData } = useCandidateLink(token);
 
   if (loading) return <LoadingState />;
   if (error === "expired") return <ErrorState kind="expired" />;
   if (error || !data) return <ErrorState kind="not_found" />;
 
-  return <PackageView data={data} />;
+  return <PackageView data={data} setData={setData} />;
 }
 
 /* -------------------- Shells -------------------- */
@@ -91,7 +95,13 @@ function ErrorState({ kind }: { kind: "not_found" | "expired" }) {
 
 /* -------------------- Main view -------------------- */
 
-function PackageView({ data }: { data: CandidateLinkData }) {
+function PackageView({
+  data,
+  setData,
+}: {
+  data: CandidateLinkData;
+  setData: React.Dispatch<React.SetStateAction<CandidateLinkData | null>>;
+}) {
   const pkg = data.packages;
   const org = pkg.organizations;
 
@@ -425,6 +435,25 @@ function PackageView({ data }: { data: CandidateLinkData }) {
         <Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?
       </SectionTitle>
       <Assistant token={data.token} pkg={pkg} params={params} />
+
+      {/* Messagerie candidat ↔ RH */}
+      <CandidateMessagingBlock
+        token={data.token}
+        orgName={org?.name ?? "l'entreprise"}
+        initialMessages={data.messages}
+      />
+
+      {/* Décision candidat */}
+      <DecisionBlock
+        data={data}
+        orgName={org?.name ?? "l'entreprise"}
+        pkgTitle={pkg.title}
+        onStatusChange={(status, statusUpdatedAt) =>
+          setData((prev) =>
+            prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev,
+          )
+        }
+      />
 
       {/* CTA */}
       <div

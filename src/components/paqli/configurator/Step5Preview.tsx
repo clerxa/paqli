@@ -221,6 +221,13 @@ export function Step5Preview() {
         </div>
       </div>
 
+      <AttractivenessScore packageId={config.packageId} />
+
+      <JobPostingGenerator
+        packageId={config.packageId}
+        packageTitle={config.title || "package"}
+      />
+
       <WarnBanner>
         Ces montants sont des estimations indicatives arrondies, calculées sur
         la base des règles fiscales en vigueur (2026). Ils ne constituent pas un

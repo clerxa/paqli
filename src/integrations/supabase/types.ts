@@ -19,36 +19,48 @@ export type Database = {
           candidate_email: string | null
           candidate_name: string | null
           created_at: string
+          decline_category: string | null
+          decline_reason: string | null
           expires_at: string | null
           id: string
           opened_at: string | null
           organization_id: string
           package_id: string
           simulated_at: string | null
+          status: string
+          status_updated_at: string | null
           token: string
         }
         Insert: {
           candidate_email?: string | null
           candidate_name?: string | null
           created_at?: string
+          decline_category?: string | null
+          decline_reason?: string | null
           expires_at?: string | null
           id?: string
           opened_at?: string | null
           organization_id: string
           package_id: string
           simulated_at?: string | null
+          status?: string
+          status_updated_at?: string | null
           token?: string
         }
         Update: {
           candidate_email?: string | null
           candidate_name?: string | null
           created_at?: string
+          decline_category?: string | null
+          decline_reason?: string | null
           expires_at?: string | null
           id?: string
           opened_at?: string | null
           organization_id?: string
           package_id?: string
           simulated_at?: string | null
+          status?: string
+          status_updated_at?: string | null
           token?: string
         }
         Relationships: [
@@ -140,6 +152,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "link_events_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          link_id: string
+          read_at: string | null
+          sender: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          link_id: string
+          read_at?: string | null
+          sender: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          link_id?: string
+          read_at?: string | null
+          sender?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_link_id_fkey"
             columns: ["link_id"]
             isOneToOne: false
             referencedRelation: "candidate_links"

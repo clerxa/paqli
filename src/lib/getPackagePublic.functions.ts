@@ -126,6 +126,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       expiresAt: link.expires_at as string | null,
       offerStatus: (link.status ?? "pending") as string,
       statusUpdatedAt: link.status_updated_at as string | null,
+      counterOffer,
       messages: (messages ?? []) as Array<{
         id: string;
         sender: "candidate" | "rh";

@@ -165,13 +165,17 @@ function EquityBlock({
                 <Chip
                   key={y}
                   selected={device.vestingYears === y}
-                  onClick={() => onChange({ vestingYears: y })}
+                  onClick={() => {
+                    onChange({ vestingYears: y });
+                    checkField("vesting_years", y);
+                  }}
                 >
                   {y} an{y > 1 ? "s" : ""}
                 </Chip>
               ),
             )}
           </div>
+          <CoachTipInline tip={tips["vesting_years"]} />
         </div>
         <div>
           <div className="text-[12px] text-aubergine-light font-medium mb-1">
@@ -193,13 +197,18 @@ function EquityBlock({
               <Chip
                 key={c.v}
                 selected={device.cliffMonths === c.v}
-                onClick={() => onChange({ cliffMonths: c.v })}
+                onClick={() => {
+                  onChange({ cliffMonths: c.v });
+                  checkField("cliff_months", c.v);
+                }}
               >
                 {c.l}
               </Chip>
             ))}
           </div>
+          <CoachTipInline tip={tips["cliff_months"]} />
         </div>
+      </div>
       </div>
 
       <TextArea

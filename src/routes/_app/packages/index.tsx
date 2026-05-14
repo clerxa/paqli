@@ -192,6 +192,27 @@ function PackageRow({
         <div className="text-grey">{pkg.openedLinks} ouvert{pkg.openedLinks > 1 ? "s" : ""}</div>
         <div className="text-grey">{pkg.openRate}% ouv.</div>
       </div>
+      {pkg.attractivenessScore !== null && (
+        <div className="flex items-center gap-1.5" title="Score d'attractivité IA">
+          <div className="w-14 h-1.5 bg-[#F0EBE8] rounded-full overflow-hidden">
+            <div
+              className="h-1.5 rounded-full"
+              style={{
+                width: `${pkg.attractivenessScore}%`,
+                background:
+                  pkg.attractivenessScore >= 80
+                    ? "#3B6D11"
+                    : pkg.attractivenessScore >= 60
+                      ? "#8B7FA8"
+                      : "#C4A882",
+              }}
+            />
+          </div>
+          <span className="text-[11px] text-grey">
+            {pkg.attractivenessScore}
+          </span>
+        </div>
+      )}
       <div className="w-20" title={`Profil complété à ${pkg.richness}%`}>
         <div className="text-[10px] uppercase tracking-[0.1em] text-grey mb-1 text-right">
           {pkg.richness}%

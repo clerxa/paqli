@@ -49,6 +49,25 @@ export interface DeclineStat {
   count: number;
 }
 
+export type FollowUpAlertType =
+  | "sim_no_response"
+  | "opened_not_sim"
+  | "not_opened_72h"
+  | "declined_can_counter";
+
+export interface FollowUpAlert {
+  type: FollowUpAlertType;
+  priority: "high" | "medium" | "low";
+  linkId: string;
+  token: string;
+  candidateName: string;
+  packageTitle: string;
+  packageId: string;
+  message: string;
+  cta: string;
+  declineCategory?: string | null;
+}
+
 export function useDashboard() {
   const { organization } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -58,6 +77,7 @@ export function useDashboard() {
   const [declineStats, setDeclineStats] = useState<DeclineStat[]>([]);
   const [acceptedCount, setAcceptedCount] = useState(0);
   const [declinedCount, setDeclinedCount] = useState(0);
+  const [followUpAlerts, setFollowUpAlerts] = useState<FollowUpAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

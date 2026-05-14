@@ -354,6 +354,23 @@ function PackageDetail() {
   );
 }
 
+function DecisionBadge({ status }: { status: string }) {
+  const styles: Record<string, { bg: string; fg: string; label: string }> = {
+    accepted: { bg: "#EAF3DE", fg: "#27500A", label: "● Accepté" },
+    declined: { bg: "#FCEBEB", fg: "#A32D2D", label: "● Décliné" },
+    pending: { bg: "#F0EBE8", fg: "#9B97A0", label: "○ En attente" },
+  };
+  const s = styles[status] ?? styles.pending;
+  return (
+    <span
+      className="text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
+      style={{ background: s.bg, color: s.fg }}
+    >
+      {s.label}
+    </span>
+  );
+}
+
 function Section({
   title,
   children,

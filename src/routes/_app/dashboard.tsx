@@ -146,12 +146,24 @@ function DashboardPage() {
                 }
               />
               <MetricCard
-                label="Liens envoyés"
-                value={String(metrics.totalLinks)}
+                label="Liens envoyés ce mois"
+                value={
+                  quota
+                    ? `${quota.used}${quota.quota != null ? ` / ${quota.quota}` : ""}`
+                    : String(metrics.totalLinks)
+                }
                 delta={
-                  metrics.totalLinks > 0
-                    ? { value: "Cette semaine", positive: true }
-                    : undefined
+                  quota?.quota != null
+                    ? {
+                        value:
+                          quota.used >= quota.quota
+                            ? "Quota atteint"
+                            : `${quota.quota - quota.used} restant${quota.quota - quota.used > 1 ? "s" : ""}`,
+                        positive: quota.used < quota.quota,
+                      }
+                    : metrics.totalLinks > 0
+                      ? { value: "Illimité", positive: true }
+                      : undefined
                 }
               />
               <MetricCard

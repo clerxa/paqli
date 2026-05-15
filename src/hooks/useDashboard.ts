@@ -70,6 +70,18 @@ export interface FollowUpAlert {
   declineCategory?: string | null;
 }
 
+export interface EngagementRow {
+  linkId: string;
+  packageId: string | null;
+  candidateName: string;
+  packageTitle: string;
+  score: number;
+  label: string | null;
+  intent: string | null;
+  status: string;
+  createdAt: string;
+}
+
 export function useDashboard() {
   const { organization } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -80,6 +92,7 @@ export function useDashboard() {
   const [acceptedCount, setAcceptedCount] = useState(0);
   const [declinedCount, setDeclinedCount] = useState(0);
   const [followUpAlerts, setFollowUpAlerts] = useState<FollowUpAlert[]>([]);
+  const [engagement, setEngagement] = useState<EngagementRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -133,6 +146,7 @@ export function useDashboard() {
       setRecentActivity(activity);
       setTodos(buildTodos(pkgList));
       setFollowUpAlerts(buildFollowUpAlerts(links));
+      setEngagement(buildEngagementList(links));
 
       const accepted = links.filter((l) => l.status === "accepted").length;
       const declined = links.filter((l) => l.status === "declined");
@@ -158,7 +172,7 @@ export function useDashboard() {
     const { data } = await supabase
       .from("candidate_links")
       .select(
-        "id, token, candidate_name, package_id, created_at, opened_at, simulated_at, status, decline_category, decision_deadline, packages (title)",
+        "id, token, candidate_name, package_id, created_at, opened_at, simulated_at, status, decline_category, decision_deadline, engagement_score, engagement_label, intent_prediction, packages (title)",
       )
       .eq("organization_id", orgId);
     return data ?? [];
@@ -266,8 +280,39 @@ export function useDashboard() {
     acceptedCount,
     declinedCount,
     followUpAlerts,
+    engagement,
     loading,
   };
+}
+
+function buildEngagementList(
+  links: Array<{
+    id: string;
+    candidate_name: string | null;
+    package_id: string | null;
+    created_at: string;
+    status: string;
+    engagement_score: number | null;
+    engagement_label: string | null;
+    intent_prediction: string | null;
+    packages?: { title: string } | null;
+  }>,
+): EngagementRow[] {
+  return links
+    .filter((l) => l.engagement_score != null)
+    .map((l) => ({
+      linkId: l.id,
+      packageId: l.package_id,
+      candidateName: l.candidate_name ?? "Candidat",
+      packageTitle: l.packages?.title ?? "",
+      score: l.engagement_score ?? 0,
+      label: l.engagement_label,
+      intent: l.intent_prediction,
+      status: l.status,
+      createdAt: l.created_at,
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6);
 }
 
 const COUNTERABLE_CATEGORIES = new Set(["salary", "equity", "location"]);

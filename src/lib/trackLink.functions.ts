@@ -20,10 +20,10 @@ export const trackLink = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (error || !link) {
-      throw new Response("Link not found", { status: 404 });
+      return { success: false, reason: "not_found" as const };
     }
     if (link.expires_at && new Date(link.expires_at) < new Date()) {
-      throw new Response("Link expired", { status: 410 });
+      return { success: false, reason: "expired" as const };
     }
 
     await supabaseAdmin.from("link_events").insert({

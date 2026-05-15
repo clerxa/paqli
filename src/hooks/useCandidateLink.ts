@@ -63,7 +63,7 @@ export function useCandidateLink(token: string) {
         });
         setLoading(false);
         if (!res.openedAt) {
-          void track({ data: { token, eventType: "opened" } });
+          void track({ data: { token, eventType: "opened" } }).catch(() => {});
         }
       } catch (e: any) {
         if (cancelled) return;

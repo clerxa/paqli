@@ -1,9 +1,33 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { reformulateInterviewNotesFn } from "@/lib/aiAssistant.functions";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { useJobs } from "@/hooks/useJobs";
 import { applyJobToConfig } from "@/lib/jobsService";
 import { Chip, TextArea, TextField } from "./fields";
-import type { ContractType, RemotePolicy } from "@/lib/packageConfig";
+import type { ContractType, GrowthPath, ManagerStyle, RemotePolicy } from "@/lib/packageConfig";
+
+const TEAM_SIZE_OPTIONS = [
+  { v: 3, l: "1-3" },
+  { v: 8, l: "4-8" },
+  { v: 15, l: "9-15" },
+  { v: 99, l: "15+" },
+];
+
+const MANAGER_OPTIONS: {
+  value: ManagerStyle;
+  icon: string;
+  label: string;
+  desc: string;
+}[] = [
+  { value: "autonomy", icon: "🎯", label: "Autonomie forte", desc: "Vous gérez votre agenda" },
+  { value: "coaching", icon: "🤝", label: "Coaching", desc: "Manager disponible et impliqué" },
+  { value: "structured", icon: "📋", label: "Structuré", desc: "Processus clairs et cadrés" },
+  { value: "collaborative", icon: "💬", label: "Collaboratif", desc: "Décisions collectives" },
+];
+
+const GROWTH_HORIZONS = ["6 mois", "1 an", "2 ans", "3 ans+"];
 
 const CONTRACT_OPTIONS: { value: ContractType; label: string }[] = [
   { value: "cdi", label: "CDI" },
@@ -40,6 +64,19 @@ export function Step0Job() {
   }
   function removeMission(i: number) {
     patch({ missions: config.missions.filter((_, j) => j !== i) });
+  }
+
+  function setGrowth(i: number, p: Partial<GrowthPath>) {
+    const next = [...config.growthPaths];
+    next[i] = { ...next[i], ...p };
+    patch({ growthPaths: next });
+  }
+  function addGrowth() {
+    if (config.growthPaths.length >= 3) return;
+    patch({ growthPaths: [...config.growthPaths, { horizon: "1 an", path: "" }] });
+  }
+  function removeGrowth(i: number) {
+    patch({ growthPaths: config.growthPaths.filter((_, j) => j !== i) });
   }
 
   return (
@@ -249,6 +286,99 @@ export function Step0Job() {
         />
       </Section>
 
+      <Section title="Équipe & management">
+        <div>
+          <SubLabel>Taille de l'équipe directe</SubLabel>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {TEAM_SIZE_OPTIONS.map((o) => (
+              <Chip
+                key={o.v}
+                selected={config.teamSize === o.v}
+                onClick={() => patch({ teamSize: o.v })}
+              >
+                {o.l}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        <TextArea
+          label="Description de l'équipe"
+          value={config.teamDescription}
+          onChange={(v) => patch({ teamDescription: v })}
+          placeholder="Une équipe de 6 engineers, 2 PM et 1 designer. Environnement bienveillant, feedback régulier."
+          maxLength={300}
+        />
+
+        <div>
+          <SubLabel>Style de management</SubLabel>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {MANAGER_OPTIONS.map((o) => (
+              <CardChoice
+                key={o.value}
+                selected={config.managerStyle === o.value}
+                icon={o.icon}
+                label={o.label}
+                desc={o.desc}
+                onClick={() => patch({ managerStyle: o.value })}
+              />
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Perspectives d'évolution">
+        <div>
+          <SubLabel>Évolutions possibles (max 3)</SubLabel>
+          <div className="space-y-2 mt-2">
+            {config.growthPaths.map((g, i) => (
+              <div key={i} className="flex flex-wrap gap-2 items-start">
+                <select
+                  value={g.horizon}
+                  onChange={(e) => setGrowth(i, { horizon: e.target.value })}
+                  className="text-[12px] px-2 py-2 rounded-md border border-[rgba(45,38,64,0.15)] bg-white"
+                >
+                  {GROWTH_HORIZONS.map((h) => (
+                    <option key={h} value={h}>{h}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={g.path}
+                  onChange={(e) => setGrowth(i, { path: e.target.value })}
+                  placeholder="Lead Engineer possible"
+                  className="flex-1 min-w-[180px] text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeGrowth(i)}
+                  className="text-grey hover:text-danger px-2 text-[12px]"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            {config.growthPaths.length < 3 && (
+              <button
+                type="button"
+                onClick={addGrowth}
+                className="text-[12px] text-aubergine hover:underline"
+              >
+                + Ajouter une perspective
+              </button>
+            )}
+          </div>
+        </div>
+
+        <TextArea
+          label="Note onboarding"
+          value={config.onboardingNote}
+          onChange={(v) => patch({ onboardingNote: v })}
+          placeholder="Onboarding structuré sur 3 mois avec buddy dédié, accès à toute la documentation interne dès J1."
+          maxLength={300}
+        />
+      </Section>
+
       <Section title="Démarrage">
         <TextField
           label="Date de démarrage souhaitée"
@@ -257,7 +387,64 @@ export function Step0Job() {
           placeholder="Dès que possible"
         />
       </Section>
+
+      <InterviewNotesSection />
     </div>
+  );
+}
+
+function InterviewNotesSection() {
+  const { config, patch } = usePackageConfig();
+  const [loading, setLoading] = useState(false);
+
+  async function handleReformulate() {
+    if (!config.interviewNotes || config.interviewNotes.trim().length < 20) {
+      toast.error("Ajoutez au moins quelques phrases avant de reformuler.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await reformulateInterviewNotesFn({
+        data: { notes: config.interviewNotes },
+      });
+      patch({ interviewNotes: result.reformulated });
+      toast.success("Notes reformulées par l'IA");
+    } catch (e) {
+      console.error(e);
+      toast.error("Échec de la reformulation");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Section title="Discussions avec le candidat">
+      <p className="text-[11px] text-aubergine-light leading-relaxed -mt-1">
+        Notez ici les éléments importants ressortis pendant les entretiens — envies,
+        questions, points sensibles. Ces notes ne sont visibles que par vous, mais
+        nourrissent l'IA pour personnaliser le package.
+      </p>
+      <textarea
+        value={config.interviewNotes}
+        onChange={(e) => patch({ interviewNotes: e.target.value.slice(0, 2000) })}
+        placeholder="Le candidat a beaucoup insisté sur l'autonomie et la possibilité de télétravailler depuis Lisbonne…"
+        rows={5}
+        className="w-full text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white resize-y"
+      />
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[11px] text-grey">
+          {config.interviewNotes.length}/2000
+        </span>
+        <button
+          type="button"
+          onClick={handleReformulate}
+          disabled={loading}
+          className="text-[12px] px-3 py-1.5 rounded-md border border-aubergine text-aubergine hover:bg-aubergine hover:text-lin transition-colors disabled:opacity-50"
+        >
+          {loading ? "Reformulation…" : "✨ Reformuler avec l'IA"}
+        </button>
+      </div>
+    </Section>
   );
 }
 

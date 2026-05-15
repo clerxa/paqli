@@ -736,6 +736,7 @@ export type Database = {
           gross_salary: number | null
           growth_paths: Json | null
           id: string
+          interview_notes: string | null
           job_summary: string | null
           job_type: string | null
           location_city: string | null
@@ -779,6 +780,7 @@ export type Database = {
           gross_salary?: number | null
           growth_paths?: Json | null
           id?: string
+          interview_notes?: string | null
           job_summary?: string | null
           job_type?: string | null
           location_city?: string | null
@@ -822,6 +824,7 @@ export type Database = {
           gross_salary?: number | null
           growth_paths?: Json | null
           id?: string
+          interview_notes?: string | null
           job_summary?: string | null
           job_type?: string | null
           location_city?: string | null

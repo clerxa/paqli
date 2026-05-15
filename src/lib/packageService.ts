@@ -58,6 +58,7 @@ export async function upsertPackage(
     process_steps: (config.processSteps ?? []) as unknown as Json,
     process_duration: config.processDuration || null,
     start_date: config.startDate || null,
+    interview_notes: config.interviewNotes || null,
     trial_period_months: config.trialPeriodMonths ?? null,
     trial_period_renewable: !!config.trialPeriodRenewable,
   };
@@ -243,6 +244,7 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
     processSteps,
     processDuration: pkg.process_duration ?? "",
     startDate: pkg.start_date ?? "",
+    interviewNotes: pkg.interview_notes ?? "",
     trialPeriodMonths: pkg.trial_period_months ?? null,
     trialPeriodRenewable: !!pkg.trial_period_renewable,
 

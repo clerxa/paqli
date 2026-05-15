@@ -356,6 +356,53 @@ Ne mentionne que les informations fournies — ne complète pas avec des supposi
     return { posting };
   });
 
+// ─────────────────────────────────────────────────────────────────
+// 5. Reformulation des notes d'entretien candidat
+// ─────────────────────────────────────────────────────────────────
+
+export const reformulateInterviewNotesFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z
+      .object({
+        notes: z.string().min(20).max(2000),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const systemPrompt = `Tu es un assistant RH expert en recrutement.
+Tu reformules des notes d'entretien brutes prises par un recruteur en notes claires,
+bienveillantes et structurées, dont l'objectif est de motiver le candidat à rejoindre
+l'entreprise.
+
+RÈGLES ABSOLUES :
+- Reste fidèle aux propos d'origine — ne jamais travestir, exagérer ou inventer
+- Ne jamais ajouter d'informations qui ne figurent pas dans les notes initiales
+- Ne jamais transformer un point neutre ou négatif en argument vendeur artificiel
+- Ton chaleureux, humain, professionnel et rassurant
+- Mettre en lumière de manière factuelle ce qui peut donner envie au candidat
+  (centres d'intérêt évoqués, projets discutés, alignement sur les valeurs)
+- Conserver la structure et la longueur approximative du texte d'origine
+- Reformule à la troisième personne ("Le candidat a évoqué…", "Nous avons partagé…")
+- Toujours en français
+- Ne pas utiliser de Markdown — texte brut uniquement`;
+
+    const userPrompt = `Reformule ces notes d'entretien :
+
+${data.notes}
+
+Réponds uniquement avec le texte reformulé, sans préambule ni commentaire.`;
+
+    const reformulated = await callClaude({
+      systemPrompt,
+      userPrompt,
+      maxTokens: 800,
+      caller: "reformulateInterviewNotes",
+    });
+
+    return { reformulated: reformulated.trim() };
+  });
+
 // Helper to fetch benchmark for a package title (used by coach)
 export const getBenchmarkFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

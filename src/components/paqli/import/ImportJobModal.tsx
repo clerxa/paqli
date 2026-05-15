@@ -3,13 +3,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 import { importJobPostingFn, type ImportedJobData } from "@/lib/importJob.functions";
-import { mapToPackageConfig } from "@/lib/importMapper";
-import type { PackageConfig } from "@/lib/packageConfig";
 
 type Method = "url" | "text" | "file";
 
 interface Props {
-  onImported: (config: Partial<PackageConfig>) => void;
+  onImported: (data: ImportedJobData) => void;
   onClose: () => void;
 }
 
@@ -125,7 +123,7 @@ export function ImportJobModal({ onImported, onClose }: Props) {
             <ImportPreview
               data={preview}
               onConfirm={() => {
-                onImported(mapToPackageConfig(preview));
+                onImported(preview);
                 onClose();
               }}
               onRetry={() => {

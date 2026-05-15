@@ -64,6 +64,15 @@ export interface PackageData {
   gross_salary: number | null;
   variable_target: number | null;
   variable_config?: {
+    components?: {
+      id: string;
+      label: string;
+      frequency: "monthly" | "quarterly" | "semestrial" | "annual";
+      amount: number;
+      objectiveType?: "individual" | "collective" | "mixed" | null;
+      indicators?: { label: string; weight: number }[];
+      calcMethod?: string;
+    }[];
     objectiveType?: "individual" | "collective" | "mixed" | null;
     payoutFrequency?: "monthly" | "quarterly" | "semestrial" | "annual" | null;
     calcMethod?: string;

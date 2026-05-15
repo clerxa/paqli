@@ -9,7 +9,8 @@ import type {
   RemotePolicy,
   ScenarioLabel,
 } from "./packageConfig";
-import { defaultBenefits, defaultScenarios, emptyConfig } from "./packageConfig";
+import { defaultBenefits, defaultScenarios, defaultVariableConfig, emptyConfig } from "./packageConfig";
+import type { VariableConfig } from "./packageConfig";
 
 export async function upsertPackage(
   config: PackageConfig,

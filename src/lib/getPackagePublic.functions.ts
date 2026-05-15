@@ -183,6 +183,20 @@ export const getPackagePublic = createServerFn({ method: "POST" })
         equity_devices: pkg.equity_devices ?? [],
         savings_devices: pkg.savings_devices ?? [],
         scenarios,
+        package_benefits: (pkg.package_benefits ?? [])
+          .slice()
+          .sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0))
+          .map((b: any) => ({
+            benefit_key: b.benefit_key,
+            category: b.category,
+            value_type: b.value_type ?? "fixed",
+            monthly_value: b.monthly_value !== null ? Number(b.monthly_value) : null,
+            annual_value: b.annual_value !== null ? Number(b.annual_value) : null,
+            employer_share: b.employer_share !== null ? Number(b.employer_share) : null,
+            custom_label: b.custom_label ?? null,
+            custom_note: b.custom_note ?? null,
+            display_order: b.display_order ?? 0,
+          })),
       },
     };
   });

@@ -145,6 +145,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
         benefits: pkg.benefits,
         scenario_message: pkg.scenario_message,
         scenario_display: pkg.scenario_display,
+        interview_notes: pkg.interview_notes ?? null,
         job_summary: pkg.job_summary ?? null,
         missions: Array.isArray(pkg.missions) ? pkg.missions : [],
         stack: pkg.stack ?? [],

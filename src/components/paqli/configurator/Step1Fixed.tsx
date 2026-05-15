@@ -1,7 +1,7 @@
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { usePackageCoach } from "@/hooks/usePackageCoach";
 import { CoachTipInline } from "@/components/paqli/CoachTipInline";
-import { NumberField, TextField } from "./fields";
+import { Chip, NumberField, TextArea, TextField } from "./fields";
 import type {
   VariableComponent,
   VariableConfig,

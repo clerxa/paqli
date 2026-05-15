@@ -54,6 +54,8 @@ export type Database = {
       }
       candidate_links: {
         Row: {
+          ai_questions_cap: number
+          ai_questions_count: number
           behavior_data: Json | null
           candidate_email: string | null
           candidate_name: string | null
@@ -85,6 +87,8 @@ export type Database = {
           token: string
         }
         Insert: {
+          ai_questions_cap?: number
+          ai_questions_count?: number
           behavior_data?: Json | null
           candidate_email?: string | null
           candidate_name?: string | null
@@ -116,6 +120,8 @@ export type Database = {
           token?: string
         }
         Update: {
+          ai_questions_cap?: number
+          ai_questions_count?: number
           behavior_data?: Json | null
           candidate_email?: string | null
           candidate_name?: string | null

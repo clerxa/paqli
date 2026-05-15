@@ -134,6 +134,7 @@ export interface PackageConfig {
   // Steps 1-3
   grossSalary: number;
   variableTarget: number;
+  variableConfig: VariableConfig;
   benefits: BenefitsConfig;
 
   equityDevices: EquityDeviceForm[];

@@ -243,7 +243,7 @@ function PackageRow({
         </button>
         {menuOpen && (
           <div
-            className="absolute right-0 top-9 z-10 bg-white border border-[rgba(45,38,64,0.1)] rounded-md shadow-lg py-1 min-w-[160px] text-[13px]"
+            className="absolute right-0 top-9 z-50 bg-white border border-[rgba(45,38,64,0.1)] rounded-md shadow-lg py-1 min-w-[160px] text-[13px]"
             onMouseLeave={() => setMenuOpen(false)}
           >
             <MenuItem

@@ -4,12 +4,17 @@ import { CoachTipInline } from "@/components/paqli/CoachTipInline";
 import { Chip, NumberField, TextArea, TextField } from "./fields";
 import type {
   BenefitsConfig,
+  VariableComponent,
   VariableConfig,
   VariableIndicator,
   VariableObjectiveType,
   VariablePayoutFrequency,
 } from "@/lib/packageConfig";
-import { defaultVariableConfig } from "@/lib/packageConfig";
+import {
+  defaultVariableConfig,
+  FREQUENCY_LABELS_FR,
+  makeVariableComponent,
+} from "@/lib/packageConfig";
 import { Plus, X } from "lucide-react";
 
 const benefitChips: { key: keyof BenefitsConfig; label: string }[] = [

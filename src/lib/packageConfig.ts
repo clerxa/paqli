@@ -1,3 +1,5 @@
+import type { PackageBenefit } from "./benefitCatalog";
+
 export type EquityType = "bspce" | "aga" | "rsu" | "stock_options" | "espp";
 export type SavingsType = "pee" | "perco" | "interessement" | "participation";
 

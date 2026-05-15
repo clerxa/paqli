@@ -125,6 +125,7 @@ function PackageView({
   useEffect(() => {
     if (!pasTouched.current) setPasRate(params.tmi);
   }, [params.tmi]);
+  const [achievementPct, setAchievementPct] = useState(1);
 
   // Debounced tracking
   const trackTimer = useRef<number | null>(null);

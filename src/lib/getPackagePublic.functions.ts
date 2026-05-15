@@ -170,6 +170,12 @@ export const getPackagePublic = createServerFn({ method: "POST" })
         process_duration: pkg.process_duration ?? null,
         start_date: pkg.start_date ?? null,
         benchmark,
+        competitor_benchmark: competitorBench
+          ? {
+              content: competitorBench.content as any,
+              generated_at: competitorBench.generated_at as string,
+            }
+          : null,
         organizations: pkg.organizations
           ? {
               name: (pkg.organizations as any).name,

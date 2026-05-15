@@ -271,9 +271,15 @@ export function ImportJobModal({ onImported, onClose }: Props) {
                   Min. 100 caractères recommandés
                 </span>
               </div>
-              {error && (
-                <div className="text-[11px] text-danger mb-3">{error}</div>
-              )}
+              <ErrorBlock
+                error={error}
+                alternatives={errorAlternatives}
+                onPickAlternative={(m) => {
+                  clearError();
+                  setInput("");
+                  setMethod(m);
+                }}
+              />
               <button
                 onClick={() => run({ text: input.trim() })}
                 disabled={input.trim().length < 50 || loading}

@@ -162,6 +162,17 @@ function CandidatesPage() {
                         {activity}
                       </td>
                       <td className="px-5 py-4">
+                        {r.engagement_score != null ? (
+                          <EngagementBadge
+                            score={r.engagement_score}
+                            label={r.engagement_label}
+                            intent={r.intent_prediction}
+                          />
+                        ) : (
+                          <span className="text-[11px] text-grey">—</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4">
                         <DecisionBadge status={r.status} />
                         {r.status === "declined" && r.decline_category && (
                           <div className="text-[10px] text-[#A32D2D] mt-1">

@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { ChevronDown, Info, Target } from "lucide-react";
 import { formatEur } from "@/lib/clientCalc";
-import type { VariableConfig } from "@/lib/packageConfig";
+type LooseVariableConfig = {
+  objectiveType?: "individual" | "collective" | "mixed" | null;
+  payoutFrequency?: "monthly" | "quarterly" | "semestrial" | "annual" | null;
+  calcMethod?: string;
+  indicators?: { label: string; weight: number }[];
+};
 
 // Estimations 2026 — cadre standard. Pédagogique, pas un calcul juridique.
 const EMPLOYER_BREAKDOWN = [

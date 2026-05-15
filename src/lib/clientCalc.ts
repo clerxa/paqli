@@ -1,5 +1,11 @@
 // Client-side fiscal estimation engine for Paqli candidate view
 // Rates hardcoded for 2026 — used for real-time recalculation
+import {
+  type PackageBenefit,
+  calcBenefitsTotal,
+  estimateBenefitValue,
+  getBenefitDef,
+} from "./benefitCatalog";
 
 export const TAX_2026 = {
   FLAT_TAX: 0.314,
@@ -128,6 +134,7 @@ export interface PackageData {
     indicators?: { label: string; weight: number }[];
   } | null;
   benefits: Record<string, any> | null;
+  package_benefits?: PackageBenefit[];
   scenario_message: string | null;
   scenario_display: "all" | "realistic_only" | "realistic_optimistic";
 
@@ -192,10 +199,21 @@ export interface ScenarioEstimate {
   isMultiRate: boolean;
 }
 
+export interface BenefitBreakdownItem {
+  key: string;
+  label: string;
+  category: string;
+  valueType: "fixed" | "estimated" | "qualitative";
+  annualValue: number;
+  monthlyValue: number;
+  note?: string | null;
+}
+
 export interface PackageEstimate {
   salaryEst: number;
   variableEst: number;
   benefitsEst: number;
+  benefitsBreakdown: BenefitBreakdownItem[];
   equityByScenario: ScenarioEstimate[];
   peeEst: number;
   interEst: number;
@@ -299,14 +317,38 @@ export function calcPackageEstimate(
       tmiFactor,
   );
 
-  const b = pkg.benefits ?? {};
-  let benefitsTotal = 0;
-  if (b.mutuelle) benefitsTotal += (b.mutuelleMontant ?? 0) * 12;
-  if (b.ticketsResto)
-    benefitsTotal += (b.ticketsRestoValeur ?? 0) * 218 * 0.6;
-  if (b.vehicule) benefitsTotal += (b.vehiculeMontant ?? 0) * 12;
-  if (b.formation) benefitsTotal += b.formationBudget ?? 0;
-  const benefitsEst = roundForDisplay(benefitsTotal);
+  const benefitsV2 = pkg.package_benefits ?? [];
+  let benefitsEst = 0;
+  let benefitsBreakdown: BenefitBreakdownItem[] = [];
+  if (benefitsV2.length > 0) {
+    benefitsEst = roundForDisplay(calcBenefitsTotal(benefitsV2));
+    benefitsBreakdown = benefitsV2.map((bf) => {
+      const def = getBenefitDef(bf.benefit_key);
+      const annual =
+        def?.valueType === "qualitative" ? 0 : estimateBenefitValue(bf);
+      return {
+        key: bf.benefit_key,
+        label: bf.custom_label ?? def?.label ?? bf.benefit_key,
+        category: bf.category,
+        valueType: (def?.valueType ?? bf.value_type) as
+          | "fixed"
+          | "estimated"
+          | "qualitative",
+        annualValue: annual,
+        monthlyValue: Math.round(annual / 12),
+        note: bf.custom_note ?? null,
+      };
+    });
+  } else {
+    const b = pkg.benefits ?? {};
+    let benefitsTotal = 0;
+    if (b.mutuelle) benefitsTotal += (b.mutuelleMontant ?? 0) * 12;
+    if (b.ticketsResto)
+      benefitsTotal += (b.ticketsRestoValeur ?? 0) * 218 * 0.6;
+    if (b.vehicule) benefitsTotal += (b.vehiculeMontant ?? 0) * 12;
+    if (b.formation) benefitsTotal += b.formationBudget ?? 0;
+    benefitsEst = roundForDisplay(benefitsTotal);
+  }
 
   const equityByScenario = calcEquityScenarios(pkg, params);
 
@@ -357,6 +399,7 @@ export function calcPackageEstimate(
     salaryEst,
     variableEst,
     benefitsEst,
+    benefitsBreakdown,
     equityByScenario,
     peeEst,
     interEst,

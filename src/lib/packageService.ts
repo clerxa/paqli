@@ -178,6 +178,18 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
     ...((pkg.benefits as Record<string, unknown>) ?? {}),
   } as PackageConfig["benefits"];
 
+  const benefitsV2: PackageBenefit[] = (pb ?? []).map((b) => ({
+    benefit_key: b.benefit_key,
+    category: b.category as BenefitCategory,
+    value_type: (b.value_type as ValueType) ?? "fixed",
+    monthly_value: b.monthly_value !== null ? Number(b.monthly_value) : null,
+    annual_value: b.annual_value !== null ? Number(b.annual_value) : null,
+    employer_share: b.employer_share !== null ? Number(b.employer_share) : null,
+    custom_label: b.custom_label ?? null,
+    custom_note: b.custom_note ?? null,
+    display_order: b.display_order ?? 0,
+  }));
+
   const missions = Array.isArray(pkg.missions)
     ? (pkg.missions as unknown[]).filter((m): m is string => typeof m === "string")
     : [];
@@ -241,6 +253,7 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
       ...((pkg.variable_config as Record<string, unknown>) ?? {}),
     } as VariableConfig,
     benefits,
+    benefitsV2,
     equityDevices: (eq ?? []).map((d) => ({
       id: d.id,
       type: d.type as PackageConfig["equityDevices"][number]["type"],

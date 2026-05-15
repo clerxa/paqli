@@ -164,6 +164,24 @@ export interface PackageData {
   process_duration?: string | null;
   start_date?: string | null;
   benchmark?: SalaryBenchmark | null;
+  competitor_benchmark?: {
+    content: {
+      company: string;
+      axes: string[];
+      criteria: {
+        name: string;
+        weight: number;
+        scores: { company: string; score: number; note: string }[];
+        insight: string;
+      }[];
+      synthesis: string;
+      competitor_arguments: { competitor: string; argument: string }[];
+      watchpoints: { criterion: string; framing: string }[];
+      ideal_candidate: string;
+      generated_for_role?: string;
+    };
+    generated_at: string;
+  } | null;
 
   organizations:
     | {

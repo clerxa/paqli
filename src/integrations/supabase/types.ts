@@ -713,6 +713,51 @@ export type Database = {
         }
         Relationships: []
       }
+      package_benchmarks: {
+        Row: {
+          content: Json
+          generated_at: string
+          generated_by: string | null
+          model: string | null
+          organization_id: string
+          package_id: string
+          prompt_version: string | null
+        }
+        Insert: {
+          content: Json
+          generated_at?: string
+          generated_by?: string | null
+          model?: string | null
+          organization_id: string
+          package_id: string
+          prompt_version?: string | null
+        }
+        Update: {
+          content?: Json
+          generated_at?: string
+          generated_by?: string | null
+          model?: string | null
+          organization_id?: string
+          package_id?: string
+          prompt_version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_benchmarks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_benchmarks_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: true
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       package_benefits: {
         Row: {
           annual_value: number | null

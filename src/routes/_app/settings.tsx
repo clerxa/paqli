@@ -20,6 +20,11 @@ import { Button } from "@/components/paqli/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { generateCompanyProfile } from "@/lib/companyProfile.functions";
+import {
+  generatePackageBenchmarkFn,
+  getPackageBenchmarkFn,
+  type BenchmarkContent,
+} from "@/lib/competitorBenchmark.functions";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -903,6 +908,212 @@ function BenchmarkTab() {
           )}
         </div>
       </Card>
+
+      <BenchmarkGenerator competitorCount={items.length} />
+    </div>
+  );
+}
+
+/* ============================================================
+ *  Benchmark Generator (AI)
+ * ============================================================ */
+
+function BenchmarkGenerator({ competitorCount }: { competitorCount: number }) {
+  const { organization } = useAuth();
+  const [packages, setPackages] = useState<{ id: string; title: string }[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [content, setContent] = useState<BenchmarkContent | null>(null);
+  const [generatedAt, setGeneratedAt] = useState<string | null>(null);
+
+  const generateFn = useServerFn(generatePackageBenchmarkFn);
+  const getFn = useServerFn(getPackageBenchmarkFn);
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    (async () => {
+      const { data } = await supabase
+        .from("packages")
+        .select("id, title")
+        .eq("organization_id", organization.id)
+        .order("updated_at", { ascending: false });
+      const list = (data ?? []) as { id: string; title: string }[];
+      setPackages(list);
+      if (list[0]) setSelectedId(list[0].id);
+    })();
+  }, [organization?.id]);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setContent(null);
+      setGeneratedAt(null);
+      return;
+    }
+    setLoading(true);
+    getFn({ data: { packageId: selectedId } })
+      .then((res) => {
+        if (res.exists) {
+          setContent(res.content);
+          setGeneratedAt(res.generated_at);
+        } else {
+          setContent(null);
+          setGeneratedAt(null);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [selectedId, getFn]);
+
+  async function generate() {
+    if (!selectedId) return;
+    if (competitorCount === 0) {
+      toast.error("Ajoute au moins un concurrent ci-dessus.");
+      return;
+    }
+    setGenerating(true);
+    try {
+      const res = await generateFn({ data: { packageId: selectedId } });
+      setContent(res.content);
+      setGeneratedAt(res.generated_at);
+      toast.success("Benchmark généré");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur lors de la génération");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  return (
+    <Card>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h2 className="font-display text-aubergine mb-1" style={{ fontSize: 20 }}>
+            Benchmark IA
+          </h2>
+          <p className="text-[12px] text-grey">
+            Analyse comparative générée par IA, visible côté candidat dans
+            l'onglet « Comparatif ».
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <select
+          value={selectedId}
+          onChange={(e) => setSelectedId(e.target.value)}
+          className={`${inputCls} sm:flex-1`}
+        >
+          <option value="">— Sélectionner un package —</option>
+          {packages.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.title}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={generate}
+          disabled={generating || !selectedId || competitorCount === 0}
+          className="px-3 py-2 rounded-lg bg-aubergine text-lin text-[12px] inline-flex items-center justify-center gap-1 disabled:opacity-50"
+        >
+          {generating ? (
+            <Loader2 size={12} className="animate-spin" />
+          ) : (
+            <Sparkles size={12} />
+          )}
+          {content ? "Régénérer" : "Générer"}
+        </button>
+      </div>
+
+      {loading && (
+        <div className="text-[12px] text-grey flex items-center gap-2">
+          <Loader2 size={12} className="animate-spin" /> Chargement…
+        </div>
+      )}
+
+      {!loading && !content && selectedId && (
+        <p className="text-[12px] text-grey">
+          Aucun benchmark pour ce package. Lance une génération.
+        </p>
+      )}
+
+      {content && (
+        <BenchmarkPreview content={content} generatedAt={generatedAt} />
+      )}
+    </Card>
+  );
+}
+
+function BenchmarkPreview({
+  content,
+  generatedAt,
+}: {
+  content: BenchmarkContent;
+  generatedAt: string | null;
+}) {
+  const companies = content.criteria[0]?.scores.map((s) => s.company) ?? [];
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg p-3" style={{ background: "#FAF8F5" }}>
+        <div className="text-[11px] uppercase tracking-wider text-grey mb-1">
+          Synthèse
+        </div>
+        <p className="text-[12px] text-aubergine leading-relaxed whitespace-pre-line">
+          {content.synthesis}
+        </p>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-[12px]">
+          <thead>
+            <tr className="text-[10px] uppercase tracking-wider text-grey border-b border-[rgba(45,38,64,0.08)]">
+              <th className="py-2 pr-2 font-medium">Critère</th>
+              <th className="py-2 px-1 font-medium text-center w-10">%</th>
+              {companies.map((co) => (
+                <th key={co} className="py-2 px-2 font-medium text-center">
+                  {co}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {content.criteria.map((cr, i) => (
+              <tr key={i} className="border-b border-[rgba(45,38,64,0.04)]">
+                <td className="py-2 pr-2 text-aubergine font-medium">
+                  {cr.name}
+                </td>
+                <td className="py-2 px-1 text-center text-grey tabular-nums">
+                  {Math.round(cr.weight * 100)}
+                </td>
+                {companies.map((co) => {
+                  const s = cr.scores.find((x) => x.company === co);
+                  return (
+                    <td
+                      key={co}
+                      className="py-2 px-2 text-center tabular-nums"
+                      title={s?.note}
+                    >
+                      {s?.score ?? "—"}/5
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {generatedAt && (
+        <p className="text-[10px] text-grey">
+          Généré le{" "}
+          {new Date(generatedAt).toLocaleString("fr-FR", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      )}
     </div>
   );
 }

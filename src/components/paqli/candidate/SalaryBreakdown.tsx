@@ -330,6 +330,14 @@ export function SalaryBreakdown({
             <div className="flex items-center justify-between gap-3 mb-2">
               <label className="text-[12px] text-aubergine font-medium">
                 Votre taux de prélèvement à la source
+                {pasAuto && (
+                  <span
+                    className="ml-2 text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded"
+                    style={{ background: "#E8F0EA", color: "#3F6B52" }}
+                  >
+                    Estimé auto
+                  </span>
+                )}
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -348,7 +356,9 @@ export function SalaryBreakdown({
               </div>
             </div>
             <p className="text-[11px] text-grey leading-relaxed">
-              Vous trouvez votre taux personnalisé sur{" "}
+              {pasAuto
+                ? "Ce taux a été estimé automatiquement à partir du package proposé (barème IR 2026, célibataire, 1 part fiscale). Modifiez-le librement pour refléter votre situation réelle — "
+                : "Vous trouvez votre taux personnalisé sur "}
               <a
                 href="https://www.impots.gouv.fr"
                 target="_blank"
@@ -357,7 +367,7 @@ export function SalaryBreakdown({
               >
                 impots.gouv.fr
               </a>{" "}
-              (rubrique « Gérer mon prélèvement à la source »). Pré-rempli depuis votre TMI.
+              (rubrique « Gérer mon prélèvement à la source »).
             </p>
           </div>
 

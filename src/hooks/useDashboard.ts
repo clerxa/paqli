@@ -291,6 +291,8 @@ function buildFollowUpAlerts(
   const alerts: FollowUpAlert[] = [];
 
   for (const l of links) {
+    if (!l.package_id) continue; // package supprimé : pas d'action de suivi
+    const packageId = l.package_id;
     const candidateName = l.candidate_name ?? "Candidat";
     const packageTitle = l.packages?.title ?? "";
 

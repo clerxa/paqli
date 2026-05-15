@@ -14,6 +14,100 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_logs: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error_code: string | null
+          id: string
+          input_tokens: number | null
+          model: string
+          organization_id: string | null
+          output_tokens: number | null
+          prompt_name: string
+          prompt_version: string
+          retries: number
+          success: boolean
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          id?: string
+          input_tokens?: number | null
+          model: string
+          organization_id?: string | null
+          output_tokens?: number | null
+          prompt_name: string
+          prompt_version: string
+          retries?: number
+          success: boolean
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          id?: string
+          input_tokens?: number | null
+          model?: string
+          organization_id?: string | null
+          output_tokens?: number | null
+          prompt_name?: string
+          prompt_version?: string
+          retries?: number
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_prompts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          system_prompt: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          system_prompt: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          system_prompt?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_prompts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       behavior_events: {
         Row: {
           created_at: string

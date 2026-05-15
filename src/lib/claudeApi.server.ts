@@ -7,6 +7,14 @@
 //  - Retries on 429/500/503/529 + AbortError + low-level network errors
 //  - Honors Anthropic `Retry-After` header on 429
 //  - 401 (AUTH_ERROR) and INVALID_RESPONSE never retried
+//
+// Versionnement des prompts :
+//  - `promptName` (ou `caller` par défaut) charge le prompt actif depuis
+//    la table `ai_prompts`, avec cache Worker-local (TTL 5 min).
+//  - Si la DB est indisponible, fallback sur le `systemPrompt` hardcodé.
+//  - Chaque appel est loggé dans `ai_logs` (silencieux, non bloquant).
+
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 const DEFAULT_MODEL = "claude-sonnet-4-20250514";
@@ -19,13 +27,21 @@ const CONFIG = {
 } as const;
 
 interface CallOptions {
+  /** Hardcoded system prompt — used as fallback if DB load fails. */
   systemPrompt: string;
+  /**
+   * Prompt name to load from `ai_prompts` (active version).
+   * Defaults to `caller` when omitted (they are kept aligned by convention).
+   */
+  promptName?: string;
   userPrompt: string;
   maxTokens?: number;
   jsonMode?: boolean;
   model?: string;
   /** Identifier used in logs, e.g. 'scoreAttractiveness'. */
   caller?: string;
+  /** Organization that triggered the call — for ai_logs attribution. */
+  organizationId?: string;
 }
 
 export interface ClaudeCallResult {
@@ -59,6 +75,80 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// ─────────────────────────────────────────────────────────────
+// Prompt loading (Worker-local cache, TTL 5 min)
+// ─────────────────────────────────────────────────────────────
+const PROMPT_CACHE_TTL = 5 * 60 * 1000;
+const promptCache = new Map<
+  string,
+  { systemPrompt: string; version: string; cachedAt: number }
+>();
+
+export async function loadActivePrompt(
+  name: string,
+): Promise<{ systemPrompt: string; version: string } | null> {
+  const now = Date.now();
+  const cached = promptCache.get(name);
+  if (cached && now - cached.cachedAt < PROMPT_CACHE_TTL) {
+    return { systemPrompt: cached.systemPrompt, version: cached.version };
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("ai_prompts")
+      .select("system_prompt, version")
+      .eq("name", name)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (error || !data) {
+      console.warn(
+        `[claudeApi] Aucun prompt actif trouvé pour "${name}" — fallback hardcodé`,
+      );
+      return null;
+    }
+
+    promptCache.set(name, {
+      systemPrompt: data.system_prompt,
+      version: data.version,
+      cachedAt: now,
+    });
+    return { systemPrompt: data.system_prompt, version: data.version };
+  } catch (e) {
+    console.warn(`[claudeApi] loadActivePrompt("${name}") a échoué:`, e);
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// AI call logging (fire-and-forget, never blocks the main call)
+// ─────────────────────────────────────────────────────────────
+export async function logAiCall(params: {
+  promptName: string;
+  promptVersion: string;
+  model: string;
+  durationMs: number;
+  retries: number;
+  success: boolean;
+  errorCode?: string;
+  organizationId?: string;
+}): Promise<void> {
+  try {
+    await supabaseAdmin.from("ai_logs").insert({
+      prompt_name: params.promptName,
+      prompt_version: params.promptVersion,
+      model: params.model,
+      duration_ms: params.durationMs,
+      retries: params.retries,
+      success: params.success,
+      error_code: params.errorCode ?? null,
+      organization_id: params.organizationId ?? null,
+    });
+  } catch (logError) {
+    console.warn("[claudeApi] Erreur de logging (ignorée):", logError);
+  }
+}
+
 export async function callClaude(options: CallOptions): Promise<string> {
   const result = await callClaudeWithMetadata(options);
   return result.text;
@@ -68,12 +158,13 @@ export async function callClaudeWithMetadata(
   options: CallOptions,
 ): Promise<ClaudeCallResult> {
   const {
-    systemPrompt,
+    systemPrompt: hardcodedSystemPrompt,
     userPrompt,
     maxTokens = 1000,
     jsonMode = false,
     model = DEFAULT_MODEL,
     caller = "unknown",
+    organizationId,
   } = options;
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -81,9 +172,27 @@ export async function callClaudeWithMetadata(
     throw new ClaudeError("ANTHROPIC_API_KEY missing", "AUTH_ERROR", 401, 0);
   }
 
+  // Résolution du prompt système : DB d'abord, fallback hardcodé.
+  // `promptName` explicite > `caller` (convention : caller === promptName).
+  const promptName =
+    options.promptName ?? (caller !== "unknown" ? caller : undefined);
+
+  let resolvedSystemPrompt = hardcodedSystemPrompt;
+  let resolvedVersion = "hardcoded";
+
+  if (promptName) {
+    const loaded = await loadActivePrompt(promptName);
+    if (loaded) {
+      resolvedSystemPrompt = loaded.systemPrompt;
+      resolvedVersion = loaded.version;
+    } else {
+      resolvedVersion = "hardcoded-fallback";
+    }
+  }
+
   const system = jsonMode
-    ? `${systemPrompt}\n\nRéponds UNIQUEMENT en JSON valide, sans texte avant ni après, sans backticks.`
-    : systemPrompt;
+    ? `${resolvedSystemPrompt}\n\nRéponds UNIQUEMENT en JSON valide, sans texte avant ni après, sans backticks.`
+    : resolvedSystemPrompt;
 
   const body = JSON.stringify({
     model,
@@ -95,6 +204,20 @@ export async function callClaudeWithMetadata(
   const startTime = Date.now();
   let lastError: ClaudeError | null = null;
   let retries = 0;
+
+  const logFailure = (code: string) => {
+    if (!promptName) return;
+    void logAiCall({
+      promptName,
+      promptVersion: resolvedVersion,
+      model,
+      durationMs: Date.now() - startTime,
+      retries,
+      success: false,
+      errorCode: code,
+      organizationId,
+    });
+  };
 
   for (let attempt = 0; attempt <= CONFIG.maxRetries; attempt++) {
     if (attempt > 0) {
@@ -129,6 +252,7 @@ export async function callClaudeWithMetadata(
 
       // Auth error — never retry
       if (response.status === 401) {
+        logFailure("AUTH_ERROR");
         throw new ClaudeError(
           "Clé API Anthropic invalide ou manquante.",
           "AUTH_ERROR",
@@ -205,6 +329,19 @@ export async function callClaudeWithMetadata(
         );
       }
 
+      // Log succès (fire-and-forget)
+      if (promptName) {
+        void logAiCall({
+          promptName,
+          promptVersion: resolvedVersion,
+          model,
+          durationMs,
+          retries,
+          success: true,
+          organizationId,
+        });
+      }
+
       return { text, retries, durationMs };
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
@@ -218,15 +355,18 @@ export async function callClaudeWithMetadata(
           `[claudeApi] ${caller} — TIMEOUT après ${CONFIG.timeoutMs}ms`,
         );
         if (attempt < CONFIG.maxRetries) continue;
+        logFailure("TIMEOUT");
         throw lastError;
       }
 
       if (error instanceof ClaudeError) {
         if (error.code === "AUTH_ERROR" || error.code === "INVALID_RESPONSE") {
+          logFailure(error.code);
           throw error;
         }
         lastError = error;
         if (attempt < CONFIG.maxRetries) continue;
+        logFailure("MAX_RETRIES_EXCEEDED");
         throw new ClaudeError(
           `${error.message} (après ${retries} retries)`,
           "MAX_RETRIES_EXCEEDED",
@@ -243,10 +383,12 @@ export async function callClaudeWithMetadata(
       );
       lastError = networkError;
       if (attempt < CONFIG.maxRetries) continue;
+      logFailure("NETWORK_ERROR");
       throw networkError;
     }
   }
 
+  logFailure("MAX_RETRIES_EXCEEDED");
   throw (
     lastError ??
     new ClaudeError(

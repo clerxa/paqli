@@ -291,8 +291,10 @@ export function calcPackageEstimate(
     ? roundForDisplay(partDevice.avg_3y * (1 - TAX_2026.CSG_CRDS))
     : 0;
 
-  const realiste =
-    equityByScenario.find((s) => s.label === "realiste")?.estimate ?? 0;
+  const realisteScenario = equityByScenario.find((s) => s.label === "realiste");
+  const realiste = realisteScenario?.estimate ?? 0;
+  const realisteLow =
+    realisteScenario?.estimateLowSeniority ?? 0;
   const pess =
     equityByScenario.find((s) => s.label === "pessimiste")?.estimate ?? 0;
   const opti =
@@ -304,6 +306,8 @@ export function calcPackageEstimate(
     peeEst +
     interEst +
     participationEst;
+
+  const hasBspce = equityByScenario.some((s) => s.isMultiRate);
 
   return {
     salaryEst,
@@ -317,6 +321,11 @@ export function calcPackageEstimate(
       low: roundForDisplay(baseTotal + (pess || realiste)),
       mid: roundForDisplay(baseTotal + realiste),
       high: roundForDisplay(baseTotal + (opti || realiste)),
+      lowSeniority: roundForDisplay(
+        baseTotal + (hasBspce ? realisteLow : realiste),
+      ),
+      highSeniority: roundForDisplay(baseTotal + realiste),
     },
+    hasBspce,
   };
 }

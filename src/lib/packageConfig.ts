@@ -192,6 +192,7 @@ export const emptyConfig: PackageConfig = {
 
   grossSalary: 0,
   variableTarget: 0,
+  variableConfig: defaultVariableConfig,
   benefits: defaultBenefits,
   equityDevices: [],
   savingsDevices: [],

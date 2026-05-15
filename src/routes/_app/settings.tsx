@@ -1,8 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, Sparkles, Plus, X, Globe } from "lucide-react";
+import {
+  Loader2,
+  Sparkles,
+  Plus,
+  X,
+  Globe,
+  Building2,
+  Users as UsersIcon,
+  Target,
+  Trash2,
+  CheckCircle2,
+} from "lucide-react";
 import { Topbar } from "@/components/paqli/Topbar";
 import { Card } from "@/components/paqli/Card";
 import { Button } from "@/components/paqli/Button";
@@ -13,6 +24,53 @@ import { generateCompanyProfile } from "@/lib/companyProfile.functions";
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
 });
+
+type TabKey = "company" | "users" | "benchmark";
+
+const TABS: { key: TabKey; label: string; icon: typeof Building2 }[] = [
+  { key: "company", label: "Mon entreprise", icon: Building2 },
+  { key: "users", label: "Utilisateurs", icon: UsersIcon },
+  { key: "benchmark", label: "Benchmark", icon: Target },
+];
+
+function SettingsPage() {
+  const [tab, setTab] = useState<TabKey>("company");
+
+  return (
+    <>
+      <Topbar title="Paramètres" />
+      <div className="px-4 sm:px-7 pt-4 sm:pt-6">
+        <div className="flex gap-1 border-b border-[rgba(45,38,64,0.12)] max-w-3xl">
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            const active = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 -mb-px transition-colors ${
+                  active
+                    ? "border-aubergine text-aubergine"
+                    : "border-transparent text-grey hover:text-aubergine"
+                }`}
+              >
+                <Icon size={14} />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      {tab === "company" && <CompanyTab />}
+      {tab === "users" && <UsersTab />}
+      {tab === "benchmark" && <BenchmarkTab />}
+    </>
+  );
+}
+
+/* ============================================================
+ *  TAB 1 — Mon entreprise
+ * ============================================================ */
 
 interface KeyFigure {
   label: string;
@@ -36,6 +94,7 @@ interface OrgProfile {
   address_street: string;
   address_zip: string;
   address_city: string;
+  profile_generated_at: string | null;
 }
 
 const empty: OrgProfile = {
@@ -50,9 +109,10 @@ const empty: OrgProfile = {
   address_street: "",
   address_zip: "",
   address_city: "",
+  profile_generated_at: null,
 };
 
-function SettingsPage() {
+function CompanyTab() {
   const { organization } = useAuth();
   const [profile, setProfile] = useState<OrgProfile>(empty);
   const [loading, setLoading] = useState(true);
@@ -67,25 +127,25 @@ function SettingsPage() {
       const { data } = await supabase
         .from("organizations")
         .select(
-          "name, description, key_figures, values, culture_note, links, source_urls, siret, address_street, address_zip, address_city",
+          "name, description, key_figures, values, culture_note, links, source_urls, siret, address_street, address_zip, address_city, profile_generated_at",
         )
         .eq("id", organization.id)
         .maybeSingle();
       if (data) {
+        const d = data as any;
         setProfile({
-          name: data.name ?? "",
-          description: data.description ?? "",
-          key_figures: Array.isArray(data.key_figures)
-            ? (data.key_figures as unknown as KeyFigure[])
-            : [],
-          values: Array.isArray(data.values) ? (data.values as string[]) : [],
-          culture_note: data.culture_note ?? "",
-          links: Array.isArray(data.links) ? (data.links as unknown as CompanyLink[]) : [],
-          source_urls: Array.isArray(data.source_urls) ? data.source_urls : [],
-          siret: data.siret ?? "",
-          address_street: data.address_street ?? "",
-          address_zip: data.address_zip ?? "",
-          address_city: data.address_city ?? "",
+          name: d.name ?? "",
+          description: d.description ?? "",
+          key_figures: Array.isArray(d.key_figures) ? d.key_figures : [],
+          values: Array.isArray(d.values) ? d.values : [],
+          culture_note: d.culture_note ?? "",
+          links: Array.isArray(d.links) ? d.links : [],
+          source_urls: Array.isArray(d.source_urls) ? d.source_urls : [],
+          siret: d.siret ?? "",
+          address_street: d.address_street ?? "",
+          address_zip: d.address_zip ?? "",
+          address_city: d.address_city ?? "",
+          profile_generated_at: d.profile_generated_at ?? null,
         });
       }
       setLoading(false);
@@ -116,14 +176,15 @@ function SettingsPage() {
       })
       .eq("id", organization.id);
     setSaving(false);
-    if (error) {
-      toast.error("Erreur d'enregistrement");
-    } else {
-      toast.success("Profil entreprise enregistré");
-    }
+    if (error) toast.error("Erreur d'enregistrement");
+    else toast.success("Profil entreprise enregistré");
   }
 
   async function runGenerate() {
+    if (profile.profile_generated_at) {
+      toast.info("Profil déjà généré une fois — édition manuelle uniquement");
+      return;
+    }
     if (profile.source_urls.length === 0) {
       toast.error("Ajoutez au moins une URL");
       return;
@@ -131,6 +192,7 @@ function SettingsPage() {
     setGenerating(true);
     try {
       const res = await generate({ data: { urls: profile.source_urls } });
+      const generatedAt = new Date().toISOString();
       setProfile((p) => ({
         ...p,
         description: res.description || p.description,
@@ -138,7 +200,14 @@ function SettingsPage() {
         values: res.values.length ? res.values : p.values,
         culture_note: res.culture_note || p.culture_note,
         links: res.links.length ? res.links : p.links,
+        profile_generated_at: generatedAt,
       }));
+      if (organization?.id) {
+        await supabase
+          .from("organizations")
+          .update({ profile_generated_at: generatedAt } as any)
+          .eq("id", organization.id);
+      }
       toast.success("Profil généré — pensez à enregistrer");
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur de génération");
@@ -163,348 +232,804 @@ function SettingsPage() {
 
   if (loading) {
     return (
-      <>
-        <Topbar title="Paramètres" />
-        <div className="px-7 py-12 flex items-center gap-2 text-grey">
-          <Loader2 size={16} className="animate-spin" /> Chargement…
+      <div className="px-7 py-12 flex items-center gap-2 text-grey">
+        <Loader2 size={16} className="animate-spin" /> Chargement…
+      </div>
+    );
+  }
+
+  const aiUsed = !!profile.profile_generated_at;
+
+  return (
+    <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-6">
+      <div className="flex justify-end">
+        <Button onClick={save} disabled={saving}>
+          {saving ? "Enregistrement…" : "Enregistrer"}
+        </Button>
+      </div>
+
+      <Card>
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="font-display text-aubergine" style={{ fontSize: 20 }}>
+            Liens sources
+          </h2>
+          <button
+            onClick={runGenerate}
+            disabled={generating || profile.source_urls.length === 0 || aiUsed}
+            title={
+              aiUsed
+                ? "Profil déjà généré — modifications manuelles uniquement"
+                : "Générer le profil avec l'IA"
+            }
+            className="inline-flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-full bg-aubergine text-lin disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {generating ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : aiUsed ? (
+              <CheckCircle2 size={12} />
+            ) : (
+              <Sparkles size={12} />
+            )}
+            {aiUsed ? "Déjà généré" : "Générer avec l'IA"}
+          </button>
         </div>
-      </>
+        <p className="text-[12px] text-grey mb-4">
+          {aiUsed
+            ? "Le profil a déjà été généré par l'IA. Modifiez les champs ci-dessous manuellement."
+            : "Ajoutez le site web, le LinkedIn, Welcome to the Jungle, des articles de presse… L'IA s'en sert pour rédiger automatiquement votre profil. Génération unique."}
+        </p>
+        <div className="flex gap-2 mb-3">
+          <input
+            type="url"
+            value={newUrl}
+            onChange={(e) => setNewUrl(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addUrl())}
+            placeholder="https://votre-entreprise.com"
+            className="flex-1 bg-white border-[0.5px] border-[rgba(45,38,64,0.12)] rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-lavande"
+          />
+          <button
+            onClick={addUrl}
+            className="px-3 py-2 rounded-lg bg-aubergine text-lin text-[12px] inline-flex items-center gap-1"
+          >
+            <Plus size={12} /> Ajouter
+          </button>
+        </div>
+        {profile.source_urls.length > 0 && (
+          <div className="space-y-1.5">
+            {profile.source_urls.map((u) => (
+              <div
+                key={u}
+                className="flex items-center justify-between gap-2 text-[12px] bg-[#FAF8F5] border-[0.5px] border-[rgba(45,38,64,0.08)] rounded-lg px-3 py-2"
+              >
+                <span className="inline-flex items-center gap-2 text-aubergine truncate">
+                  <Globe size={11} className="text-grey flex-shrink-0" />
+                  <span className="truncate">{u}</span>
+                </span>
+                <button
+                  onClick={() =>
+                    setProfile((p) => ({
+                      ...p,
+                      source_urls: p.source_urls.filter((x) => x !== u),
+                    }))
+                  }
+                  className="text-grey hover:text-aubergine flex-shrink-0"
+                  aria-label="Supprimer"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card>
+        <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 20 }}>
+          Identité
+        </h2>
+        <Field label="Nom de l'entreprise">
+          <input
+            value={profile.name}
+            onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
+            className={inputCls}
+          />
+        </Field>
+        <div className="mt-4">
+          <Field label="SIRET (requis pour la promesse d'embauche)">
+            <input
+              value={profile.siret}
+              onChange={(e) =>
+                setProfile((p) => ({
+                  ...p,
+                  siret: e.target.value.replace(/\s/g, ""),
+                }))
+              }
+              placeholder="12345678900012"
+              maxLength={14}
+              className={inputCls}
+            />
+            {profile.siret && profile.siret.length !== 14 && (
+              <p className="text-[11px] text-danger mt-1">
+                Le SIRET doit contenir 14 chiffres
+              </p>
+            )}
+          </Field>
+        </div>
+        <div className="mt-4">
+          <Field label="Adresse du siège social (rue)">
+            <input
+              value={profile.address_street}
+              onChange={(e) =>
+                setProfile((p) => ({ ...p, address_street: e.target.value }))
+              }
+              placeholder="42 Avenue des Champs-Élysées"
+              className={inputCls}
+            />
+          </Field>
+        </div>
+        <div className="mt-4 grid grid-cols-[120px_1fr] gap-3">
+          <Field label="Code postal">
+            <input
+              value={profile.address_zip}
+              onChange={(e) =>
+                setProfile((p) => ({ ...p, address_zip: e.target.value }))
+              }
+              placeholder="75008"
+              maxLength={5}
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Ville">
+            <input
+              value={profile.address_city}
+              onChange={(e) =>
+                setProfile((p) => ({ ...p, address_city: e.target.value }))
+              }
+              placeholder="Paris"
+              className={inputCls}
+            />
+          </Field>
+        </div>
+      </Card>
+
+      <Card>
+        <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 20 }}>
+          Présentation & produit
+        </h2>
+        <textarea
+          value={profile.description}
+          onChange={(e) => setProfile((p) => ({ ...p, description: e.target.value }))}
+          rows={5}
+          placeholder="Pitch, mission, produit, marché…"
+          className={`${inputCls} resize-none leading-relaxed`}
+        />
+      </Card>
+
+      <Card>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-aubergine" style={{ fontSize: 20 }}>
+            Chiffres clés
+          </h2>
+          <button
+            onClick={() =>
+              setProfile((p) => ({
+                ...p,
+                key_figures: [...p.key_figures, { label: "", value: "" }],
+              }))
+            }
+            className="text-[12px] inline-flex items-center gap-1 text-aubergine"
+          >
+            <Plus size={12} /> Ajouter
+          </button>
+        </div>
+        <div className="space-y-2">
+          {profile.key_figures.map((kf, i) => (
+            <div key={i} className="flex gap-2">
+              <input
+                value={kf.label}
+                onChange={(e) =>
+                  setProfile((p) => {
+                    const next = [...p.key_figures];
+                    next[i] = { ...next[i], label: e.target.value };
+                    return { ...p, key_figures: next };
+                  })
+                }
+                placeholder="Effectif"
+                className={`${inputCls} flex-1`}
+              />
+              <input
+                value={kf.value}
+                onChange={(e) =>
+                  setProfile((p) => {
+                    const next = [...p.key_figures];
+                    next[i] = { ...next[i], value: e.target.value };
+                    return { ...p, key_figures: next };
+                  })
+                }
+                placeholder="45 personnes"
+                className={`${inputCls} flex-1`}
+              />
+              <button
+                onClick={() =>
+                  setProfile((p) => ({
+                    ...p,
+                    key_figures: p.key_figures.filter((_, j) => j !== i),
+                  }))
+                }
+                className="px-2 text-grey hover:text-aubergine"
+                aria-label="Supprimer"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+          {profile.key_figures.length === 0 && (
+            <p className="text-[12px] text-grey">Aucun chiffre clé renseigné.</p>
+          )}
+        </div>
+      </Card>
+
+      <Card>
+        <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 20 }}>
+          Valeurs & culture
+        </h2>
+        <Field label="Valeurs (séparées par une virgule)">
+          <input
+            value={profile.values.join(", ")}
+            onChange={(e) =>
+              setProfile((p) => ({
+                ...p,
+                values: e.target.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              }))
+            }
+            placeholder="Bienveillance, Excellence, Transparence"
+            className={inputCls}
+          />
+        </Field>
+        <div className="mt-4">
+          <Field label="Note culture / manifeste">
+            <textarea
+              value={profile.culture_note}
+              onChange={(e) =>
+                setProfile((p) => ({ ...p, culture_note: e.target.value }))
+              }
+              rows={3}
+              className={`${inputCls} resize-none leading-relaxed`}
+            />
+          </Field>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-aubergine" style={{ fontSize: 20 }}>
+            Liens & médias
+          </h2>
+          <button
+            onClick={() =>
+              setProfile((p) => ({
+                ...p,
+                links: [...p.links, { label: "", url: "", type: null }],
+              }))
+            }
+            className="text-[12px] inline-flex items-center gap-1 text-aubergine"
+          >
+            <Plus size={12} /> Ajouter
+          </button>
+        </div>
+        <div className="space-y-2">
+          {profile.links.map((l, i) => (
+            <div key={i} className="flex gap-2">
+              <input
+                value={l.label}
+                onChange={(e) =>
+                  setProfile((p) => {
+                    const next = [...p.links];
+                    next[i] = { ...next[i], label: e.target.value };
+                    return { ...p, links: next };
+                  })
+                }
+                placeholder="LinkedIn"
+                className={`${inputCls} w-32`}
+              />
+              <input
+                value={l.url}
+                onChange={(e) =>
+                  setProfile((p) => {
+                    const next = [...p.links];
+                    next[i] = { ...next[i], url: e.target.value };
+                    return { ...p, links: next };
+                  })
+                }
+                placeholder="https://…"
+                className={`${inputCls} flex-1`}
+              />
+              <button
+                onClick={() =>
+                  setProfile((p) => ({
+                    ...p,
+                    links: p.links.filter((_, j) => j !== i),
+                  }))
+                }
+                className="px-2 text-grey hover:text-aubergine"
+                aria-label="Supprimer"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+          {profile.links.length === 0 && (
+            <p className="text-[12px] text-grey">Aucun lien renseigné.</p>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ============================================================
+ *  TAB 2 — Utilisateurs (rôles)
+ * ============================================================ */
+
+type AppRole = "admin" | "member" | "manager" | "validator";
+
+const ROLE_LABELS: Record<AppRole, string> = {
+  admin: "Administrateur",
+  manager: "Manager (créateur de packages)",
+  validator: "Validateur de packages",
+  member: "Membre",
+};
+
+const ROLE_DESC: Record<AppRole, string> = {
+  admin: "Accès complet, gestion des utilisateurs et paramètres.",
+  manager: "Peut créer et soumettre des packages à validation.",
+  validator: "Peut valider les packages avant envoi au candidat.",
+  member: "Accès en lecture aux packages de l'organisation.",
+};
+
+interface Member {
+  id: string;
+  full_name: string | null;
+  email: string;
+  roles: AppRole[];
+}
+
+function UsersTab() {
+  const { organization, user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!organization?.id || !user?.id) return;
+    (async () => {
+      setLoading(true);
+      const [{ data: profiles }, { data: roles }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .eq("organization_id", organization.id),
+        supabase
+          .from("user_roles")
+          .select("user_id, role")
+          .eq("organization_id", organization.id),
+      ]);
+      const rolesByUser = new Map<string, AppRole[]>();
+      (roles ?? []).forEach((r: any) => {
+        const arr = rolesByUser.get(r.user_id) ?? [];
+        arr.push(r.role as AppRole);
+        rolesByUser.set(r.user_id, arr);
+      });
+      const list: Member[] = (profiles ?? []).map((p: any) => ({
+        id: p.id,
+        full_name: p.full_name,
+        email: p.email,
+        roles: rolesByUser.get(p.id) ?? [],
+      }));
+      setMembers(list);
+      setIsAdmin((rolesByUser.get(user.id) ?? []).includes("admin"));
+      setLoading(false);
+    })();
+  }, [organization?.id, user?.id]);
+
+  async function toggleRole(memberId: string, role: AppRole, currentlyHas: boolean) {
+    if (!organization?.id) return;
+    if (!isAdmin) {
+      toast.error("Réservé aux administrateurs");
+      return;
+    }
+    if (currentlyHas) {
+      const { error } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", memberId)
+        .eq("organization_id", organization.id)
+        .eq("role", role);
+      if (error) return toast.error("Erreur");
+    } else {
+      const { error } = await supabase
+        .from("user_roles")
+        .insert({
+          user_id: memberId,
+          organization_id: organization.id,
+          role: role as any,
+        });
+      if (error) return toast.error("Erreur");
+    }
+    setMembers((ms) =>
+      ms.map((m) =>
+        m.id === memberId
+          ? {
+              ...m,
+              roles: currentlyHas
+                ? m.roles.filter((r) => r !== role)
+                : [...m.roles, role],
+            }
+          : m,
+      ),
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="px-7 py-12 flex items-center gap-2 text-grey">
+        <Loader2 size={16} className="animate-spin" /> Chargement…
+      </div>
     );
   }
 
   return (
-    <>
-      <Topbar
-        title="Paramètres entreprise"
-        actions={
-          <Button onClick={save} disabled={saving}>
-            {saving ? "Enregistrement…" : "Enregistrer"}
-          </Button>
-        }
-      />
-      <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-6">
-        {/* AI sources */}
-        <Card>
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="font-display text-aubergine" style={{ fontSize: 20 }}>
-              Liens sources
-            </h2>
-            <button
-              onClick={runGenerate}
-              disabled={generating || profile.source_urls.length === 0}
-              className="inline-flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-full bg-aubergine text-lin disabled:opacity-50"
-            >
-              {generating ? (
-                <Loader2 size={12} className="animate-spin" />
-              ) : (
-                <Sparkles size={12} />
-              )}
-              Générer avec l'IA
-            </button>
+    <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-6">
+      <Card>
+        <h2 className="font-display text-aubergine mb-2" style={{ fontSize: 20 }}>
+          Utilisateurs & rôles
+        </h2>
+        <p className="text-[12px] text-grey mb-4">
+          Attribuez un ou plusieurs rôles à chaque membre. Les rôles définissent
+          qui peut créer ou valider les packages.
+        </p>
+
+        {!isAdmin && (
+          <div className="mb-4 p-3 rounded-lg bg-[#FAF8F5] border-[0.5px] border-[rgba(45,38,64,0.08)] text-[12px] text-grey">
+            Vous devez être administrateur pour modifier les rôles.
           </div>
-          <p className="text-[12px] text-grey mb-4">
-            Ajoutez le site web, le LinkedIn, Welcome to the Jungle, des articles
-            de presse… L'IA s'en sert pour rédiger automatiquement votre profil.
-          </p>
-          <div className="flex gap-2 mb-3">
-            <input
-              type="url"
-              value={newUrl}
-              onChange={(e) => setNewUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addUrl())}
-              placeholder="https://votre-entreprise.com"
-              className="flex-1 bg-white border-[0.5px] border-[rgba(45,38,64,0.12)] rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-lavande"
-            />
-            <button
-              onClick={addUrl}
-              className="px-3 py-2 rounded-lg bg-aubergine text-lin text-[12px] inline-flex items-center gap-1"
+        )}
+
+        <div className="space-y-2">
+          {members.map((m) => (
+            <div
+              key={m.id}
+              className="border-[0.5px] border-[rgba(45,38,64,0.08)] rounded-lg p-3"
             >
-              <Plus size={12} /> Ajouter
-            </button>
-          </div>
-          {profile.source_urls.length > 0 && (
-            <div className="space-y-1.5">
-              {profile.source_urls.map((u) => (
-                <div
-                  key={u}
-                  className="flex items-center justify-between gap-2 text-[12px] bg-[#FAF8F5] border-[0.5px] border-[rgba(45,38,64,0.08)] rounded-lg px-3 py-2"
-                >
-                  <span className="inline-flex items-center gap-2 text-aubergine truncate">
-                    <Globe size={11} className="text-grey flex-shrink-0" />
-                    <span className="truncate">{u}</span>
-                  </span>
-                  <button
-                    onClick={() =>
-                      setProfile((p) => ({
-                        ...p,
-                        source_urls: p.source_urls.filter((x) => x !== u),
-                      }))
-                    }
-                    className="text-grey hover:text-aubergine flex-shrink-0"
-                    aria-label="Supprimer"
-                  >
-                    <X size={12} />
-                  </button>
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <div className="min-w-0">
+                  <div className="text-[13px] text-aubergine font-medium truncate">
+                    {m.full_name?.trim() || m.email.split("@")[0]}
+                    {m.id === user?.id && (
+                      <span className="ml-2 text-[10px] text-grey">(vous)</span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-grey truncate">{m.email}</div>
                 </div>
-              ))}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {(Object.keys(ROLE_LABELS) as AppRole[]).map((r) => {
+                  const has = m.roles.includes(r);
+                  return (
+                    <button
+                      key={r}
+                      onClick={() => toggleRole(m.id, r, has)}
+                      disabled={!isAdmin}
+                      title={ROLE_DESC[r]}
+                      className={`text-[11px] px-2.5 py-1 rounded-full border-[0.5px] transition-colors ${
+                        has
+                          ? "bg-aubergine text-lin border-aubergine"
+                          : "bg-white text-grey border-[rgba(45,38,64,0.15)] hover:border-aubergine"
+                      } disabled:cursor-not-allowed disabled:opacity-60`}
+                    >
+                      {ROLE_LABELS[r]}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+          ))}
+          {members.length === 0 && (
+            <p className="text-[12px] text-grey">Aucun membre.</p>
           )}
-        </Card>
+        </div>
+      </Card>
 
-        {/* Identité */}
-        <Card>
-          <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 20 }}>
-            Identité
-          </h2>
-          <Field label="Nom de l'entreprise">
-            <input
-              value={profile.name}
-              onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
-              className={inputCls}
-            />
-          </Field>
-          <div className="mt-4">
-            <Field label="SIRET (requis pour la promesse d'embauche)">
-              <input
-                value={profile.siret}
-                onChange={(e) =>
-                  setProfile((p) => ({
-                    ...p,
-                    siret: e.target.value.replace(/\s/g, ""),
-                  }))
-                }
-                placeholder="12345678900012"
-                maxLength={14}
-                className={inputCls}
-              />
-              {profile.siret && profile.siret.length !== 14 && (
-                <p className="text-[11px] text-danger mt-1">
-                  Le SIRET doit contenir 14 chiffres
-                </p>
-              )}
-            </Field>
-          </div>
-          <div className="mt-4">
-            <Field label="Adresse du siège social (rue)">
-              <input
-                value={profile.address_street}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, address_street: e.target.value }))
-                }
-                placeholder="42 Avenue des Champs-Élysées"
-                className={inputCls}
-              />
-            </Field>
-          </div>
-          <div className="mt-4 grid grid-cols-[120px_1fr] gap-3">
-            <Field label="Code postal">
-              <input
-                value={profile.address_zip}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, address_zip: e.target.value }))
-                }
-                placeholder="75008"
-                maxLength={5}
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Ville">
-              <input
-                value={profile.address_city}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, address_city: e.target.value }))
-                }
-                placeholder="Paris"
-                className={inputCls}
-              />
-            </Field>
-          </div>
-        </Card>
-
-        {/* Présentation */}
-        <Card>
-          <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 20 }}>
-            Présentation & produit
-          </h2>
-          <textarea
-            value={profile.description}
-            onChange={(e) =>
-              setProfile((p) => ({ ...p, description: e.target.value }))
-            }
-            rows={5}
-            placeholder="Pitch, mission, produit, marché…"
-            className={`${inputCls} resize-none leading-relaxed`}
-          />
-        </Card>
-
-        {/* Chiffres clés */}
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-aubergine" style={{ fontSize: 20 }}>
-              Chiffres clés
-            </h2>
-            <button
-              onClick={() =>
-                setProfile((p) => ({
-                  ...p,
-                  key_figures: [...p.key_figures, { label: "", value: "" }],
-                }))
-              }
-              className="text-[12px] inline-flex items-center gap-1 text-aubergine"
-            >
-              <Plus size={12} /> Ajouter
-            </button>
-          </div>
-          <div className="space-y-2">
-            {profile.key_figures.map((kf, i) => (
-              <div key={i} className="flex gap-2">
-                <input
-                  value={kf.label}
-                  onChange={(e) =>
-                    setProfile((p) => {
-                      const next = [...p.key_figures];
-                      next[i] = { ...next[i], label: e.target.value };
-                      return { ...p, key_figures: next };
-                    })
-                  }
-                  placeholder="Effectif"
-                  className={`${inputCls} flex-1`}
-                />
-                <input
-                  value={kf.value}
-                  onChange={(e) =>
-                    setProfile((p) => {
-                      const next = [...p.key_figures];
-                      next[i] = { ...next[i], value: e.target.value };
-                      return { ...p, key_figures: next };
-                    })
-                  }
-                  placeholder="45 personnes"
-                  className={`${inputCls} flex-1`}
-                />
-                <button
-                  onClick={() =>
-                    setProfile((p) => ({
-                      ...p,
-                      key_figures: p.key_figures.filter((_, j) => j !== i),
-                    }))
-                  }
-                  className="px-2 text-grey hover:text-aubergine"
-                  aria-label="Supprimer"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ))}
-            {profile.key_figures.length === 0 && (
-              <p className="text-[12px] text-grey">Aucun chiffre clé renseigné.</p>
-            )}
-          </div>
-        </Card>
-
-        {/* Valeurs & culture */}
-        <Card>
-          <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 20 }}>
-            Valeurs & culture
-          </h2>
-          <Field label="Valeurs (séparées par une virgule)">
-            <input
-              value={profile.values.join(", ")}
-              onChange={(e) =>
-                setProfile((p) => ({
-                  ...p,
-                  values: e.target.value
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                }))
-              }
-              placeholder="Bienveillance, Excellence, Transparence"
-              className={inputCls}
-            />
-          </Field>
-          <div className="mt-4">
-            <Field label="Note culture / manifeste">
-              <textarea
-                value={profile.culture_note}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, culture_note: e.target.value }))
-                }
-                rows={3}
-                className={`${inputCls} resize-none leading-relaxed`}
-              />
-            </Field>
-          </div>
-        </Card>
-
-        {/* Liens & médias */}
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-aubergine" style={{ fontSize: 20 }}>
-              Liens & médias
-            </h2>
-            <button
-              onClick={() =>
-                setProfile((p) => ({
-                  ...p,
-                  links: [...p.links, { label: "", url: "", type: null }],
-                }))
-              }
-              className="text-[12px] inline-flex items-center gap-1 text-aubergine"
-            >
-              <Plus size={12} /> Ajouter
-            </button>
-          </div>
-          <div className="space-y-2">
-            {profile.links.map((l, i) => (
-              <div key={i} className="flex gap-2">
-                <input
-                  value={l.label}
-                  onChange={(e) =>
-                    setProfile((p) => {
-                      const next = [...p.links];
-                      next[i] = { ...next[i], label: e.target.value };
-                      return { ...p, links: next };
-                    })
-                  }
-                  placeholder="LinkedIn"
-                  className={`${inputCls} w-32`}
-                />
-                <input
-                  value={l.url}
-                  onChange={(e) =>
-                    setProfile((p) => {
-                      const next = [...p.links];
-                      next[i] = { ...next[i], url: e.target.value };
-                      return { ...p, links: next };
-                    })
-                  }
-                  placeholder="https://…"
-                  className={`${inputCls} flex-1`}
-                />
-                <button
-                  onClick={() =>
-                    setProfile((p) => ({
-                      ...p,
-                      links: p.links.filter((_, j) => j !== i),
-                    }))
-                  }
-                  className="px-2 text-grey hover:text-aubergine"
-                  aria-label="Supprimer"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ))}
-            {profile.links.length === 0 && (
-              <p className="text-[12px] text-grey">Aucun lien renseigné.</p>
-            )}
-          </div>
-        </Card>
-      </div>
-    </>
+      <Card>
+        <h3 className="font-display text-aubergine mb-3" style={{ fontSize: 16 }}>
+          Définition des rôles
+        </h3>
+        <ul className="space-y-2 text-[12px] text-aubergine-light">
+          {(Object.keys(ROLE_LABELS) as AppRole[]).map((r) => (
+            <li key={r}>
+              <span className="font-medium text-aubergine">{ROLE_LABELS[r]}</span>{" "}
+              — {ROLE_DESC[r]}
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </div>
   );
 }
+
+/* ============================================================
+ *  TAB 3 — Benchmark concurrentiel
+ * ============================================================ */
+
+interface Competitor {
+  id: string;
+  name: string;
+  website: string | null;
+  notes: string | null;
+  salary_min: number | null;
+  salary_max: number | null;
+  strengths: string[];
+  weaknesses: string[];
+}
+
+function BenchmarkTab() {
+  const { organization } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<Competitor[]>([]);
+  const [creating, setCreating] = useState(false);
+  const [draft, setDraft] = useState({ name: "", website: "" });
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("competitors")
+        .select("*")
+        .eq("organization_id", organization.id)
+        .order("created_at", { ascending: false });
+      setItems((data ?? []) as Competitor[]);
+      setLoading(false);
+    })();
+  }, [organization?.id]);
+
+  async function add() {
+    if (!organization?.id || !draft.name.trim()) return;
+    setCreating(true);
+    const { data, error } = await (supabase as any)
+      .from("competitors")
+      .insert({
+        organization_id: organization.id,
+        name: draft.name.trim(),
+        website: draft.website.trim() || null,
+      })
+      .select()
+      .single();
+    setCreating(false);
+    if (error) {
+      toast.error("Erreur — réservé aux administrateurs");
+      return;
+    }
+    setItems((p) => [data as Competitor, ...p]);
+    setDraft({ name: "", website: "" });
+    toast.success("Concurrent ajouté");
+  }
+
+  async function update(id: string, patch: Partial<Competitor>) {
+    setItems((p) => p.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  }
+
+  async function persist(c: Competitor) {
+    const { error } = await (supabase as any)
+      .from("competitors")
+      .update({
+        name: c.name,
+        website: c.website,
+        notes: c.notes,
+        salary_min: c.salary_min,
+        salary_max: c.salary_max,
+        strengths: c.strengths,
+        weaknesses: c.weaknesses,
+      })
+      .eq("id", c.id);
+    if (error) toast.error("Erreur d'enregistrement");
+    else toast.success("Enregistré");
+  }
+
+  async function remove(id: string) {
+    if (!confirm("Supprimer ce concurrent ?")) return;
+    const { error } = await (supabase as any).from("competitors").delete().eq("id", id);
+    if (error) return toast.error("Erreur");
+    setItems((p) => p.filter((c) => c.id !== id));
+  }
+
+  if (loading) {
+    return (
+      <div className="px-7 py-12 flex items-center gap-2 text-grey">
+        <Loader2 size={16} className="animate-spin" /> Chargement…
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-6">
+      <Card>
+        <h2 className="font-display text-aubergine mb-1" style={{ fontSize: 20 }}>
+          Concurrents & positionnement
+        </h2>
+        <p className="text-[12px] text-grey mb-4">
+          Suivez les entreprises qui chassent les mêmes profils que vous, leur
+          fourchette salariale et vos avantages comparés.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+          <input
+            value={draft.name}
+            onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+            placeholder="Nom du concurrent"
+            className={`${inputCls} sm:flex-1`}
+          />
+          <input
+            value={draft.website}
+            onChange={(e) => setDraft((d) => ({ ...d, website: e.target.value }))}
+            placeholder="https://…"
+            className={`${inputCls} sm:flex-1`}
+          />
+          <button
+            onClick={add}
+            disabled={creating || !draft.name.trim()}
+            className="px-3 py-2 rounded-lg bg-aubergine text-lin text-[12px] inline-flex items-center justify-center gap-1 disabled:opacity-50"
+          >
+            <Plus size={12} /> Ajouter
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          {items.map((c) => (
+            <CompetitorCard
+              key={c.id}
+              competitor={c}
+              onChange={(patch) => update(c.id, patch)}
+              onSave={() => persist(c)}
+              onRemove={() => remove(c.id)}
+            />
+          ))}
+          {items.length === 0 && (
+            <p className="text-[12px] text-grey">
+              Aucun concurrent ajouté. Commencez par en ajouter un ci-dessus.
+            </p>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function CompetitorCard({
+  competitor,
+  onChange,
+  onSave,
+  onRemove,
+}: {
+  competitor: Competitor;
+  onChange: (patch: Partial<Competitor>) => void;
+  onSave: () => void;
+  onRemove: () => void;
+}) {
+  const strengths = useMemo(() => competitor.strengths.join(", "), [competitor.strengths]);
+  const weaknesses = useMemo(
+    () => competitor.weaknesses.join(", "),
+    [competitor.weaknesses],
+  );
+
+  return (
+    <div className="border-[0.5px] border-[rgba(45,38,64,0.1)] rounded-lg p-3 bg-[#FAF8F5]">
+      <div className="flex items-start gap-2 mb-3">
+        <input
+          value={competitor.name}
+          onChange={(e) => onChange({ name: e.target.value })}
+          className={`${inputCls} flex-1 font-medium`}
+        />
+        <button
+          onClick={onRemove}
+          className="p-2 text-grey hover:text-danger"
+          aria-label="Supprimer"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Field label="Site web">
+          <input
+            value={competitor.website ?? ""}
+            onChange={(e) => onChange({ website: e.target.value })}
+            placeholder="https://…"
+            className={inputCls}
+          />
+        </Field>
+        <div className="grid grid-cols-2 gap-2">
+          <Field label="Salaire min (k€)">
+            <input
+              type="number"
+              value={competitor.salary_min ?? ""}
+              onChange={(e) =>
+                onChange({
+                  salary_min: e.target.value ? Number(e.target.value) : null,
+                })
+              }
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Salaire max (k€)">
+            <input
+              type="number"
+              value={competitor.salary_max ?? ""}
+              onChange={(e) =>
+                onChange({
+                  salary_max: e.target.value ? Number(e.target.value) : null,
+                })
+              }
+              className={inputCls}
+            />
+          </Field>
+        </div>
+      </div>
+      <div className="mt-3">
+        <Field label="Leurs forces (séparées par une virgule)">
+          <input
+            value={strengths}
+            onChange={(e) =>
+              onChange({
+                strengths: e.target.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              })
+            }
+            placeholder="Marque forte, Equity généreuse"
+            className={inputCls}
+          />
+        </Field>
+      </div>
+      <div className="mt-3">
+        <Field label="Leurs faiblesses (séparées par une virgule)">
+          <input
+            value={weaknesses}
+            onChange={(e) =>
+              onChange({
+                weaknesses: e.target.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              })
+            }
+            placeholder="Peu de remote, Process long"
+            className={inputCls}
+          />
+        </Field>
+      </div>
+      <div className="mt-3">
+        <Field label="Notes">
+          <textarea
+            value={competitor.notes ?? ""}
+            onChange={(e) => onChange({ notes: e.target.value })}
+            rows={2}
+            className={`${inputCls} resize-none`}
+          />
+        </Field>
+      </div>
+      <div className="mt-3 flex justify-end">
+        <Button onClick={onSave}>Enregistrer</Button>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+ *  Shared
+ * ============================================================ */
 
 const inputCls =
   "w-full bg-white border-[0.5px] border-[rgba(45,38,64,0.12)] rounded-lg px-3 py-2 text-[13px] text-aubergine focus:outline-none focus:border-lavande";

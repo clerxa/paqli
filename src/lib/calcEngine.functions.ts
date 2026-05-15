@@ -86,7 +86,8 @@ export const calcEngine = createServerFn({ method: "POST" })
            scenario_display, scenario_message,
            equity_devices (*),
            savings_devices (*),
-           scenarios (*)
+           scenarios (*),
+           package_benefits (*)
          )`,
       )
       .eq("token", data.token)

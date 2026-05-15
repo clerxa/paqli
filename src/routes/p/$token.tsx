@@ -444,14 +444,20 @@ function PackageView({
         <>
           <ProcessSection pkg={pkg} />
           <div data-section="decision">
-            <DecisionBlock
-              data={data}
-              orgName={org?.name ?? "l'entreprise"}
-              pkgTitle={pkg.title}
-              onStatusChange={(status, statusUpdatedAt) =>
-                setData((prev) => (prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev))
-              }
-            />
+            {data.decisionDeadline &&
+            new Date(data.decisionDeadline) < new Date() &&
+            data.offerStatus === "pending" ? (
+              <ExpiredDecisionBlock onContact={() => setTab("questions")} />
+            ) : (
+              <DecisionBlock
+                data={data}
+                orgName={org?.name ?? "l'entreprise"}
+                pkgTitle={pkg.title}
+                onStatusChange={(status, statusUpdatedAt) =>
+                  setData((prev) => (prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev))
+                }
+              />
+            )}
           </div>
           <div className="rounded-2xl p-6 mt-8 mb-6 text-center" style={{ background: "#FAEEDA" }}>
             <div className="font-display text-aubergine" style={{ fontSize: 20 }}>Des questions sur ce package ?</div>

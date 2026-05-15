@@ -172,7 +172,7 @@ export function useDashboard() {
     const { data } = await supabase
       .from("candidate_links")
       .select(
-        "id, token, candidate_name, package_id, created_at, opened_at, simulated_at, status, decline_category, decision_deadline, packages (title)",
+        "id, token, candidate_name, package_id, created_at, opened_at, simulated_at, status, decline_category, decision_deadline, engagement_score, engagement_label, intent_prediction, packages (title)",
       )
       .eq("organization_id", orgId);
     return data ?? [];

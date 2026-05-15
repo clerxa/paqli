@@ -1,3 +1,5 @@
+import type { PackageBenefit } from "./benefitCatalog";
+
 export type EquityType = "bspce" | "aga" | "rsu" | "stock_options" | "espp";
 export type SavingsType = "pee" | "perco" | "interessement" | "participation";
 
@@ -175,6 +177,7 @@ export interface PackageConfig {
   variableTarget: number;
   variableConfig: VariableConfig;
   benefits: BenefitsConfig;
+  benefitsV2: PackageBenefit[];
   trialPeriodMonths: number | null;
   trialPeriodRenewable: boolean;
 
@@ -235,6 +238,7 @@ export const emptyConfig: PackageConfig = {
   variableTarget: 0,
   variableConfig: defaultVariableConfig,
   benefits: defaultBenefits,
+  benefitsV2: [],
   trialPeriodMonths: null,
   trialPeriodRenewable: false,
   equityDevices: [],

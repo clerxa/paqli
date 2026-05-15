@@ -10,6 +10,7 @@ import { PreviewPanel } from "./PreviewPanel";
 import { SaveIndicator } from "./SaveIndicator";
 import { Step0Job } from "./Step0Job";
 import { Step1Fixed } from "./Step1Fixed";
+import { StepBenefits } from "./StepBenefits";
 import { Step2Equity } from "./Step2Equity";
 import { Step3Savings } from "./Step3Savings";
 import { Step4Scenarios } from "./Step4Scenarios";
@@ -31,7 +32,7 @@ export function Configurator() {
       toast.error(err);
       return;
     }
-    if (config.currentStep === 4 && config.equityDevices.length > 0) {
+    if (config.currentStep === 5 && config.equityDevices.length > 0) {
       const sErr = validateScenarios(config.scenarios);
       if (sErr) {
         toast.error(sErr);
@@ -39,7 +40,7 @@ export function Configurator() {
       }
     }
     await saveDraft();
-    if (config.currentStep < 5) {
+    if (config.currentStep < 6) {
       const next = config.currentStep + 1;
       setStep(next);
       setMaxReached((m) => Math.max(m, next));
@@ -58,12 +59,14 @@ export function Configurator() {
       case 1:
         return <Step1Fixed />;
       case 2:
-        return <Step2Equity />;
+        return <StepBenefits />;
       case 3:
-        return <Step3Savings />;
+        return <Step2Equity />;
       case 4:
-        return <Step4Scenarios />;
+        return <Step3Savings />;
       case 5:
+        return <Step4Scenarios />;
+      case 6:
         return <Step5Preview />;
       default:
         return null;
@@ -94,7 +97,7 @@ export function Configurator() {
               Enregistrer
             </Button>
             <Button onClick={goNext}>
-              {config.currentStep === 5 ? "Terminer" : "Suivant →"}
+              {config.currentStep === 6 ? "Terminer" : "Suivant →"}
             </Button>
           </div>
         }
@@ -123,7 +126,7 @@ export function Configurator() {
                 ← Précédent
               </Button>
               <Button onClick={goNext}>
-                {config.currentStep === 5 ? "Terminer" : "Suivant →"}
+                {config.currentStep === 6 ? "Terminer" : "Suivant →"}
               </Button>
             </div>
           </Card>

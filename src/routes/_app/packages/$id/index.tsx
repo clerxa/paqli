@@ -465,6 +465,93 @@ function DecisionBadge({ status }: { status: string }) {
   );
 }
 
+function DeadlineBadge({ deadline }: { deadline: string }) {
+  const diff = new Date(deadline).getTime() - Date.now();
+  const expired = diff <= 0;
+  const hours = Math.max(0, Math.floor(diff / 3_600_000));
+  const days = Math.floor(hours / 24);
+  const urgent = !expired && hours < 24;
+  const label = expired
+    ? "⏱ Expirée"
+    : days > 0
+      ? `⏱ ${days}j restant${days > 1 ? "s" : ""}`
+      : `⏱ ${hours}h restantes`;
+  const bg = expired ? "#FCEBEB" : urgent ? "#FFF1E0" : "#F0EBE8";
+  const fg = expired ? "#A32D2D" : urgent ? "#A35A0E" : "#5A4E55";
+  return (
+    <span
+      className="text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap inline-block"
+      style={{ background: bg, color: fg }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function DeadlineManager({
+  linkId,
+  deadline,
+  onUpdate,
+}: {
+  linkId: string;
+  deadline: string;
+  onUpdate: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+
+  async function update(newDeadline: string | null) {
+    setBusy(true);
+    const { error } = await supabase
+      .from("candidate_links")
+      .update({
+        decision_deadline: newDeadline,
+        deadline_notified_48h: false,
+        deadline_notified_24h: false,
+        deadline_notified_expired: false,
+      })
+      .eq("id", linkId);
+    setBusy(false);
+    if (error) {
+      toast.error("Impossible de mettre à jour la deadline");
+      return;
+    }
+    toast.success(newDeadline ? "Deadline mise à jour" : "Deadline retirée");
+    onUpdate();
+  }
+
+  function extend(days: number) {
+    const base = new Date(deadline).getTime();
+    const from = base > Date.now() ? base : Date.now();
+    update(new Date(from + days * 86_400_000).toISOString());
+  }
+
+  return (
+    <div className="flex gap-2 mt-1 text-[10px]">
+      <button
+        disabled={busy}
+        onClick={() => extend(3)}
+        className="text-aubergine hover:underline disabled:opacity-50"
+      >
+        +3j
+      </button>
+      <button
+        disabled={busy}
+        onClick={() => extend(7)}
+        className="text-aubergine hover:underline disabled:opacity-50"
+      >
+        +7j
+      </button>
+      <button
+        disabled={busy}
+        onClick={() => update(null)}
+        className="text-[#A32D2D] hover:underline disabled:opacity-50"
+      >
+        Retirer
+      </button>
+    </div>
+  );
+}
+
 function Section({
   title,
   children,

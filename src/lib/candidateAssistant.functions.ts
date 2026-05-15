@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const InputSchema = z.object({
   packageContext: z.string().min(1).max(20000),
@@ -15,6 +16,9 @@ const InputSchema = z.object({
     )
     .min(1)
     .max(20),
+  candidateLinkToken: z
+    .string()
+    .regex(/^[a-f0-9]{16,32}$/, "Token invalide"),
 });
 
 function buildSystemPrompt(
@@ -48,12 +52,103 @@ RÈGLES ABSOLUES :
 Si on te demande de comparer ou d'optimiser : "Je ne suis pas en mesure de vous recommander une option plutôt qu'une autre — cela dépend de votre situation personnelle complète. Je vous conseille d'en parler avec un conseiller en gestion de patrimoine ou un expert-comptable."`;
 }
 
+export type AskCandidateAssistantResult =
+  | { answer: string; error: null }
+  | {
+      answer: null;
+      error: {
+        code:
+          | "INVALID_TOKEN"
+          | "EXPIRED"
+          | "QUOTA_EXCEEDED"
+          | "RETRY"
+          | "NETWORK_ERROR"
+          | "GATEWAY_RATE_LIMITED"
+          | "QUOTA_EXHAUSTED"
+          | "GATEWAY_ERROR";
+        message: string;
+      };
+    };
+
 export const askCandidateAssistant = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<AskCandidateAssistantResult> => {
     const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY manquante.");
+    if (!apiKey) {
+      return {
+        answer: null,
+        error: { code: "GATEWAY_ERROR", message: "Configuration IA manquante." },
+      };
+    }
 
+    // Étape 1 : valider le token et lire le compteur
+    const { data: link, error: fetchError } = await supabaseAdmin
+      .from("candidate_links")
+      .select("id, expires_at, ai_questions_count, ai_questions_cap")
+      .eq("token", data.candidateLinkToken)
+      .maybeSingle();
+
+    if (fetchError || !link) {
+      return {
+        answer: null,
+        error: {
+          code: "INVALID_TOKEN",
+          message: "Lien invalide ou introuvable.",
+        },
+      };
+    }
+
+    if (link.expires_at && new Date(link.expires_at) < new Date()) {
+      return {
+        answer: null,
+        error: {
+          code: "EXPIRED",
+          message:
+            "Ce lien a expiré. Contactez l'entreprise pour obtenir un nouveau lien.",
+        },
+      };
+    }
+
+    // Étape 2 : vérifier le cap
+    const currentCount = link.ai_questions_count ?? 0;
+    const cap = link.ai_questions_cap ?? 50;
+    if (currentCount >= cap) {
+      return {
+        answer: null,
+        error: {
+          code: "QUOTA_EXCEEDED",
+          message: `Vous avez atteint le nombre maximum de questions (${cap}) pour cette offre. Utilisez la messagerie pour contacter l'équipe RH directement.`,
+        },
+      };
+    }
+
+    // Étape 3 : incrément atomique avec optimistic lock
+    const { data: updated, error: updateError } = await supabaseAdmin
+      .from("candidate_links")
+      .update({ ai_questions_count: currentCount + 1 })
+      .eq("id", link.id)
+      .eq("ai_questions_count", currentCount)
+      .select("id");
+
+    if (updateError || !updated || updated.length === 0) {
+      return {
+        answer: null,
+        error: {
+          code: "RETRY",
+          message: "Une erreur est survenue. Réessayez votre question.",
+        },
+      };
+    }
+
+    // Helper pour décrémenter en cas d'échec après l'incrément
+    const rollback = async () => {
+      await supabaseAdmin
+        .from("candidate_links")
+        .update({ ai_questions_count: currentCount })
+        .eq("id", link.id);
+    };
+
+    // Étape 4 : appel Lovable AI Gateway
     const system = buildSystemPrompt(
       data.orgName,
       data.jobTitle,
@@ -61,33 +156,58 @@ export const askCandidateAssistant = createServerFn({ method: "POST" })
       data.candidateContext,
     );
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: system },
-          ...data.messages,
-        ],
-      }),
-    });
+    let res: Response;
+    try {
+      res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [{ role: "system", content: system }, ...data.messages],
+        }),
+      });
+    } catch {
+      await rollback();
+      return {
+        answer: null,
+        error: {
+          code: "NETWORK_ERROR",
+          message:
+            "L'assistant est temporairement indisponible. Réessayez dans un instant.",
+        },
+      };
+    }
 
-    if (res.status === 429) {
-      throw new Error("Trop de requêtes, merci de patienter.");
+    if (res.status === 429 || res.status === 402) {
+      await rollback();
+      return {
+        answer: null,
+        error: {
+          code: res.status === 402 ? "QUOTA_EXHAUSTED" : "GATEWAY_RATE_LIMITED",
+          message:
+            res.status === 402
+              ? "Le crédit IA est temporairement épuisé. Contactez le support Paqli."
+              : "L'assistant est surchargé. Réessayez dans quelques instants.",
+        },
+      };
     }
-    if (res.status === 402) {
-      throw new Error("Crédit IA épuisé, contactez l'entreprise.");
-    }
+
     if (!res.ok) {
-      throw new Error(`Erreur IA (${res.status}).`);
+      await rollback();
+      return {
+        answer: null,
+        error: {
+          code: "GATEWAY_ERROR",
+          message: "Une erreur est survenue. Réessayez votre question.",
+        },
+      };
     }
 
     const json = await res.json();
     const answer: string =
       json?.choices?.[0]?.message?.content ?? "Désolé, aucune réponse générée.";
-    return { answer };
+    return { answer, error: null };
   });

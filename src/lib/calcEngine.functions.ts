@@ -28,32 +28,39 @@ function roundForDisplay(value: number): number {
 function computeEquity(
   devices: any[],
   scenarios: any[],
-  seniorityYears: number,
+  _seniorityYears: number,
   R: RulesMap,
 ) {
   const device = devices[0];
   if (!device || !scenarios.length) return [];
-  const irRate =
-    seniorityYears >= (R["bspce.seniority_threshold"] ?? 3)
-      ? R["bspce.ir_rate_3y_plus"] ?? 0.128
-      : R["bspce.ir_rate_under_3y"] ?? 0.30;
-  const psRate = R["bspce.ps_rate"] ?? 0.186;
-  const totalTax = irRate + psRate;
+  const isBspce = device.type === "bspce" || device.type === "stock_options";
+  const irHigh = R["bspce.ir_rate_3y_plus"] ?? 0.128;
+  const irLow = R["bspce.ir_rate_under_3y"] ?? 0.30;
+  const ps = R["bspce.ps_rate"] ?? 0.186;
+  const taxHigh = isBspce ? irHigh + ps : R["meta.flat_tax_total"] ?? 0.314;
+  const taxLow = irLow + ps;
 
   return scenarios.map((scenario: any) => {
-    let estimate = 0;
+    let grossGain = 0;
     if (device.strike_price > 0 && device.current_valuation_m > 0 && device.quantity > 0) {
       const totalShares = (device.current_valuation_m * 1_000_000) / device.strike_price;
       const exitPrice = (scenario.target_valuation_m * 1_000_000) / totalShares;
-      const grossGain = (exitPrice - device.strike_price) * device.quantity;
-      if (grossGain > 0) estimate = roundForDisplay(grossGain * (1 - totalTax));
+      grossGain = Math.max(0, (exitPrice - device.strike_price) * device.quantity);
     }
+    const estimateHigh = grossGain > 0 ? roundForDisplay(grossGain * (1 - taxHigh)) : 0;
+    const estimateLow =
+      grossGain > 0 && isBspce ? roundForDisplay(grossGain * (1 - taxLow)) : 0;
     return {
       label: scenario.label,
-      estimate,
-      tax_rate_applied: totalTax,
+      estimate: estimateHigh,
+      tax_rate_applied: taxHigh,
       target_valuation: scenario.target_valuation_m,
       horizon_years: scenario.horizon_years,
+      estimate_high_seniority: estimateHigh,
+      estimate_low_seniority: estimateLow,
+      tax_rate_high: taxHigh,
+      tax_rate_low: taxLow,
+      is_multi_rate: isBspce && grossGain > 0,
     };
   });
 }

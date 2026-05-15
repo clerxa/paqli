@@ -31,7 +31,7 @@ export const Route = createFileRoute("/p/$token")({
   component: PublicPackagePage,
 });
 
-const TMI_OPTIONS: TMI[] = [0.11, 0.30, 0.41, 0.45];
+
 const SENIORITY_OPTIONS: Array<1 | 2 | 3 | 5> = [1, 2, 3, 5];
 
 function PublicPackagePage() {
@@ -335,69 +335,32 @@ function PackageView({
 
       {tab === "package" && (
         <>
-          {/* Votre situation */}
-          <SectionTitle>Votre situation</SectionTitle>
-          <div data-section="simulation" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-5">
-            <Field
-              label="Votre tranche marginale d'imposition"
-              info="Votre TMI est le taux d'imposition qui s'applique à la dernière tranche de vos revenus. Pour un salaire de 50 000 € net, elle est généralement de 30 %."
-            >
-              <ChipRow>
-                {TMI_OPTIONS.map((t) => (
-                  <Chip key={t} selected={params.tmi === t} onClick={() => update("tmi", t)}>
-                    {Math.round(t * 100)}%
-                  </Chip>
-                ))}
-              </ChipRow>
-            </Field>
-
-            {peeDevice && (peeDevice.cap_amount ?? 0) > 0 && (
-              <Field
-                label="Votre mise PEE annuelle envisagée"
-                info={`Plus vous versez, plus l'abondement de ${org?.name} est élevé. Les fonds sont bloqués 5 ans (sauf cas légaux de déblocage).`}
-              >
-                <input
-                  type="range"
-                  min={0}
-                  max={peeDevice.cap_amount ?? 0}
-                  step={100}
-                  value={params.peeContribution}
-                  onChange={(e) => update("peeContribution", Number(e.target.value))}
-                  className="w-full accent-[#2D2640]"
-                />
-                <div className="text-[13px] text-aubergine mt-1">
-                  {formatEur(params.peeContribution)} / an
+          {/* Package brut — prioritaire */}
+          <SectionTitle>Votre rémunération</SectionTitle>
+          {(() => {
+            const fixe = pkg.gross_salary ?? 0;
+            const variableCible = pkg.variable_target ?? 0;
+            const brutTotal = fixe + variableCible;
+            return (
+              <div className="rounded-2xl p-7 mb-3" style={{ background: "#2D2640" }}>
+                <div className="text-[10px] uppercase tracking-[0.15em]" style={{ color: "#B8AECF" }}>
+                  Package brut annuel {variableCible > 0 ? "(fixe + variable cible)" : "(fixe)"}
                 </div>
-              </Field>
-            )}
-          </div>
-
-          {/* Total */}
-          <SectionTitle>Estimation de votre package</SectionTitle>
-          <div className="rounded-2xl p-7 mb-3" style={{ background: "#2D2640" }}>
-            <div className="text-[10px] uppercase tracking-[0.15em]" style={{ color: "#B8AECF" }}>
-              Estimation de votre package
-            </div>
-            {estimate.hasBspce ? (
-              <>
-                <div className="font-display text-white mt-2" style={{ fontSize: 34, lineHeight: 1.05 }}>
-                  ~{formatEur(estimate.totalRange.lowSeniority)} – ~{formatEur(estimate.totalRange.highSeniority)}
+                <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
+                  {formatEur(brutTotal)}
                 </div>
-                <div className="text-[11px] mt-1" style={{ color: "#B8AECF" }}>
-                  selon votre ancienneté au moment de la cession des BSPCE
+                <div className="text-[12px] mt-3 leading-relaxed flex flex-wrap gap-x-5 gap-y-1" style={{ color: "#B8AECF" }}>
+                  <span>Fixe : <strong className="text-white">{formatEur(fixe)}</strong> / an</span>
+                  {variableCible > 0 && (
+                    <span>Variable cible : <strong className="text-white">{formatEur(variableCible)}</strong> / an</span>
+                  )}
+                  <span>soit ~{formatEur(Math.round(brutTotal / 12))} / mois brut</span>
                 </div>
-              </>
-            ) : (
-              <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
-                {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
               </div>
-            )}
-            <div className="text-[12px] mt-3 leading-relaxed" style={{ color: "#8B7FA8" }}>
-              Ordre de grandeur basé sur le scénario réaliste — règles fiscales 2026 (taux en vigueur).
-            </div>
-          </div>
+            );
+          })()}
 
-          <div className="mb-4">
+          <div className="mb-6">
             <SalaryBreakdown
               grossAnnual={pkg.gross_salary ?? 0}
               pasRate={pasRate}
@@ -412,6 +375,57 @@ function PackageView({
               onAchievementPctChange={setAchievementPct}
               variableConfig={pkg.variable_config ?? null}
             />
+          </div>
+
+          {/* Mise PEE — seulement si pertinent */}
+          {peeDevice && (peeDevice.cap_amount ?? 0) > 0 && (
+            <>
+              <SectionTitle>Votre mise PEE</SectionTitle>
+              <div data-section="simulation" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6">
+                <Field
+                  label="Votre mise PEE annuelle envisagée"
+                  info={`Plus vous versez, plus l'abondement de ${org?.name} est élevé. Les fonds sont bloqués 5 ans (sauf cas légaux de déblocage).`}
+                >
+                  <input
+                    type="range"
+                    min={0}
+                    max={peeDevice.cap_amount ?? 0}
+                    step={100}
+                    value={params.peeContribution}
+                    onChange={(e) => update("peeContribution", Number(e.target.value))}
+                    className="w-full accent-[#2D2640]"
+                  />
+                  <div className="text-[13px] text-aubergine mt-1">
+                    {formatEur(params.peeContribution)} / an
+                  </div>
+                </Field>
+              </div>
+            </>
+          )}
+
+          {/* Estimation totale (avec equity, épargne, avantages) */}
+          <SectionTitle>Estimation totale du package</SectionTitle>
+          <div className="rounded-2xl p-7 mb-3" style={{ background: "#FAF8F5", border: "0.5px solid rgba(45,38,64,0.08)" }}>
+            <div className="text-[10px] uppercase tracking-[0.15em] text-grey">
+              Tout compris (rémunération + equity + épargne + avantages)
+            </div>
+            {estimate.hasBspce ? (
+              <>
+                <div className="font-display text-aubergine mt-2" style={{ fontSize: 30, lineHeight: 1.05 }}>
+                  ~{formatEur(estimate.totalRange.lowSeniority)} – ~{formatEur(estimate.totalRange.highSeniority)}
+                </div>
+                <div className="text-[11px] mt-1 text-grey">
+                  selon votre ancienneté au moment de la cession des BSPCE
+                </div>
+              </>
+            ) : (
+              <div className="font-display text-aubergine mt-2" style={{ fontSize: 32, lineHeight: 1.05 }}>
+                {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
+              </div>
+            )}
+            <div className="text-[12px] mt-3 leading-relaxed text-aubergine-light">
+              Ordre de grandeur basé sur le scénario réaliste — règles fiscales 2026 (taux en vigueur).
+            </div>
           </div>
 
           <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-4 space-y-3">

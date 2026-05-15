@@ -619,6 +619,73 @@ function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState<Member[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviting, setInviting] = useState(false);
+  const [inviteDraft, setInviteDraft] = useState<{
+    email: string;
+    full_name: string;
+    roles: AppRole[];
+  }>({ email: "", full_name: "", roles: ["member"] });
+  const inviteUser = useServerFn(inviteUserFn);
+
+  async function refreshMembers() {
+    if (!organization?.id || !user?.id) return;
+    const [{ data: profiles }, { data: roles }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .eq("organization_id", organization.id),
+      supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .eq("organization_id", organization.id),
+    ]);
+    const rolesByUser = new Map<string, AppRole[]>();
+    (roles ?? []).forEach((r: any) => {
+      const arr = rolesByUser.get(r.user_id) ?? [];
+      arr.push(r.role as AppRole);
+      rolesByUser.set(r.user_id, arr);
+    });
+    const list: Member[] = (profiles ?? []).map((p: any) => ({
+      id: p.id,
+      full_name: p.full_name,
+      email: p.email,
+      roles: rolesByUser.get(p.id) ?? [],
+    }));
+    setMembers(list);
+    setIsAdmin((rolesByUser.get(user.id) ?? []).includes("admin"));
+  }
+
+  async function handleInvite() {
+    const email = inviteDraft.email.trim();
+    const fullName = inviteDraft.full_name.trim();
+    if (!email || !fullName) {
+      toast.error("Email et nom requis");
+      return;
+    }
+    if (inviteDraft.roles.length === 0) {
+      toast.error("Sélectionnez au moins un rôle");
+      return;
+    }
+    setInviting(true);
+    try {
+      await inviteUser({
+        data: {
+          email,
+          full_name: fullName,
+          roles: inviteDraft.roles,
+        },
+      });
+      toast.success("Invitation envoyée");
+      setInviteDraft({ email: "", full_name: "", roles: ["member"] });
+      setInviteOpen(false);
+      await refreshMembers();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec de l'invitation");
+    } finally {
+      setInviting(false);
+    }
+  }
 
   useEffect(() => {
     if (!organization?.id || !user?.id) return;

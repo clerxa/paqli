@@ -177,6 +177,7 @@ export interface PackageConfig {
   variableTarget: number;
   variableConfig: VariableConfig;
   benefits: BenefitsConfig;
+  benefitsV2: PackageBenefit[];
   trialPeriodMonths: number | null;
   trialPeriodRenewable: boolean;
 

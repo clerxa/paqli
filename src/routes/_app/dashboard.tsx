@@ -86,6 +86,13 @@ function DashboardPage() {
   const [counterAlert, setCounterAlert] = useState<FollowUpAlert | null>(null);
   const [counterPkg, setCounterPkg] = useState<PackageConfig | null>(null);
 
+  const fetchQuota = useServerFn(getLinkQuotaFn);
+  const { data: quota } = useQuery({
+    queryKey: ["link-quota"],
+    queryFn: () => fetchQuota(),
+    enabled: !!organization,
+  });
+
   async function openCounterOffer(alert: FollowUpAlert) {
     try {
       const pkg = await loadPackage(alert.packageId);

@@ -10,6 +10,11 @@ export const TAX_2026 = {
   SOCIAL_CHARGES_SALARY: 0.22,
 };
 
+export const BSPCE_TAX_HIGH_SENIORITY =
+  TAX_2026.IR_BSPCE_3Y_PLUS + TAX_2026.PS_RATE; // 0.314 ≥ 3 ans
+export const BSPCE_TAX_LOW_SENIORITY =
+  TAX_2026.IR_BSPCE_UNDER_3Y + TAX_2026.PS_RATE; // 0.486 < 3 ans
+
 export type TMI = 0.11 | 0.30 | 0.41 | 0.45;
 
 export interface CandidateParams {

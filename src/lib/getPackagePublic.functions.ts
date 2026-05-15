@@ -25,7 +25,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
            glassdoor_url, wtj_url,
            growth_paths, training_budget, onboarding_note,
            process_steps, process_duration, start_date,
-           organizations ( name, logo_url ),
+           organizations ( name, logo_url, description, key_figures, values, culture_note, links ),
            equity_devices (
              id, type, quantity, strike_price,
              current_valuation_m, vesting_years, cliff_months,

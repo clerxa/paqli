@@ -71,9 +71,15 @@ export const runDeadlineNotifier = createServerFn({ method: "POST" }).handler(
         `[deadline TODO email] ${label} link=${link.id} candidate=${candName} email=${link.candidate_email ?? "?"} pkg="${pkgTitle}"`,
       );
 
+      const update: {
+        deadline_notified_48h?: boolean;
+        deadline_notified_24h?: boolean;
+        deadline_notified_expired?: boolean;
+      } = { [flagToSet]: true };
+
       const { error: updErr } = await supabaseAdmin
         .from("candidate_links")
-        .update({ [flagToSet]: true })
+        .update(update)
         .eq("id", link.id);
       if (updErr) {
         console.error("deadline-notifier update failed", updErr);

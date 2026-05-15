@@ -22,6 +22,7 @@ import {
   DecisionBlock,
   CandidateMessagingBlock,
 } from "@/components/paqli/candidate/DecisionBlocks";
+import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
 
 export const Route = createFileRoute("/p/$token")({
   component: PublicPackagePage,

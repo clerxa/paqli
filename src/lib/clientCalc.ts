@@ -199,10 +199,21 @@ export interface ScenarioEstimate {
   isMultiRate: boolean;
 }
 
+export interface BenefitBreakdownItem {
+  key: string;
+  label: string;
+  category: string;
+  valueType: "fixed" | "estimated" | "qualitative";
+  annualValue: number;
+  monthlyValue: number;
+  note?: string | null;
+}
+
 export interface PackageEstimate {
   salaryEst: number;
   variableEst: number;
   benefitsEst: number;
+  benefitsBreakdown: BenefitBreakdownItem[];
   equityByScenario: ScenarioEstimate[];
   peeEst: number;
   interEst: number;

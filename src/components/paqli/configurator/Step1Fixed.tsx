@@ -85,6 +85,14 @@ export function Step1Fixed() {
         />
       </div>
 
+      {config.variableTarget > 0 && (
+        <VariableConfigSection
+          value={config.variableConfig ?? defaultVariableConfig}
+          onChange={(v) => patch({ variableConfig: v })}
+          variableTarget={config.variableTarget}
+        />
+      )}
+
       <CoachTipInline tip={tips.remote_days} />
 
       <div>

@@ -20,6 +20,11 @@ import { Button } from "@/components/paqli/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { generateCompanyProfile } from "@/lib/companyProfile.functions";
+import {
+  generatePackageBenchmarkFn,
+  getPackageBenchmarkFn,
+  type BenchmarkContent,
+} from "@/lib/competitorBenchmark.functions";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,

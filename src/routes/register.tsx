@@ -148,7 +148,6 @@ function RegisterPage() {
     const { error: profileError } = await supabase.from("profiles").insert({
       id: authData.user.id,
       organization_id: orgData.id,
-      role: "admin",
       full_name: `${usr.firstName} ${usr.lastName}`.trim(),
       email: usr.email,
     });

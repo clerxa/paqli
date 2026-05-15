@@ -124,6 +124,7 @@ function CandidatesPage() {
                   <th className="px-5 py-3 font-medium">Candidat</th>
                   <th className="px-5 py-3 font-medium">Package</th>
                   <th className="px-5 py-3 font-medium">Activité</th>
+                  <th className="px-5 py-3 font-medium">Engagement</th>
                   <th className="px-5 py-3 font-medium">Décision</th>
                   <th className="px-5 py-3 font-medium">Envoyé</th>
                 </tr>

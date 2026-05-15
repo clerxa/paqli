@@ -50,10 +50,103 @@ export function BehaviorView({ linkId }: Props) {
     <div className="space-y-6">
       <EngagementHeader link={link} />
       <KeyStats link={link} behaviors={behaviors} />
+      <TabsProgress behaviors={behaviors} />
       <SectionsTime behaviors={behaviors} />
       <ScenariosViewed behaviors={behaviors} />
       <TmiTested behaviors={behaviors} />
       <AIBehaviorInterpretation linkId={linkId} />
+    </div>
+  );
+}
+
+const TAB_LABELS: Record<string, string> = {
+  tab_welcome: "Bienvenue",
+  tab_package: "Package",
+  tab_simulate: "Simulation",
+  tab_scenarios: "Scénarios equity",
+  tab_savings: "Épargne",
+  tab_fit: "Équipe & culture",
+  tab_process: "Process",
+  tab_faq: "FAQ",
+  tab_ask: "Échanger",
+  tab_decision: "Ma décision",
+  tab_next: "Ma décision",
+};
+
+function TabsProgress({ behaviors }: { behaviors: BehaviorEvent[] }) {
+  const tabViews = behaviors.filter(
+    (b) => b.event_type === "section_view" && b.section?.startsWith("tab_"),
+  );
+  const completed = behaviors.some(
+    (b) =>
+      b.event_type === "section_view" && b.section === "all_tabs_completed",
+  );
+
+  if (tabViews.length === 0 && !completed) return null;
+
+  // Distinct tabs in order of first visit
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  for (const b of tabViews) {
+    const s = b.section!;
+    if (!seen.has(s)) {
+      seen.add(s);
+      ordered.push(s);
+    }
+  }
+
+  const timePerTab: Record<string, number> = {};
+  behaviors
+    .filter(
+      (b) =>
+        b.event_type === "section_time" && b.section?.startsWith("tab_"),
+    )
+    .forEach((b) => {
+      timePerTab[b.section!] =
+        (timePerTab[b.section!] ?? 0) + (b.duration_s ?? 0);
+    });
+
+  const totalTabTime = Object.values(timePerTab).reduce((a, b) => a + b, 0);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-[12px] font-medium text-aubergine-light">
+          Parcours candidat ({ordered.length} onglet
+          {ordered.length > 1 ? "s" : ""} vu{ordered.length > 1 ? "s" : ""})
+        </div>
+        <div
+          className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+            completed
+              ? "bg-[#EAF3DE] text-[#27500A]"
+              : "bg-[#F0EBE8] text-[#9B97A0]"
+          }`}
+        >
+          {completed ? "✓ Parcours complété" : "En cours"}
+        </div>
+      </div>
+      <div className="space-y-2">
+        {ordered.map((tabId) => {
+          const t = timePerTab[tabId] ?? 0;
+          const pct = totalTabTime > 0 ? (t / totalTabTime) * 100 : 0;
+          return (
+            <div key={tabId} className="flex items-center gap-3">
+              <div className="text-[12px] text-aubergine w-36 flex-shrink-0 font-light">
+                ✓ {TAB_LABELS[tabId] ?? tabId.replace("tab_", "")}
+              </div>
+              <div className="flex-1 h-1.5 bg-[#F0EBE8] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-[#8B7FA8]"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <div className="text-[11px] text-grey w-14 text-right">
+                {t > 0 ? formatDuration(t) : "—"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

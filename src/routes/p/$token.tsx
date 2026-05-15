@@ -688,42 +688,126 @@ function PackageView({
 
 /* -------------------- Tabs -------------------- */
 
-function TabBar({ tab, onChange }: { tab: TabKey; onChange: (t: TabKey) => void }) {
+function TabBar({
+  tab,
+  onChange,
+  visitedTabs,
+  allUnlocked,
+}: {
+  tab: TabKey;
+  onChange: (t: TabKey) => void;
+  visitedTabs: Set<TabKey>;
+  allUnlocked: boolean;
+}) {
+  const order = TABS.map((t) => t.key);
+  const currentIdx = order.indexOf(tab);
   return (
     <div
       className="flex flex-wrap gap-1.5 p-1.5 rounded-2xl mb-6 sticky top-2 z-10"
       style={{ background: "#FFFFFF", border: "0.5px solid rgba(45,38,64,0.08)", boxShadow: "0 4px 16px rgba(45,38,64,0.04)" }}
     >
-      {TABS.map((t) => {
+      {TABS.map((t, idx) => {
         const active = tab === t.key;
         const isHL = t.highlight;
+        const visited = visitedTabs.has(t.key);
+        const isNext = idx === currentIdx + 1;
+        const unlocked = allUnlocked || visited || isNext;
+        const locked = !unlocked;
         return (
           <button
             key={t.key}
             onClick={() => onChange(t.key)}
-            className="px-3 py-2 rounded-xl text-[12px] transition-all"
+            disabled={locked}
+            title={locked ? "Terminez l'étape précédente pour débloquer" : undefined}
+            className="px-3 py-2 rounded-xl text-[12px] transition-all flex items-center gap-1"
             style={
-              isHL
+              locked
                 ? {
-                    background: active ? "#C4A882" : "#FAEEDA",
-                    color: active ? "#FFFFFF" : "#7A5417",
-                    fontWeight: 600,
-                    fontSize: 13,
-                    boxShadow: active ? "0 2px 8px rgba(196,168,130,0.4)" : undefined,
-                    border: "1px solid rgba(196,168,130,0.4)",
+                    background: "transparent",
+                    color: "#C7C3CC",
+                    cursor: "not-allowed",
+                    opacity: 0.55,
                   }
-                : {
-                    background: active ? "#2D2640" : "transparent",
-                    color: active ? "#FAF8F5" : "#524970",
-                    fontWeight: active ? 500 : 400,
-                  }
+                : isHL
+                  ? {
+                      background: active ? "#C4A882" : "#FAEEDA",
+                      color: active ? "#FFFFFF" : "#7A5417",
+                      fontWeight: 600,
+                      fontSize: 13,
+                      boxShadow: active ? "0 2px 8px rgba(196,168,130,0.4)" : undefined,
+                      border: "1px solid rgba(196,168,130,0.4)",
+                    }
+                  : {
+                      background: active ? "#2D2640" : "transparent",
+                      color: active ? "#FAF8F5" : "#524970",
+                      fontWeight: active ? 500 : 400,
+                    }
             }
           >
-            {isHL && <Sparkles size={11} className="inline mr-1" />}
+            {locked && <Lock size={10} />}
+            {!locked && isHL && <Sparkles size={11} />}
+            {!locked && visited && !active && (
+              <span style={{ color: "#5B8C7B", fontSize: 10 }}>✓</span>
+            )}
             {t.label}
           </button>
         );
       })}
+    </div>
+  );
+}
+
+function TabFooterNav({
+  prevTab,
+  nextTab,
+  prevLabel,
+  nextLabel,
+  onPrev,
+  onNext,
+  allUnlocked,
+}: {
+  prevTab: TabKey | null;
+  nextTab: TabKey | null;
+  prevLabel: string | null;
+  nextLabel: string | null;
+  onPrev: () => void;
+  onNext: () => void;
+  allUnlocked: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 mt-8 mb-4">
+      <button
+        type="button"
+        onClick={onPrev}
+        disabled={!prevTab}
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-medium transition"
+        style={{
+          background: "transparent",
+          color: prevTab ? "#524970" : "#C7C3CC",
+          border: "1px solid rgba(45,38,64,0.15)",
+          cursor: prevTab ? "pointer" : "not-allowed",
+        }}
+      >
+        ← {prevLabel ?? "Précédent"}
+      </button>
+      <div className="text-[11px] text-grey">
+        {allUnlocked
+          ? "Vous pouvez naviguer librement"
+          : "Avancez étape par étape pour tout débloquer"}
+      </div>
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={!nextTab}
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-medium transition"
+        style={{
+          background: nextTab ? "#2D2640" : "#E5E1EC",
+          color: nextTab ? "#FAF8F5" : "#9C95B0",
+          cursor: nextTab ? "pointer" : "not-allowed",
+        }}
+      >
+        {nextLabel ?? "Terminer"} →
+      </button>
     </div>
   );
 }

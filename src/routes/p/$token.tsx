@@ -97,6 +97,25 @@ function ErrorState({ kind }: { kind: "not_found" | "expired" }) {
 
 /* -------------------- Main view -------------------- */
 
+type TabKey =
+  | "offre"
+  | "entreprise"
+  | "flex"
+  | "team"
+  | "package"
+  | "questions"
+  | "next";
+
+const TABS: { key: TabKey; label: string; highlight?: boolean }[] = [
+  { key: "offre", label: "Offre" },
+  { key: "entreprise", label: "Entreprise" },
+  { key: "flex", label: "Flexibilité" },
+  { key: "team", label: "Équipe & culture" },
+  { key: "package", label: "Package", highlight: true },
+  { key: "questions", label: "Questions" },
+  { key: "next", label: "Next steps" },
+];
+
 function PackageView({
   data,
   setData,
@@ -114,12 +133,26 @@ function PackageView({
     metadata?: Record<string, unknown>,
   ) => track({ data: { token: data.token, eventType, metadata } }).catch(() => {});
 
+  // Read deep-link from URL
+  const initialTab = (() => {
+    if (typeof window === "undefined") return "package" as TabKey;
+    const t = new URLSearchParams(window.location.search).get("tab") as TabKey | null;
+    return TABS.some((x) => x.key === t) ? (t as TabKey) : "package";
+  })();
+  const [tab, setTab] = useState<TabKey>(initialTab);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tab);
+    window.history.replaceState({}, "", url.toString());
+  }, [tab]);
+
   const [params, setParams] = useState<CandidateParams>({
     tmi: 0.30,
     seniority: 3,
     peeContribution: 0,
   });
-  // Taux de prélèvement à la source — pré-rempli depuis la TMI, ajustable
   const [pasRate, setPasRate] = useState<number>(0.30);
   const pasTouched = useRef(false);
   useEffect(() => {
@@ -127,7 +160,6 @@ function PackageView({
   }, [params.tmi]);
   const [achievementPct, setAchievementPct] = useState(1);
 
-  // Debounced tracking
   const trackTimer = useRef<number | null>(null);
   function scheduleTrack(param: string, value: any) {
     if (trackTimer.current) window.clearTimeout(trackTimer.current);
@@ -158,22 +190,17 @@ function PackageView({
 
   return (
     <PageShell>
-      {data.counterOffer && (
-        <CounterOfferBanner info={data.counterOffer} />
-      )}
+      {data.counterOffer && <CounterOfferBanner info={data.counterOffer} />}
+
       {/* Hero */}
       <section
         data-section="hero"
-        className="rounded-2xl p-7 mb-6"
+        className="rounded-2xl p-7 mb-5"
         style={{ background: "#2D2640" }}
       >
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-3">
           {org?.logo_url ? (
-            <img
-              src={org.logo_url}
-              alt={org.name}
-              className="w-10 h-10 rounded-xl object-cover"
-            />
+            <img src={org.logo_url} alt={org.name} className="w-10 h-10 rounded-xl object-cover" />
           ) : (
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-display text-lg text-white">
               {org?.name?.[0] ?? "?"}
@@ -188,343 +215,304 @@ function PackageView({
             </div>
           </div>
         </div>
-        <p
-          className="text-[13px] leading-relaxed"
-          style={{ color: "#B8AECF" }}
-        >
-          {org?.name} vous a envoyé cette simulation pour vous aider à
-          comprendre{" "}
-          <strong className="font-medium" style={{ color: "#C4A882" }}>
-            la valeur estimée de votre package de rémunération
-          </strong>{" "}
-          — des ordres de grandeur basés sur les règles fiscales en vigueur,
-          personnalisés selon votre situation.
-        </p>
       </section>
 
-      {/* Le poste */}
-      <JobSections pkg={pkg} onExternalLink={behavior.trackExternalLink} />
+      {/* Tabs */}
+      <TabBar tab={tab} onChange={setTab} />
 
-      {/* Votre situation */}
-      <SectionTitle>Votre situation</SectionTitle>
-      <div data-section="simulation" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-5">
-        <Field
-          label="Votre tranche marginale d'imposition"
-          info="Votre TMI est le taux d'imposition qui s'applique à la dernière tranche de vos revenus. Pour un salaire de 50 000 € net, elle est généralement de 30 %."
-        >
-          <ChipRow>
-            {TMI_OPTIONS.map((t) => (
-              <Chip
-                key={t}
-                selected={params.tmi === t}
-                onClick={() => update("tmi", t)}
+      {tab === "offre" && (
+        <OfferTab pkg={pkg} />
+      )}
+
+      {tab === "entreprise" && (
+        <CompanyTab org={org} />
+      )}
+
+      {tab === "flex" && (
+        <FlexibilityTab pkg={pkg} />
+      )}
+
+      {tab === "team" && (
+        <TeamCultureTab pkg={pkg} onExternalLink={behavior.trackExternalLink} />
+      )}
+
+      {tab === "package" && (
+        <>
+          {/* Votre situation */}
+          <SectionTitle>Votre situation</SectionTitle>
+          <div data-section="simulation" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-5">
+            <Field
+              label="Votre tranche marginale d'imposition"
+              info="Votre TMI est le taux d'imposition qui s'applique à la dernière tranche de vos revenus. Pour un salaire de 50 000 € net, elle est généralement de 30 %."
+            >
+              <ChipRow>
+                {TMI_OPTIONS.map((t) => (
+                  <Chip key={t} selected={params.tmi === t} onClick={() => update("tmi", t)}>
+                    {Math.round(t * 100)}%
+                  </Chip>
+                ))}
+              </ChipRow>
+            </Field>
+
+            <Field
+              label="Ancienneté envisagée dans l'entreprise"
+              info={hasEquity ? "L'ancienneté impacte la fiscalité de l'equity. Après 3 ans, le taux global passe de 47,2% à 31,4% (règles 2026)." : undefined}
+            >
+              <ChipRow>
+                {SENIORITY_OPTIONS.map((y) => (
+                  <Chip key={y} selected={params.seniority === y} onClick={() => update("seniority", y)}>
+                    {y === 1 ? "1 an" : y >= 3 ? `${y} ans+` : `${y} ans`}
+                  </Chip>
+                ))}
+              </ChipRow>
+            </Field>
+
+            {peeDevice && (peeDevice.cap_amount ?? 0) > 0 && (
+              <Field
+                label="Votre mise PEE annuelle envisagée"
+                info={`Plus vous versez, plus l'abondement de ${org?.name} est élevé. Les fonds sont bloqués 5 ans (sauf cas légaux de déblocage).`}
               >
-                {Math.round(t * 100)}%
-              </Chip>
-            ))}
-          </ChipRow>
-        </Field>
+                <input
+                  type="range"
+                  min={0}
+                  max={peeDevice.cap_amount ?? 0}
+                  step={100}
+                  value={params.peeContribution}
+                  onChange={(e) => update("peeContribution", Number(e.target.value))}
+                  className="w-full accent-[#2D2640]"
+                />
+                <div className="text-[13px] text-aubergine mt-1">
+                  {formatEur(params.peeContribution)} / an
+                </div>
+              </Field>
+            )}
+          </div>
 
-        <Field
-          label="Ancienneté envisagée dans l'entreprise"
-          info={
-            hasEquity
-              ? "L'ancienneté impacte la fiscalité de l'equity. Après 3 ans, le taux global passe de 47,2% à 31,4% (règles 2026)."
-              : undefined
-          }
-        >
-          <ChipRow>
-            {SENIORITY_OPTIONS.map((y) => (
-              <Chip
-                key={y}
-                selected={params.seniority === y}
-                onClick={() => update("seniority", y)}
-              >
-                {y === 1 ? "1 an" : y >= 3 ? `${y} ans+` : `${y} ans`}
-              </Chip>
-            ))}
-          </ChipRow>
-        </Field>
+          {/* Total */}
+          <SectionTitle>Estimation de votre package</SectionTitle>
+          <div className="rounded-2xl p-7 mb-3" style={{ background: "#2D2640" }}>
+            <div className="text-[10px] uppercase tracking-[0.15em]" style={{ color: "#B8AECF" }}>
+              Estimation de votre package
+            </div>
+            <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
+              {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
+            </div>
+            <div className="text-[12px] mt-3 leading-relaxed" style={{ color: "#8B7FA8" }}>
+              Ordre de grandeur basé sur le scénario réaliste — règles fiscales 2026 (taux en vigueur).
+            </div>
+          </div>
 
-        {peeDevice && (peeDevice.cap_amount ?? 0) > 0 && (
-          <Field
-            label="Votre mise PEE annuelle envisagée"
-            info={`Plus vous versez, plus l'abondement de ${org?.name} est élevé. Les fonds sont bloqués 5 ans (sauf cas légaux de déblocage).`}
-          >
-            <input
-              type="range"
-              min={0}
-              max={peeDevice.cap_amount ?? 0}
-              step={100}
-              value={params.peeContribution}
-              onChange={(e) =>
-                update("peeContribution", Number(e.target.value))
-              }
-              className="w-full accent-[#2D2640]"
+          <div className="mb-4">
+            <SalaryBreakdown
+              grossAnnual={pkg.gross_salary ?? 0}
+              pasRate={pasRate}
+              onPasRateChange={(v) => {
+                pasTouched.current = true;
+                setPasRate(v);
+              }}
+              variableTarget={pkg.variable_target ?? 0}
+              achievementPct={achievementPct}
+              onAchievementPctChange={setAchievementPct}
+              variableConfig={pkg.variable_config ?? null}
             />
-            <div className="text-[13px] text-aubergine mt-1">
-              {formatEur(params.peeContribution)} / an
-            </div>
-          </Field>
-        )}
-      </div>
+          </div>
 
-      {/* Total */}
-      <SectionTitle>Estimation de votre package</SectionTitle>
-      <div
-        className="rounded-2xl p-7 mb-3"
-        style={{ background: "#2D2640" }}
-      >
-        <div
-          className="text-[10px] uppercase tracking-[0.15em]"
-          style={{ color: "#B8AECF" }}
-        >
-          Estimation de votre package
-        </div>
-        <div
-          className="font-display text-white mt-2"
-          style={{ fontSize: 40, lineHeight: 1.05 }}
-        >
-          {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
-        </div>
-        <div
-          className="text-[12px] mt-3 leading-relaxed"
-          style={{ color: "#8B7FA8" }}
-        >
-          Ordre de grandeur basé sur le scénario réaliste — règles fiscales
-          2026 (taux en vigueur).
-        </div>
-      </div>
-
-      {/* Salaire — bloc pédagogique dépliable */}
-      <div className="mb-4">
-        <SalaryBreakdown
-          grossAnnual={pkg.gross_salary ?? 0}
-          pasRate={pasRate}
-          onPasRateChange={(v) => {
-            pasTouched.current = true;
-            setPasRate(v);
-          }}
-          variableTarget={pkg.variable_target ?? 0}
-          achievementPct={achievementPct}
-          onAchievementPctChange={setAchievementPct}
-          variableConfig={pkg.variable_config ?? null}
-        />
-      </div>
-
-      {/* Lignes */}
-      <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-4 space-y-3">
-        {hasEquity && (
-          <DetailLine
-            label="Equity — scénario réaliste"
-            value={
-              estimate.equityByScenario.find((s) => s.label === "realiste")
-                ?.estimate ?? 0
-            }
-            valueColor="#8B7FA8"
-            info="Estimation après fiscalité — voir les scénarios détaillés ci-dessous."
-          />
-        )}
-        {peeDevice && (
-          <DetailLine
-            label="Abondement PEE employeur"
-            value={estimate.peeEst}
-            valueColor="#C4A882"
-            info={`Votre mise ${formatEur(params.peeContribution)} → ${org?.name} ajoute ${formatEur(estimate.peeEst)}.`}
-          />
-        )}
-        {estimate.interEst > 0 && (
-          <DetailLine
-            label="Intéressement moyen"
-            value={estimate.interEst}
-            info="Moyenne historique sur les 3 dernières années — non garantie."
-          />
-        )}
-        {estimate.participationEst > 0 && (
-          <DetailLine
-            label="Participation moyenne"
-            value={estimate.participationEst}
-            info="Moyenne historique sur les 3 dernières années — non garantie."
-          />
-        )}
-        {estimate.benefitsEst > 0 && (
-          <DetailLine
-            label="Avantages valorisés"
-            value={estimate.benefitsEst}
-            info="Mutuelle, tickets restaurant, véhicule, formation — valeur annuelle estimée."
-          />
-        )}
-      </div>
-
-      <DisclaimerBlock>
-        Ces montants sont des estimations indicatives arrondies, calculées sur
-        la base des règles fiscales en vigueur à la date de cette simulation
-        (version 2026). Ils ne constituent pas un résultat garanti, ni un
-        conseil fiscal ou patrimonial. Consultez un professionnel pour une
-        analyse personnalisée.
-      </DisclaimerBlock>
-
-      {pkg.benchmark && (pkg.gross_salary ?? 0) > 0 && (
-        <BenchmarkBar benchmark={pkg.benchmark} gross={pkg.gross_salary ?? 0} />
-      )}
-
-      {/* Equity scenarios */}
-      {hasEquity && scenariosToShow.length > 0 && (
-        <>
-          <SectionTitle className="mt-8">
-            Equity — scénarios de valorisation
-          </SectionTitle>
-          <div data-section="equity_scenarios" className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            {scenariosToShow.map((s) => (
-              <ScenarioCard
-                key={s.label}
-                scenario={s}
-                onView={() => behavior.trackScenarioView(s.label)}
+          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-4 space-y-3">
+            {hasEquity && (
+              <DetailLine
+                label="Equity — scénario réaliste"
+                value={estimate.equityByScenario.find((s) => s.label === "realiste")?.estimate ?? 0}
+                valueColor="#8B7FA8"
+                info="Estimation après fiscalité — voir les scénarios détaillés ci-dessous."
               />
-            ))}
-          </div>
-          {pkg.scenario_message && (
-            <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-4 mb-4">
-              <p className="text-[13px] text-aubergine-light leading-relaxed italic">
-                « {pkg.scenario_message} »
-              </p>
-              <div className="text-[11px] text-grey mt-2 text-right">
-                — {org?.name}
-              </div>
-            </div>
-          )}
-          <DisclaimerBlock>
-            Les estimations equity reposent sur des hypothèses de valorisation
-            future non garanties. La perte totale est possible. Les BSPCE ne
-            sont réalisables que lors d'un événement de liquidité (acquisition,
-            IPO, secondaire).
-          </DisclaimerBlock>
-        </>
-      )}
-
-      {/* Savings */}
-      {hasSavings && (
-        <>
-          <SectionTitle className="mt-8">Épargne salariale</SectionTitle>
-          <div data-section="epargne" className="space-y-3 mb-4">
+            )}
             {peeDevice && (
-              <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
-                <div className="font-display text-aubergine" style={{ fontSize: 18 }}>
-                  🏦 Plan d'Épargne Entreprise (PEE)
-                </div>
-                <div className="text-[13px] text-aubergine-light mt-2">
-                  Abondement {org?.name} :{" "}
-                  <strong>
-                    {Math.round((peeDevice.matching_rate ?? 0) * 100)}%
-                  </strong>
-                </div>
-                <div className="text-[13px] text-aubergine-light mt-1">
-                  Si vous versez{" "}
-                  <strong>{formatEur(params.peeContribution)}</strong> →{" "}
-                  {org?.name} ajoute ~
-                  <strong>{formatEur(estimate.peeEst)}</strong>.
-                </div>
-                <div
-                  className="text-[11px] text-grey mt-3 leading-relaxed"
-                  style={{ background: "#F0EBE8", padding: 10, borderRadius: 8 }}
-                >
-                  ℹ️ Les fonds sont bloqués 5 ans minimum. Cas de déblocage
-                  anticipé : achat de la résidence principale, mariage,
-                  naissance, invalidité, rupture de contrat.
-                </div>
-              </div>
+              <DetailLine
+                label="Abondement PEE employeur"
+                value={estimate.peeEst}
+                valueColor="#C4A882"
+                info={`Votre mise ${formatEur(params.peeContribution)} → ${org?.name} ajoute ${formatEur(estimate.peeEst)}.`}
+              />
             )}
-            {interDevice && (
-              <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
-                <div className="font-display text-aubergine" style={{ fontSize: 18 }}>
-                  📈 Intéressement
-                </div>
-                <div className="text-[13px] text-aubergine-light mt-2">
-                  Montant moyen (3 dernières années) : ~
-                  <strong>{formatEur(interDevice.avg_3y ?? 0)}</strong>
-                </div>
-                <div
-                  className="text-[11px] mt-3 leading-relaxed"
-                  style={{ background: "#FCEEE6", color: "#7A3F0E", padding: 10, borderRadius: 8 }}
-                >
-                  ⚠️ Moyenne historique. L'intéressement dépend des résultats
-                  de l'entreprise — il peut être nul certaines années.
-                </div>
-              </div>
+            {estimate.interEst > 0 && (
+              <DetailLine label="Intéressement moyen" value={estimate.interEst} info="Moyenne historique sur les 3 dernières années — non garantie." />
             )}
+            {estimate.participationEst > 0 && (
+              <DetailLine label="Participation moyenne" value={estimate.participationEst} info="Moyenne historique sur les 3 dernières années — non garantie." />
+            )}
+            {estimate.benefitsEst > 0 && (
+              <DetailLine label="Avantages valorisés" value={estimate.benefitsEst} info="Mutuelle, tickets restaurant, véhicule, formation — valeur annuelle estimée." />
+            )}
+          </div>
+
+          <DisclaimerBlock>
+            Ces montants sont des estimations indicatives arrondies, calculées sur
+            la base des règles fiscales en vigueur à la date de cette simulation
+            (version 2026). Ils ne constituent pas un résultat garanti, ni un
+            conseil fiscal ou patrimonial. Consultez un professionnel pour une
+            analyse personnalisée.
+          </DisclaimerBlock>
+
+          {pkg.benchmark && (pkg.gross_salary ?? 0) > 0 && (
+            <BenchmarkBar benchmark={pkg.benchmark} gross={pkg.gross_salary ?? 0} />
+          )}
+
+          {hasEquity && scenariosToShow.length > 0 && (
+            <>
+              <SectionTitle className="mt-8">Equity — scénarios de valorisation</SectionTitle>
+              <div data-section="equity_scenarios" className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                {scenariosToShow.map((s) => (
+                  <ScenarioCard key={s.label} scenario={s} onView={() => behavior.trackScenarioView(s.label)} />
+                ))}
+              </div>
+              {pkg.scenario_message && (
+                <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-4 mb-4">
+                  <p className="text-[13px] text-aubergine-light leading-relaxed italic">« {pkg.scenario_message} »</p>
+                  <div className="text-[11px] text-grey mt-2 text-right">— {org?.name}</div>
+                </div>
+              )}
+              <DisclaimerBlock>
+                Les estimations equity reposent sur des hypothèses de valorisation
+                future non garanties. La perte totale est possible. Les BSPCE ne
+                sont réalisables que lors d'un événement de liquidité (acquisition,
+                IPO, secondaire).
+              </DisclaimerBlock>
+            </>
+          )}
+
+          {hasSavings && (
+            <>
+              <SectionTitle className="mt-8">Épargne salariale</SectionTitle>
+              <div data-section="epargne" className="space-y-3 mb-4">
+                {peeDevice && (
+                  <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
+                    <div className="font-display text-aubergine" style={{ fontSize: 18 }}>🏦 Plan d'Épargne Entreprise (PEE)</div>
+                    <div className="text-[13px] text-aubergine-light mt-2">
+                      Abondement {org?.name} : <strong>{Math.round((peeDevice.matching_rate ?? 0) * 100)}%</strong>
+                    </div>
+                    <div className="text-[13px] text-aubergine-light mt-1">
+                      Si vous versez <strong>{formatEur(params.peeContribution)}</strong> → {org?.name} ajoute ~<strong>{formatEur(estimate.peeEst)}</strong>.
+                    </div>
+                    <div className="text-[11px] text-grey mt-3 leading-relaxed" style={{ background: "#F0EBE8", padding: 10, borderRadius: 8 }}>
+                      ℹ️ Les fonds sont bloqués 5 ans minimum. Cas de déblocage anticipé : achat de la résidence principale, mariage, naissance, invalidité, rupture de contrat.
+                    </div>
+                  </div>
+                )}
+                {interDevice && (
+                  <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
+                    <div className="font-display text-aubergine" style={{ fontSize: 18 }}>📈 Intéressement</div>
+                    <div className="text-[13px] text-aubergine-light mt-2">
+                      Montant moyen (3 dernières années) : ~<strong>{formatEur(interDevice.avg_3y ?? 0)}</strong>
+                    </div>
+                    <div className="text-[11px] mt-3 leading-relaxed" style={{ background: "#FCEEE6", color: "#7A3F0E", padding: 10, borderRadius: 8 }}>
+                      ⚠️ Moyenne historique. L'intéressement dépend des résultats de l'entreprise — il peut être nul certaines années.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          <SectionTitle className="mt-8">Questions fréquentes</SectionTitle>
+          <div data-section="faq">
+            <FAQ hasEquity={hasEquity} hasPee={!!peeDevice} />
           </div>
         </>
       )}
 
-      {/* FAQ */}
-      <SectionTitle className="mt-8">Questions fréquentes</SectionTitle>
-      <div data-section="faq">
-        <FAQ hasEquity={hasEquity} hasPee={!!peeDevice} />
-      </div>
+      {tab === "questions" && (
+        <>
+          <SectionTitle><Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?</SectionTitle>
+          <div data-section="assistant_ia">
+            <Assistant token={data.token} pkg={pkg} params={params} />
+          </div>
+          <SectionTitle className="mt-6">Échangez avec l'équipe</SectionTitle>
+          <div data-section="messagerie">
+            <CandidateMessagingBlock token={data.token} orgName={org?.name ?? "l'entreprise"} initialMessages={data.messages} />
+          </div>
+        </>
+      )}
 
-      {/* Assistant */}
-      <SectionTitle className="mt-8">
-        <Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?
-      </SectionTitle>
-      <div data-section="assistant_ia">
-        <Assistant token={data.token} pkg={pkg} params={params} />
-      </div>
+      {tab === "next" && (
+        <>
+          <ProcessSection pkg={pkg} />
+          <div data-section="decision">
+            <DecisionBlock
+              data={data}
+              orgName={org?.name ?? "l'entreprise"}
+              pkgTitle={pkg.title}
+              onStatusChange={(status, statusUpdatedAt) =>
+                setData((prev) => (prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev))
+              }
+            />
+          </div>
+          <div className="rounded-2xl p-6 mt-8 mb-6 text-center" style={{ background: "#FAEEDA" }}>
+            <div className="font-display text-aubergine" style={{ fontSize: 20 }}>Des questions sur ce package ?</div>
+            <p className="text-[13px] text-aubergine-light mt-2 leading-relaxed">
+              L'équipe de {org?.name} peut répondre à toutes vos questions lors d'un échange de 20 minutes.
+            </p>
+            <button
+              onClick={async () => {
+                await trackEvent("rdv_click");
+                window.location.href = `mailto:?subject=${encodeURIComponent(`Question sur mon package ${pkg.title}`)}`;
+              }}
+              className="mt-4 inline-flex items-center gap-2 px-5 py-3 rounded-full text-[13px] font-medium text-lin"
+              style={{ background: "#2D2640" }}
+            >
+              <Calendar size={14} /> Prendre rendez-vous
+            </button>
+          </div>
+        </>
+      )}
 
-      {/* Messagerie candidat ↔ RH */}
-      <div data-section="messagerie">
-        <CandidateMessagingBlock
-          token={data.token}
-          orgName={org?.name ?? "l'entreprise"}
-          initialMessages={data.messages}
-        />
-      </div>
-
-      {/* Décision candidat */}
-      <div data-section="decision">
-        <DecisionBlock
-          data={data}
-          orgName={org?.name ?? "l'entreprise"}
-          pkgTitle={pkg.title}
-          onStatusChange={(status, statusUpdatedAt) =>
-            setData((prev) =>
-              prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev,
-            )
-          }
-        />
-      </div>
-
-      {/* CTA */}
-      <div
-        className="rounded-2xl p-6 mt-8 mb-6 text-center"
-        style={{ background: "#FAEEDA" }}
-      >
-        <div className="font-display text-aubergine" style={{ fontSize: 20 }}>
-          Des questions sur ce package ?
-        </div>
-        <p className="text-[13px] text-aubergine-light mt-2 leading-relaxed">
-          L'équipe de {org?.name} peut répondre à toutes vos questions lors d'un
-          échange de 20 minutes.
-        </p>
-        <button
-          onClick={async () => {
-            await trackEvent("rdv_click");
-            window.location.href = `mailto:?subject=${encodeURIComponent(
-              `Question sur mon package ${pkg.title}`,
-            )}`;
-          }}
-          className="mt-4 inline-flex items-center gap-2 px-5 py-3 rounded-full text-[13px] font-medium text-lin"
-          style={{ background: "#2D2640" }}
-        >
-          <Calendar size={14} />
-          Prendre rendez-vous
-        </button>
-      </div>
-
-      {/* Footer */}
       <FooterDisclaimer />
     </PageShell>
   );
 }
+
+/* -------------------- Tabs -------------------- */
+
+function TabBar({ tab, onChange }: { tab: TabKey; onChange: (t: TabKey) => void }) {
+  return (
+    <div
+      className="flex flex-wrap gap-1.5 p-1.5 rounded-2xl mb-6 sticky top-2 z-10"
+      style={{ background: "#FFFFFF", border: "0.5px solid rgba(45,38,64,0.08)", boxShadow: "0 4px 16px rgba(45,38,64,0.04)" }}
+    >
+      {TABS.map((t) => {
+        const active = tab === t.key;
+        const isHL = t.highlight;
+        return (
+          <button
+            key={t.key}
+            onClick={() => onChange(t.key)}
+            className="px-3 py-2 rounded-xl text-[12px] transition-all"
+            style={
+              isHL
+                ? {
+                    background: active ? "#C4A882" : "#FAEEDA",
+                    color: active ? "#FFFFFF" : "#7A5417",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    boxShadow: active ? "0 2px 8px rgba(196,168,130,0.4)" : undefined,
+                    border: "1px solid rgba(196,168,130,0.4)",
+                  }
+                : {
+                    background: active ? "#2D2640" : "transparent",
+                    color: active ? "#FAF8F5" : "#524970",
+                    fontWeight: active ? 500 : 400,
+                  }
+            }
+          >
+            {isHL && <Sparkles size={11} className="inline mr-1" />}
+            {t.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+
 
 /* -------------------- Helpers -------------------- */
 

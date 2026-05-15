@@ -101,6 +101,7 @@ function ErrorState({ kind }: { kind: "not_found" | "expired" }) {
 /* -------------------- Main view -------------------- */
 
 type TabKey =
+  | "welcome"
   | "offre"
   | "entreprise"
   | "flex"
@@ -111,6 +112,7 @@ type TabKey =
   | "next";
 
 const TABS: { key: TabKey; label: string; highlight?: boolean }[] = [
+  { key: "welcome", label: "Bienvenue" },
   { key: "offre", label: "Offre" },
   { key: "entreprise", label: "Entreprise" },
   { key: "flex", label: "Flexibilité" },

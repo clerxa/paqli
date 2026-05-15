@@ -3,6 +3,17 @@ import type { JobInput } from "./jobsService";
 import { emptyJob } from "./jobsService";
 import type { PackageConfig } from "./packageConfig";
 
+function toIntOrNull(v: unknown): number | null {
+  if (v == null) return null;
+  if (typeof v === "number" && Number.isFinite(v)) return Math.round(v);
+  if (typeof v === "string") {
+    const m = v.replace(/[^\d.-]/g, "");
+    const n = parseFloat(m);
+    return Number.isFinite(n) ? Math.round(n) : null;
+  }
+  return null;
+}
+
 export function mapToJobInput(data: ImportedJobData): JobInput {
   return {
     ...emptyJob,
@@ -12,17 +23,17 @@ export function mapToJobInput(data: ImportedJobData): JobInput {
     stack: data.stack ?? [],
     contractType: data.contract_type ?? "cdi",
     remotePolicy: data.remote_policy ?? "hybrid",
-    remoteDays: data.remote_days ?? emptyJob.remoteDays,
+    remoteDays: toIntOrNull(data.remote_days) ?? emptyJob.remoteDays,
     flexibleHours: data.flexible_hours ?? false,
     locationCity: data.location_city ?? "",
     locationDetails: data.location_details ?? "",
-    teamSize: data.team_size ?? null,
+    teamSize: toIntOrNull(data.team_size),
     teamDescription: data.team_description ?? "",
     managerStyle: data.manager_style ?? null,
     companyValues: data.company_values ?? [],
     cultureNote: data.culture_note ?? "",
     growthPaths: data.growth_paths ?? [],
-    trainingBudget: data.training_budget ?? null,
+    trainingBudget: toIntOrNull(data.training_budget),
     onboardingNote: data.onboarding_note ?? "",
     processSteps: (data.process_steps ?? []).map((p) => ({
       step: p.step,
@@ -57,13 +68,13 @@ export function mapToPackageConfig(
     flexibleHours: data.flexible_hours ?? false,
     locationCity: data.location_city ?? "",
     locationDetails: data.location_details ?? "",
-    teamSize: data.team_size ?? null,
+    teamSize: toIntOrNull(data.team_size),
     teamDescription: data.team_description ?? "",
     managerStyle: data.manager_style ?? null,
     companyValues: data.company_values ?? [],
     cultureNote: data.culture_note ?? "",
     growthPaths: data.growth_paths ?? [],
-    trainingBudget: data.training_budget ?? null,
+    trainingBudget: toIntOrNull(data.training_budget),
     onboardingNote: data.onboarding_note ?? "",
     processSteps: (data.process_steps ?? []).map((p) => ({
       step: p.step,

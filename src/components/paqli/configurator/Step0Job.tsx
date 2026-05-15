@@ -418,11 +418,13 @@ function InterviewNotesSection() {
   }
 
   return (
-    <Section title="Discussions avec le candidat">
+    <Section title="Mot personnel pour le candidat">
       <p className="text-[11px] text-aubergine-light leading-relaxed -mt-1">
-        Notez ici les éléments importants ressortis pendant les entretiens — envies,
-        questions, points sensibles. Ces notes ne sont visibles que par vous, mais
-        nourrissent l'IA pour personnaliser le package.
+        Reprenez ici les éléments importants ressortis pendant les entretiens —
+        ce qui vous a marqué, pourquoi vous l'avez choisi, ce qui résonne avec
+        ses envies. <strong>Ce mot sera affiché en haut de son lien</strong>{" "}
+        pour personnaliser son expérience et lui montrer que l'entreprise le
+        veut vraiment.
       </p>
       <textarea
         value={config.interviewNotes}

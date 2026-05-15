@@ -105,11 +105,14 @@ export function SalaryBreakdown({
         </div>
         <div className="flex items-center gap-2">
           <div
-            className="text-[14px] font-medium tabular-nums"
+            className="text-[14px] font-medium tabular-nums text-right"
             style={{ color: "#2D2640" }}
           >
             ~{formatEur(netApresImpot)}
             <span className="text-[11px] text-grey ml-1">/ an net après impôt</span>
+            <div className="text-[11px] text-grey font-normal">
+              soit ~{formatEur(Math.round(netApresImpot / 12))} / mois
+            </div>
           </div>
           <ChevronDown
             size={14}

@@ -32,7 +32,7 @@ export function Configurator() {
       toast.error(err);
       return;
     }
-    if (config.currentStep === 4 && config.equityDevices.length > 0) {
+    if (config.currentStep === 5 && config.equityDevices.length > 0) {
       const sErr = validateScenarios(config.scenarios);
       if (sErr) {
         toast.error(sErr);
@@ -40,7 +40,7 @@ export function Configurator() {
       }
     }
     await saveDraft();
-    if (config.currentStep < 5) {
+    if (config.currentStep < 6) {
       const next = config.currentStep + 1;
       setStep(next);
       setMaxReached((m) => Math.max(m, next));
@@ -59,12 +59,14 @@ export function Configurator() {
       case 1:
         return <Step1Fixed />;
       case 2:
-        return <Step2Equity />;
+        return <StepBenefits />;
       case 3:
-        return <Step3Savings />;
+        return <Step2Equity />;
       case 4:
-        return <Step4Scenarios />;
+        return <Step3Savings />;
       case 5:
+        return <Step4Scenarios />;
+      case 6:
         return <Step5Preview />;
       default:
         return null;

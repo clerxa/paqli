@@ -117,13 +117,29 @@ export const calcEngine = createServerFn({ method: "POST" })
       (pkg.variable_target ?? 0) * (1 - 0.22) * tmiFactor,
     );
 
-    const b = pkg.benefits ?? {};
-    let benefitsTotal = 0;
-    if (b.mutuelle) benefitsTotal += (b.mutuelleMontant ?? 0) * 12;
-    if (b.ticketsResto) benefitsTotal += (b.ticketsRestoValeur ?? 0) * 218 * 0.6;
-    if (b.vehicule) benefitsTotal += (b.vehiculeMontant ?? 0) * 12;
-    if (b.formation) benefitsTotal += b.formationBudget ?? 0;
-    const benefitsEst = roundForDisplay(benefitsTotal);
+    const benefitsV2: PackageBenefit[] = (pkg.package_benefits ?? []).map((b: any) => ({
+      benefit_key: b.benefit_key,
+      category: b.category,
+      value_type: b.value_type ?? "fixed",
+      monthly_value: b.monthly_value !== null ? Number(b.monthly_value) : null,
+      annual_value: b.annual_value !== null ? Number(b.annual_value) : null,
+      employer_share: b.employer_share !== null ? Number(b.employer_share) : null,
+      custom_label: b.custom_label ?? null,
+      custom_note: b.custom_note ?? null,
+      display_order: b.display_order ?? 0,
+    }));
+    let benefitsEst = 0;
+    if (benefitsV2.length > 0) {
+      benefitsEst = roundForDisplay(calcBenefitsTotal(benefitsV2));
+    } else {
+      const b = pkg.benefits ?? {};
+      let benefitsTotal = 0;
+      if (b.mutuelle) benefitsTotal += (b.mutuelleMontant ?? 0) * 12;
+      if (b.ticketsResto) benefitsTotal += (b.ticketsRestoValeur ?? 0) * 218 * 0.6;
+      if (b.vehicule) benefitsTotal += (b.vehiculeMontant ?? 0) * 12;
+      if (b.formation) benefitsTotal += b.formationBudget ?? 0;
+      benefitsEst = roundForDisplay(benefitsTotal);
+    }
 
     const equityResults = computeEquity(
       pkg.equity_devices ?? [],

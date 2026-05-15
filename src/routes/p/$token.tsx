@@ -31,7 +31,7 @@ export const Route = createFileRoute("/p/$token")({
   component: PublicPackagePage,
 });
 
-const TMI_OPTIONS: TMI[] = [0.11, 0.30, 0.41, 0.45];
+
 const SENIORITY_OPTIONS: Array<1 | 2 | 3 | 5> = [1, 2, 3, 5];
 
 function PublicPackagePage() {

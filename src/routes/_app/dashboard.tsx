@@ -229,45 +229,7 @@ function DashboardPage() {
               )}
             </Card>
 
-            {/* Engagement by device */}
-            <Card>
-              <h2
-                className="font-display text-aubergine mb-4"
-                style={{ fontSize: 18 }}
-              >
-                Engagement par dispositif
-              </h2>
-              <ul className="space-y-3">
-                {engagementByDevice.map((d) => (
-                  <li key={d.label} className="grid grid-cols-[140px_1fr_44px] items-center gap-3">
-                    <span className="text-[12px] text-aubergine-light">{d.label}</span>
-                    <div
-                      className="rounded-[3px] overflow-hidden"
-                      style={{ background: "#F0EBE8", height: 6 }}
-                    >
-                      <div
-                        style={{
-                          width: `${d.value}%`,
-                          background: d.color,
-                          height: "100%",
-                          borderRadius: 3,
-                          transition: "width 400ms ease",
-                        }}
-                      />
-                    </div>
-                    <span className="text-[11px] text-grey text-right">{d.value}%</span>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          </div>
-
-          {/* Right column */}
-          <div className="space-y-4">
-            <FollowUpAlertsCard
-              alerts={followUpAlerts}
-              onCounterOffer={openCounterOffer}
-            />
+            {/* Activité récente */}
             <Card>
               <h2
                 className="font-display text-aubergine mb-4"
@@ -312,29 +274,14 @@ function DashboardPage() {
                 </ul>
               )}
             </Card>
+          </div>
 
-            <Card>
-              <h2
-                className="font-display text-aubergine mb-4"
-                style={{ fontSize: 18 }}
-              >
-                À faire
-              </h2>
-              {todos.length === 0 ? (
-                <div
-                  className="text-[12px] rounded-md px-3 py-2"
-                  style={{ background: "#EAF3DE", color: "#27500A" }}
-                >
-                  Tout est à jour ✓
-                </div>
-              ) : (
-                <ul className="space-y-3">
-                  {todos.map((t, i) => (
-                    <TodoRow key={i} todo={t} />
-                  ))}
-                </ul>
-              )}
-            </Card>
+          {/* Right column */}
+          <div className="space-y-4">
+            <FollowUpAlertsCard
+              alerts={followUpAlerts}
+              onCounterOffer={openCounterOffer}
+            />
 
             {(declinedCount > 0 || acceptedCount > 0) && (
               <Card>
@@ -414,6 +361,29 @@ function DashboardPage() {
                 )}
               </Card>
             )}
+
+            <Card>
+              <h2
+                className="font-display text-aubergine mb-4"
+                style={{ fontSize: 18 }}
+              >
+                À faire
+              </h2>
+              {todos.length === 0 ? (
+                <div
+                  className="text-[12px] rounded-md px-3 py-2"
+                  style={{ background: "#EAF3DE" }}
+                >
+                  Tout est à jour ✓
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {todos.map((t, i) => (
+                    <TodoRow key={i} todo={t} />
+                  ))}
+                </ul>
+              )}
+            </Card>
           </div>
         </div>
       </div>

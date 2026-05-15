@@ -62,6 +62,7 @@ function PackageDetail() {
   const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
   const [counterOfferFor, setCounterOfferFor] = useState<CounterOfferOriginal | null>(null);
   const [previewPas, setPreviewPas] = useState(0.30);
+  const [previewAchievement, setPreviewAchievement] = useState(1);
 
   async function reload() {
     const [p, l] = await Promise.all([
@@ -253,6 +254,10 @@ function PackageDetail() {
               grossAnnual={pkg.grossSalary}
               pasRate={previewPas}
               onPasRateChange={setPreviewPas}
+              variableTarget={pkg.variableTarget}
+              achievementPct={previewAchievement}
+              onAchievementPctChange={setPreviewAchievement}
+              variableConfig={pkg.variableConfig}
             />
           </Card>
         </div>

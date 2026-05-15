@@ -1,6 +1,12 @@
 import { useState } from "react";
-import { ChevronDown, Info } from "lucide-react";
+import { ChevronDown, Info, Target } from "lucide-react";
 import { formatEur } from "@/lib/clientCalc";
+type LooseVariableConfig = {
+  objectiveType?: "individual" | "collective" | "mixed" | null;
+  payoutFrequency?: "monthly" | "quarterly" | "semestrial" | "annual" | null;
+  calcMethod?: string;
+  indicators?: { label: string; weight: number }[];
+};
 
 // Estimations 2026 — cadre standard. Pédagogique, pas un calcul juridique.
 const EMPLOYER_BREAKDOWN = [
@@ -19,18 +25,40 @@ const EMPLOYEE_BREAKDOWN = [
 const EMPLOYER_TOTAL = EMPLOYER_BREAKDOWN.reduce((a, b) => a + b.rate, 0); // ~0.42
 const EMPLOYEE_TOTAL = EMPLOYEE_BREAKDOWN.reduce((a, b) => a + b.rate, 0); // ~0.22
 
+const OBJECTIVE_LABELS: Record<string, string> = {
+  individual: "Objectifs individuels",
+  collective: "Objectifs collectifs",
+  mixed: "Objectifs mixtes (individuels + collectifs)",
+};
+const FREQUENCY_LABELS: Record<string, string> = {
+  monthly: "Versé mensuellement",
+  quarterly: "Versé trimestriellement",
+  semestrial: "Versé semestriellement",
+  annual: "Versé annuellement",
+};
+
 export function SalaryBreakdown({
   grossAnnual,
   pasRate,
   onPasRateChange,
+  variableTarget = 0,
+  achievementPct = 1,
+  onAchievementPctChange,
+  variableConfig,
 }: {
   grossAnnual: number;
   pasRate: number; // 0..1
   onPasRateChange: (v: number) => void;
+  variableTarget?: number;
+  achievementPct?: number; // 0..1.5 typically
+  onAchievementPctChange?: (v: number) => void;
+  variableConfig?: LooseVariableConfig | null;
 }) {
   const [open, setOpen] = useState(false);
 
-  const brut = grossAnnual || 0;
+  const fixe = grossAnnual || 0;
+  const variable = Math.round((variableTarget || 0) * achievementPct);
+  const brut = fixe + variable;
   const superBrut = Math.round(brut * (1 + EMPLOYER_TOTAL));
   const net = Math.round(brut * (1 - EMPLOYEE_TOTAL));
   const netApresImpot = Math.round(net * (1 - pasRate));
@@ -39,9 +67,12 @@ export function SalaryBreakdown({
   const employeeCharges = brut - net;
   const tax = net - netApresImpot;
 
+  const hasVariable = (variableTarget || 0) > 0;
+  const indicators: { label: string; weight: number }[] =
+    variableConfig?.indicators?.filter((i) => i.label.trim()) ?? [];
+
   return (
     <div className="rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] bg-white overflow-hidden">
-      {/* Header always visible */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -49,7 +80,9 @@ export function SalaryBreakdown({
       >
         <div className="flex items-center gap-1.5 text-[13px] text-aubergine">
           <span style={{ color: "#8B7FA8" }}>●</span>
-          Salaire fixe — du super brut au net après impôt
+          {hasVariable
+            ? "Rémunération (fixe + variable) — du super brut au net après impôt"
+            : "Salaire fixe — du super brut au net après impôt"}
         </div>
         <div className="flex items-center gap-2">
           <div
@@ -69,8 +102,100 @@ export function SalaryBreakdown({
 
       {open && (
         <div className="px-5 pb-5 space-y-4">
-          {/* Cascade des 4 montants */}
+          {/* Variable — atteinte */}
+          {hasVariable && (
+            <div className="rounded-[10px] p-4 space-y-3" style={{ background: "#FAEEDA" }}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-[12px] font-medium" style={{ color: "#633806" }}>
+                  <Target size={13} />
+                  Variable cible {formatEur(variableTarget)} / an
+                </div>
+                <div className="text-[12px] tabular-nums" style={{ color: "#633806" }}>
+                  Atteinte : <strong>{Math.round(achievementPct * 100)}%</strong> ·{" "}
+                  <span className="font-medium">{formatEur(variable)}</span>
+                </div>
+              </div>
+              {onAchievementPctChange && (
+                <div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={150}
+                    step={5}
+                    value={Math.round(achievementPct * 100)}
+                    onChange={(e) => onAchievementPctChange(Number(e.target.value) / 100)}
+                    className="w-full accent-[#B85A6A]"
+                  />
+                  <div className="flex justify-between text-[10px]" style={{ color: "#633806", opacity: 0.7 }}>
+                    <span>0%</span>
+                    <span>50%</span>
+                    <span>100% (cible)</span>
+                    <span>150%</span>
+                  </div>
+                </div>
+              )}
+              {(variableConfig?.objectiveType ||
+                variableConfig?.payoutFrequency ||
+                indicators.length > 0 ||
+                variableConfig?.calcMethod) && (
+                <div
+                  className="space-y-2 pt-2"
+                  style={{ borderTop: "0.5px dashed rgba(99,56,6,0.25)" }}
+                >
+                  {variableConfig?.objectiveType && (
+                    <div className="text-[11px]" style={{ color: "#633806" }}>
+                      <span style={{ opacity: 0.7 }}>Type :</span>{" "}
+                      {OBJECTIVE_LABELS[variableConfig.objectiveType]}
+                    </div>
+                  )}
+                  {variableConfig?.payoutFrequency && (
+                    <div className="text-[11px]" style={{ color: "#633806" }}>
+                      <span style={{ opacity: 0.7 }}>Fréquence :</span>{" "}
+                      {FREQUENCY_LABELS[variableConfig.payoutFrequency]}
+                    </div>
+                  )}
+                  {indicators.length > 0 && (
+                    <div>
+                      <div className="text-[11px] mb-1" style={{ color: "#633806", opacity: 0.7 }}>
+                        Indicateurs :
+                      </div>
+                      <ul className="space-y-1">
+                        {indicators.map((ind, i) => (
+                          <li
+                            key={i}
+                            className="flex items-center justify-between text-[11px]"
+                            style={{ color: "#633806" }}
+                          >
+                            <span>• {ind.label}</span>
+                            {ind.weight > 0 && (
+                              <span className="tabular-nums" style={{ opacity: 0.8 }}>
+                                {ind.weight}%
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {variableConfig?.calcMethod && (
+                    <div className="text-[11px] leading-relaxed" style={{ color: "#633806" }}>
+                      <span style={{ opacity: 0.7 }}>Méthode de calcul :</span>{" "}
+                      {variableConfig.calcMethod}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Cascade */}
           <div className="rounded-[10px] p-4 space-y-3" style={{ background: "#F7F4EE" }}>
+            {hasVariable && (
+              <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "#8B7FA8" }}>
+                Base : fixe ({formatEur(fixe)}) + variable ({formatEur(variable)}) ={" "}
+                {formatEur(brut)} brut
+              </div>
+            )}
             <CascadeRow
               label="Super brut"
               sub="Coût total pour l'employeur"
@@ -81,7 +206,7 @@ export function SalaryBreakdown({
             <Arrow note={`− ${formatEur(employerCharges)} de cotisations patronales (~${Math.round(EMPLOYER_TOTAL * 100)}%)`} />
             <CascadeRow
               label="Brut"
-              sub="Montant inscrit sur le contrat"
+              sub={hasVariable ? "Fixe + variable estimé" : "Montant inscrit sur le contrat"}
               value={brut}
               valueColor="#2D2640"
               accent="#8B7FA8"

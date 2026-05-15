@@ -9,7 +9,8 @@ import type {
   RemotePolicy,
   ScenarioLabel,
 } from "./packageConfig";
-import { defaultBenefits, defaultScenarios, emptyConfig } from "./packageConfig";
+import { defaultBenefits, defaultScenarios, defaultVariableConfig, emptyConfig } from "./packageConfig";
+import type { VariableConfig } from "./packageConfig";
 
 export async function upsertPackage(
   config: PackageConfig,
@@ -23,6 +24,7 @@ export async function upsertPackage(
     status: config.status,
     gross_salary: config.grossSalary || null,
     variable_target: config.variableTarget || null,
+    variable_config: (config.variableConfig ?? defaultVariableConfig) as unknown as Json,
     benefits: config.benefits as unknown as Json,
     scenario_message: config.scenarioMessage || null,
     scenario_display: config.scenarioDisplay,
@@ -205,6 +207,10 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
 
     grossSalary: Number(pkg.gross_salary) || 0,
     variableTarget: Number(pkg.variable_target) || 0,
+    variableConfig: {
+      ...defaultVariableConfig,
+      ...((pkg.variable_config as Record<string, unknown>) ?? {}),
+    } as VariableConfig,
     benefits,
     equityDevices: (eq ?? []).map((d) => ({
       id: d.id,

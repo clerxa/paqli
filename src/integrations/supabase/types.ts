@@ -493,6 +493,7 @@ export type Database = {
           title: string
           training_budget: number | null
           updated_at: string
+          variable_config: Json
           variable_target: number | null
           wtj_url: string | null
         }
@@ -533,6 +534,7 @@ export type Database = {
           title: string
           training_budget?: number | null
           updated_at?: string
+          variable_config?: Json
           variable_target?: number | null
           wtj_url?: string | null
         }
@@ -573,6 +575,7 @@ export type Database = {
           title?: string
           training_budget?: number | null
           updated_at?: string
+          variable_config?: Json
           variable_target?: number | null
           wtj_url?: string | null
         }

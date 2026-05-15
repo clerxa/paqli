@@ -72,6 +72,32 @@ export interface ProcessStep {
   duration: string;
 }
 
+export type VariableObjectiveType = "individual" | "collective" | "mixed";
+export type VariablePayoutFrequency =
+  | "monthly"
+  | "quarterly"
+  | "semestrial"
+  | "annual";
+
+export interface VariableIndicator {
+  label: string;
+  weight: number; // % (0-100), optional
+}
+
+export interface VariableConfig {
+  objectiveType: VariableObjectiveType | null;
+  payoutFrequency: VariablePayoutFrequency | null;
+  calcMethod: string;
+  indicators: VariableIndicator[];
+}
+
+export const defaultVariableConfig: VariableConfig = {
+  objectiveType: null,
+  payoutFrequency: null,
+  calcMethod: "",
+  indicators: [],
+};
+
 export interface PackageConfig {
   packageId: string | null;
   status: "draft" | "active";
@@ -108,6 +134,7 @@ export interface PackageConfig {
   // Steps 1-3
   grossSalary: number;
   variableTarget: number;
+  variableConfig: VariableConfig;
   benefits: BenefitsConfig;
 
   equityDevices: EquityDeviceForm[];
@@ -165,6 +192,7 @@ export const emptyConfig: PackageConfig = {
 
   grossSalary: 0,
   variableTarget: 0,
+  variableConfig: defaultVariableConfig,
   benefits: defaultBenefits,
   equityDevices: [],
   savingsDevices: [],

@@ -63,6 +63,12 @@ export interface PackageData {
   title: string;
   gross_salary: number | null;
   variable_target: number | null;
+  variable_config?: {
+    objectiveType?: "individual" | "collective" | "mixed" | null;
+    payoutFrequency?: "monthly" | "quarterly" | "semestrial" | "annual" | null;
+    calcMethod?: string;
+    indicators?: { label: string; weight: number }[];
+  } | null;
   benefits: Record<string, any> | null;
   scenario_message: string | null;
   scenario_display: "all" | "realistic_only" | "realistic_optimistic";

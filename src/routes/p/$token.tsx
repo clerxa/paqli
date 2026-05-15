@@ -125,6 +125,7 @@ function PackageView({
   useEffect(() => {
     if (!pasTouched.current) setPasRate(params.tmi);
   }, [params.tmi]);
+  const [achievementPct, setAchievementPct] = useState(1);
 
   // Debounced tracking
   const trackTimer = useRef<number | null>(null);
@@ -304,18 +305,15 @@ function PackageView({
             pasTouched.current = true;
             setPasRate(v);
           }}
+          variableTarget={pkg.variable_target ?? 0}
+          achievementPct={achievementPct}
+          onAchievementPctChange={setAchievementPct}
+          variableConfig={pkg.variable_config ?? null}
         />
       </div>
 
       {/* Lignes */}
       <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-4 space-y-3">
-        {(pkg.variable_target ?? 0) > 0 && (
-          <DetailLine
-            label="Variable estimé"
-            value={estimate.variableEst}
-            info="Estimation appliquée à la cible variable au même niveau de fiscalité que le fixe."
-          />
-        )}
         {hasEquity && (
           <DetailLine
             label="Equity — scénario réaliste"

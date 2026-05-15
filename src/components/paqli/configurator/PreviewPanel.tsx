@@ -62,18 +62,18 @@ export function PreviewPanel({ config }: { config: PackageConfig }) {
         />
         <Row
           label="Equity (réaliste)"
-          value={step >= 2 ? formatEur(s2.equityEst) : "— —"}
-          dimmed={step < 2}
+          value={step >= 4 ? formatEur(s2.equityEst) : "— —"}
+          dimmed={step < 4}
         />
         <Row
           label="PEE abondé"
-          value={step >= 3 ? formatEur(s3.peeEst) : "— —"}
-          dimmed={step < 3}
+          value={step >= 6 ? formatEur(s3.peeEst) : "— —"}
+          dimmed={step < 6}
         />
         <Row
           label="Intéressement"
-          value={step >= 3 ? formatEur(s3.interEst) : "— —"}
-          dimmed={step < 3}
+          value={step >= 6 ? formatEur(s3.interEst) : "— —"}
+          dimmed={step < 6}
         />
         <Row label="Avantages" value={formatEur(s1.benefitsEst)} />
       </div>

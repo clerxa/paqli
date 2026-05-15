@@ -88,6 +88,16 @@ function PackageDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // Estimation auto du PAS dès que le package est chargé / changé
+  useEffect(() => {
+    if (!pkg) return;
+    const totalGross = (pkg.grossSalary ?? 0) + (pkg.variableTarget ?? 0);
+    if (totalGross > 0 && previewPasAuto) {
+      setPreviewPas(estimatePasRate(totalGross));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pkg?.grossSalary, pkg?.variableTarget]);
+
   if (loading) {
     return (
       <>
@@ -258,7 +268,11 @@ function PackageDetail() {
             <SalaryBreakdown
               grossAnnual={pkg.grossSalary}
               pasRate={previewPas}
-              onPasRateChange={setPreviewPas}
+              pasAuto={previewPasAuto}
+              onPasRateChange={(v) => {
+                setPreviewPasAuto(false);
+                setPreviewPas(v);
+              }}
               variableTarget={pkg.variableTarget}
               achievementPct={previewAchievement}
               onAchievementPctChange={setPreviewAchievement}

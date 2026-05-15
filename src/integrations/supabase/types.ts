@@ -662,6 +662,7 @@ export type Database = {
           key_figures: Json
           links: Json
           logo_url: string | null
+          monthly_link_quota: number | null
           name: string
           plan: string
           profile_generated_at: string | null
@@ -682,6 +683,7 @@ export type Database = {
           key_figures?: Json
           links?: Json
           logo_url?: string | null
+          monthly_link_quota?: number | null
           name: string
           plan?: string
           profile_generated_at?: string | null
@@ -702,6 +704,7 @@ export type Database = {
           key_figures?: Json
           links?: Json
           logo_url?: string | null
+          monthly_link_quota?: number | null
           name?: string
           plan?: string
           profile_generated_at?: string | null
@@ -1311,6 +1314,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      links_sent_this_month: { Args: { _org_id: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "member" | "manager" | "validator"

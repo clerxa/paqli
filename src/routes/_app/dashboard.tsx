@@ -1,5 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getLinkQuotaFn } from "@/lib/linkQuota.functions";
 import { Package as PackageIcon, ArrowUpRight } from "lucide-react";
 import { Topbar } from "@/components/paqli/Topbar";
 import { MetricCard } from "@/components/paqli/MetricCard";
@@ -83,6 +86,13 @@ function DashboardPage() {
   const [counterAlert, setCounterAlert] = useState<FollowUpAlert | null>(null);
   const [counterPkg, setCounterPkg] = useState<PackageConfig | null>(null);
 
+  const fetchQuota = useServerFn(getLinkQuotaFn);
+  const { data: quota } = useQuery({
+    queryKey: ["link-quota"],
+    queryFn: () => fetchQuota(),
+    enabled: !!organization,
+  });
+
   async function openCounterOffer(alert: FollowUpAlert) {
     try {
       const pkg = await loadPackage(alert.packageId);
@@ -136,12 +146,24 @@ function DashboardPage() {
                 }
               />
               <MetricCard
-                label="Liens envoyés"
-                value={String(metrics.totalLinks)}
+                label="Liens envoyés ce mois"
+                value={
+                  quota
+                    ? `${quota.used}${quota.quota != null ? ` / ${quota.quota}` : ""}`
+                    : String(metrics.totalLinks)
+                }
                 delta={
-                  metrics.totalLinks > 0
-                    ? { value: "Cette semaine", positive: true }
-                    : undefined
+                  quota?.quota != null
+                    ? {
+                        value:
+                          quota.used >= quota.quota
+                            ? "Quota atteint"
+                            : `${quota.quota - quota.used} restant${quota.quota - quota.used > 1 ? "s" : ""}`,
+                        positive: quota.used < quota.quota,
+                      }
+                    : metrics.totalLinks > 0
+                      ? { value: "Illimité", positive: true }
+                      : undefined
                 }
               />
               <MetricCard

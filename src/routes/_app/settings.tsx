@@ -31,6 +31,9 @@ import {
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    tab: (search.tab as TabKey | undefined) ?? undefined,
+  }),
 });
 
 type TabKey = "company" | "users" | "benchmark" | "plan";
@@ -43,7 +46,11 @@ const TABS: { key: TabKey; label: string; icon: typeof Building2 }[] = [
 ];
 
 function SettingsPage() {
-  const [tab, setTab] = useState<TabKey>("company");
+  const search = Route.useSearch();
+  const [tab, setTab] = useState<TabKey>(search.tab ?? "company");
+  useEffect(() => {
+    if (search.tab) setTab(search.tab);
+  }, [search.tab]);
 
   return (
     <>

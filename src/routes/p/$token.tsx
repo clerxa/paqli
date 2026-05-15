@@ -681,6 +681,16 @@ function PackageView({
         </>
       )}
 
+      <TabFooterNav
+        prevTab={prevTab}
+        nextTab={nextTab}
+        prevLabel={prevTab ? TABS.find((x) => x.key === prevTab)?.label ?? null : null}
+        nextLabel={nextTab ? TABS.find((x) => x.key === nextTab)?.label ?? null : null}
+        onPrev={() => prevTab && tryChangeTab(prevTab)}
+        onNext={() => nextTab && tryChangeTab(nextTab)}
+        allUnlocked={allTabsVisited}
+      />
+
       <FooterDisclaimer />
     </PageShell>
   );

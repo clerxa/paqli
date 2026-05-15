@@ -138,6 +138,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
         title: pkg.title,
         gross_salary: pkg.gross_salary,
         variable_target: pkg.variable_target,
+        variable_config: pkg.variable_config ?? {},
         benefits: pkg.benefits,
         scenario_message: pkg.scenario_message,
         scenario_display: pkg.scenario_display,

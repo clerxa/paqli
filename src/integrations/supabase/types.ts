@@ -170,7 +170,7 @@ export type Database = {
           last_reminder_at: string | null
           opened_at: string | null
           organization_id: string
-          package_id: string
+          package_id: string | null
           reminder_count: number
           reminders_enabled: boolean
           return_visits: number
@@ -203,7 +203,7 @@ export type Database = {
           last_reminder_at?: string | null
           opened_at?: string | null
           organization_id: string
-          package_id: string
+          package_id?: string | null
           reminder_count?: number
           reminders_enabled?: boolean
           return_visits?: number
@@ -236,7 +236,7 @@ export type Database = {
           last_reminder_at?: string | null
           opened_at?: string | null
           organization_id?: string
-          package_id?: string
+          package_id?: string | null
           reminder_count?: number
           reminders_enabled?: boolean
           return_visits?: number

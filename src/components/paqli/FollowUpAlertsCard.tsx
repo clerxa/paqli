@@ -27,7 +27,7 @@ export function FollowUpAlertsCard({ alerts, onCounterOffer }: Props) {
         <div className="text-center py-6">
           <div className="text-2xl mb-2">✅</div>
           <div className="text-[13px] text-grey font-light">
-            Tous vos candidats sont à jour
+            Aucune relance à faire pour le moment
           </div>
         </div>
       </Card>

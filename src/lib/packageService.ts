@@ -253,6 +253,7 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
       ...((pkg.variable_config as Record<string, unknown>) ?? {}),
     } as VariableConfig,
     benefits,
+    benefitsV2,
     equityDevices: (eq ?? []).map((d) => ({
       id: d.id,
       type: d.type as PackageConfig["equityDevices"][number]["type"],

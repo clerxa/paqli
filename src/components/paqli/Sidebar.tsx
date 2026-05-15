@@ -189,6 +189,7 @@ export function Sidebar() {
               active={!!item.to && pathname.startsWith(item.to)}
             />
           ))}
+          <PlanWidget />
         </nav>
 
         <div

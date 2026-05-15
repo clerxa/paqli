@@ -1166,17 +1166,52 @@ function Assistant({
           orgName: pkg.organizations?.name ?? "l'entreprise",
           jobTitle: pkg.title,
           messages: next,
+          candidateLinkToken: token,
         },
       });
-      setMessages((m) => [
-        ...m,
-        { role: "assistant", content: res.answer },
-      ]);
+      if (res.error) {
+        if (res.error.code === "RETRY") {
+          // Retry automatique une fois après 500ms
+          await new Promise((r) => setTimeout(r, 500));
+          const retry = await ask({
+            data: {
+              packageContext,
+              candidateContext,
+              orgName: pkg.organizations?.name ?? "l'entreprise",
+              jobTitle: pkg.title,
+              messages: next,
+              candidateLinkToken: token,
+            },
+          });
+          if (retry.error) {
+            setMessages((m) => [
+              ...m,
+              { role: "assistant" as const, content: retry.error!.message },
+            ]);
+          } else {
+            setMessages((m) => [
+              ...m,
+              { role: "assistant" as const, content: retry.answer ?? "" },
+            ]);
+          }
+        } else {
+          if (res.error.code === "QUOTA_EXCEEDED") setQuotaExceeded(true);
+          setMessages((m) => [
+            ...m,
+            { role: "assistant" as const, content: res.error!.message },
+          ]);
+        }
+      } else {
+        setMessages((m) => [
+          ...m,
+          { role: "assistant" as const, content: res.answer ?? "" },
+        ]);
+      }
     } catch (e: any) {
       setMessages((m) => [
         ...m,
         {
-          role: "assistant",
+          role: "assistant" as const,
           content:
             e?.message ?? "Désolé, une erreur est survenue. Réessayez plus tard.",
         },

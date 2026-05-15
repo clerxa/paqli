@@ -6,7 +6,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 const InviteSchema = z.object({
   email: z.string().trim().email().max(255),
   full_name: z.string().trim().min(1).max(120),
-  roles: z.array(z.enum(["admin", "rh", "manager"])).min(1).max(3),
+  roles: z.array(z.enum(["admin", "member", "manager", "validator"])).min(1).max(4),
 });
 
 export const inviteUserFn = createServerFn({ method: "POST" })

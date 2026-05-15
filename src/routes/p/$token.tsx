@@ -160,6 +160,17 @@ function PackageView({
   const [pasAuto, setPasAuto] = useState(true);
   const [achievementPct, setAchievementPct] = useState(1);
 
+  // Auto-estimation du PAS et de la TMI à partir du brut total cible (fixe + variable cible)
+  const pkgGross = (pkg?.gross_salary ?? 0) + (pkg?.variable_target ?? 0);
+  useEffect(() => {
+    if (pkgGross <= 0) return;
+    if (!pasTouched.current) {
+      setPasRate(estimatePasRate(pkgGross));
+      setPasAuto(true);
+      setParams((p) => ({ ...p, tmi: estimateTmi(pkgGross) }));
+    }
+  }, [pkgGross]);
+
   const trackTimer = useRef<number | null>(null);
   function scheduleTrack(param: string, value: any) {
     if (trackTimer.current) window.clearTimeout(trackTimer.current);
@@ -311,8 +322,10 @@ function PackageView({
             <SalaryBreakdown
               grossAnnual={pkg.gross_salary ?? 0}
               pasRate={pasRate}
+              pasAuto={pasAuto}
               onPasRateChange={(v) => {
                 pasTouched.current = true;
+                setPasAuto(false);
                 setPasRate(v);
               }}
               variableTarget={pkg.variable_target ?? 0}

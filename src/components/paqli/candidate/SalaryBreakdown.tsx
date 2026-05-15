@@ -52,7 +52,7 @@ export function SalaryBreakdown({
   variableTarget?: number;
   achievementPct?: number; // 0..1.5 typically
   onAchievementPctChange?: (v: number) => void;
-  variableConfig?: VariableConfig | null;
+  variableConfig?: LooseVariableConfig | null;
 }) {
   const [open, setOpen] = useState(false);
 

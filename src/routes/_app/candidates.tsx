@@ -4,6 +4,7 @@ import { Topbar } from "@/components/paqli/Topbar";
 import { Card } from "@/components/paqli/Card";
 import { Button } from "@/components/paqli/Button";
 import { Skeleton } from "@/components/paqli/Skeleton";
+import { EngagementBadge } from "@/components/paqli/EngagementBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
@@ -22,6 +23,9 @@ interface Row {
   simulated_at: string | null;
   status: string;
   decline_category: string | null;
+  engagement_score: number | null;
+  engagement_label: string | null;
+  intent_prediction: string | null;
   packages: { title: string } | null;
 }
 
@@ -48,7 +52,7 @@ function CandidatesPage() {
       const { data } = await supabase
         .from("candidate_links")
         .select(
-          "id, package_id, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category, packages(title)",
+          "id, package_id, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category, engagement_score, engagement_label, intent_prediction, packages(title)",
         )
         .eq("organization_id", organization.id)
         .order("created_at", { ascending: false });
@@ -120,6 +124,7 @@ function CandidatesPage() {
                   <th className="px-5 py-3 font-medium">Candidat</th>
                   <th className="px-5 py-3 font-medium">Package</th>
                   <th className="px-5 py-3 font-medium">Activité</th>
+                  <th className="px-5 py-3 font-medium">Engagement</th>
                   <th className="px-5 py-3 font-medium">Décision</th>
                   <th className="px-5 py-3 font-medium">Envoyé</th>
                 </tr>
@@ -155,6 +160,17 @@ function CandidatesPage() {
                       </td>
                       <td className="px-5 py-4 text-aubergine-light">
                         {activity}
+                      </td>
+                      <td className="px-5 py-4">
+                        {r.engagement_score != null ? (
+                          <EngagementBadge
+                            score={r.engagement_score}
+                            label={r.engagement_label}
+                            intent={r.intent_prediction}
+                          />
+                        ) : (
+                          <span className="text-[11px] text-grey">—</span>
+                        )}
                       </td>
                       <td className="px-5 py-4">
                         <DecisionBadge status={r.status} />

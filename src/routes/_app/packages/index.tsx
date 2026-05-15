@@ -169,7 +169,7 @@ function PackageRow({
       onClick={() => navigate({ to: "/packages/$id", params: { id: pkg.id } })}
     >
       <div
-        className="w-10 h-10 rounded-full flex items-center justify-center text-[12px] font-medium font-display"
+        className="w-10 h-10 rounded-full flex items-center justify-center text-[12px] font-medium font-display shrink-0"
         style={{ background: "#F0EBE8", color: "#524970" }}
       >
         {initials || "—"}
@@ -187,33 +187,37 @@ function PackageRow({
           </span>
         </div>
       </div>
-      <div className="hidden sm:block text-right text-[12px] text-aubergine-light">
+      <div className="hidden sm:block text-right text-[12px] text-aubergine-light w-24 shrink-0">
         <div>{pkg.totalLinks} lien{pkg.totalLinks > 1 ? "s" : ""}</div>
         <div className="text-grey">{pkg.openedLinks} ouvert{pkg.openedLinks > 1 ? "s" : ""}</div>
         <div className="text-grey">{pkg.openRate}% ouv.</div>
       </div>
-      {pkg.attractivenessScore !== null && (
-        <div className="hidden md:flex items-center gap-1.5" title="Score d'attractivité IA">
-          <div className="w-14 h-1.5 bg-[#F0EBE8] rounded-full overflow-hidden">
-            <div
-              className="h-1.5 rounded-full"
-              style={{
-                width: `${pkg.attractivenessScore}%`,
-                background:
-                  pkg.attractivenessScore >= 80
-                    ? "#3B6D11"
-                    : pkg.attractivenessScore >= 60
-                      ? "#8B7FA8"
-                      : "#C4A882",
-              }}
-            />
-          </div>
-          <span className="text-[11px] text-grey">
-            {pkg.attractivenessScore}
-          </span>
-        </div>
-      )}
-      <div className="hidden md:block w-20" title={`Profil complété à ${pkg.richness}%`}>
+      <div className="hidden md:flex items-center gap-1.5 w-20 shrink-0" title="Score d'attractivité IA">
+        {pkg.attractivenessScore !== null ? (
+          <>
+            <div className="flex-1 h-1.5 bg-[#F0EBE8] rounded-full overflow-hidden">
+              <div
+                className="h-1.5 rounded-full"
+                style={{
+                  width: `${pkg.attractivenessScore}%`,
+                  background:
+                    pkg.attractivenessScore >= 80
+                      ? "#3B6D11"
+                      : pkg.attractivenessScore >= 60
+                        ? "#8B7FA8"
+                        : "#C4A882",
+                }}
+              />
+            </div>
+            <span className="text-[11px] text-grey w-6 text-right">
+              {pkg.attractivenessScore}
+            </span>
+          </>
+        ) : (
+          <span className="text-[11px] text-grey/50 w-full text-center">—</span>
+        )}
+      </div>
+      <div className="hidden md:block w-20 shrink-0" title={`Profil complété à ${pkg.richness}%`}>
         <div className="text-[10px] uppercase tracking-[0.1em] text-grey mb-1 text-right">
           {pkg.richness}%
         </div>
@@ -232,7 +236,9 @@ function PackageRow({
           />
         </div>
       </div>
-      <StatusPill status={pkg.status} />
+      <div className="w-20 shrink-0 flex justify-center">
+        <StatusPill status={pkg.status} />
+      </div>
       <div className="relative" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={() => setMenuOpen((m) => !m)}

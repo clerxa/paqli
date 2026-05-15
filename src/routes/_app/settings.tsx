@@ -1345,55 +1345,25 @@ function PlanTab() {
         </div>
       ) : (
         <>
-          <Card>
-            <div className="p-5 space-y-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-[11px] uppercase tracking-wider text-grey font-medium">
-                    Plan actuel
-                  </div>
-                  <div className="font-display text-aubergine mt-1" style={{ fontSize: 28 }}>
-                    {current.label}
-                  </div>
-                  <div className="text-sm text-grey mt-0.5">{current.price}</div>
-                </div>
-                <div
-                  className="px-3 py-1.5 rounded-full text-[11px] font-medium"
-                  style={{ background: "#F0EBE8", color: "#2D2640" }}
-                >
-                  {quota == null ? "Liens illimités" : `${quota} liens / mois`}
-                </div>
+          <div className="flex items-baseline justify-between">
+            <div>
+              <div className="text-[11px] uppercase tracking-wider text-grey font-medium">
+                Plan actuel
               </div>
-
-              <div className="space-y-2">
-                <div className="flex items-baseline justify-between">
-                  <div className="text-sm text-aubergine font-medium">
-                    {used}
-                    {quota != null && <span className="text-grey"> / {quota}</span>} liens utilisés ce mois
-                  </div>
-                  {quota != null && (
-                    <div className={`text-[12px] font-medium ${danger ? "text-[#B23A1F]" : "text-grey"}`}>
-                      {remaining} restant{(remaining ?? 0) > 1 ? "s" : ""}
-                    </div>
-                  )}
-                </div>
-                {quota != null && (
-                  <div className="h-2 rounded-full bg-[#F0EBE8] overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{
-                        width: `${pct}%`,
-                        background: danger ? "#B23A1F" : "#2D2640",
-                      }}
-                    />
-                  </div>
-                )}
-                <div className="text-[11px] text-grey">
-                  Le compteur se réinitialise le 1er de chaque mois.
-                </div>
+              <div className="font-display text-aubergine mt-1" style={{ fontSize: 22 }}>
+                {current.label} <span className="text-grey text-sm font-sans">— {current.price}</span>
               </div>
             </div>
-          </Card>
+            <div className="text-[12px] text-grey">
+              {used}
+              {quota != null ? ` / ${quota}` : ""} liens ce mois
+              {quota != null && (
+                <span className={`ml-2 font-medium ${danger ? "text-[#B23A1F]" : "text-aubergine"}`}>
+                  ({remaining} restant{(remaining ?? 0) > 1 ? "s" : ""})
+                </span>
+              )}
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Card>

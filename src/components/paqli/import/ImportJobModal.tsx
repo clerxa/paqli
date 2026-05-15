@@ -344,9 +344,16 @@ export function ImportJobModal({ onImported, onClose }: Props) {
                   </div>
                 )}
               </div>
-              {error && (
-                <div className="text-[11px] text-danger mb-3">{error}</div>
-              )}
+              <ErrorBlock
+                error={error}
+                alternatives={errorAlternatives}
+                onPickAlternative={(m) => {
+                  clearError();
+                  setFile(null);
+                  setInput("");
+                  setMethod(m);
+                }}
+              />
               <button
                 onClick={() => file && run({ file })}
                 disabled={!file || loading}

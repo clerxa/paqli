@@ -79,8 +79,12 @@ export function SalaryBreakdown({
   const employeeCharges = brut - net;
   const tax = net - netApresImpot;
 
-  const hasVariable = (variableTarget || 0) > 0;
-  const indicators: { label: string; weight: number }[] =
+  const components: LooseComponent[] = (variableConfig?.components ?? []).filter(
+    (c) => (c.amount || 0) > 0 || c.label.trim() || (c.indicators?.length ?? 0) > 0,
+  );
+  const hasComponents = components.length > 0;
+  const hasVariable = (variableTarget || 0) > 0 || hasComponents;
+  const legacyIndicators: LooseIndicator[] =
     variableConfig?.indicators?.filter((i) => i.label.trim()) ?? [];
 
   return (

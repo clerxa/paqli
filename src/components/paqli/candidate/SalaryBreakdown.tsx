@@ -68,7 +68,7 @@ export function SalaryBreakdown({
   const tax = net - netApresImpot;
 
   const hasVariable = (variableTarget || 0) > 0;
-  const indicators = variableConfig?.indicators?.filter((i) => i.label.trim()) ?? [];
+  const indicators = variableConfig?.indicators?.filter((i: { label: string }) => i.label.trim()) ?? [];
 
   return (
     <div className="rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] bg-white overflow-hidden">

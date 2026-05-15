@@ -12,6 +12,7 @@ import { Button } from "@/components/paqli/Button";
 import { Skeleton } from "@/components/paqli/Skeleton";
 import { FollowUpAlertsCard } from "@/components/paqli/FollowUpAlertsCard";
 import { CounterOfferModal } from "@/components/paqli/CounterOfferModal";
+import { EngagementBadge } from "@/components/paqli/EngagementBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { seedDemoData } from "@/lib/seedDemo";
 import {

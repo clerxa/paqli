@@ -4,7 +4,7 @@ import type { SavingsDeviceForm, SavingsType } from "@/lib/packageConfig";
 
 const types: { value: SavingsType; label: string; icon: string }[] = [
   { value: "pee", label: "PEE", icon: "🏦" },
-  { value: "perco", label: "PERCO", icon: "🐷" },
+  { value: "perco", label: "PERCO", icon: "🌴" },
   { value: "interessement", label: "Intéressement", icon: "📈" },
   { value: "participation", label: "Participation", icon: "💰" },
 ];

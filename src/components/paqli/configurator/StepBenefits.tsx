@@ -4,6 +4,7 @@ import {
   BENEFIT_CATALOG,
   CATEGORY_LABELS,
   GYMLIB_LEVELS,
+  VISIBLE_CATEGORIES,
   buildSavingsMessage,
   calcBenefitsTotal,
   estimateBenefitValue,
@@ -13,7 +14,7 @@ import {
   type PackageBenefit,
 } from "@/lib/benefitCatalog";
 
-const CATEGORIES = Object.keys(CATEGORY_LABELS) as BenefitCategory[];
+const CATEGORIES = VISIBLE_CATEGORIES;
 
 export function StepBenefits() {
   const { config, patch } = usePackageConfig();
@@ -284,6 +285,35 @@ export function StepBenefits() {
         })}
       </div>
 
+      {/* Avantages personnalisés (catégorie active) */}
+      <CustomBenefitsSection
+        category={activeCategory}
+        benefits={selected.filter(
+          (b) => b.category === activeCategory && b.benefit_key.startsWith("custom:"),
+        )}
+        onAdd={() => {
+          const id =
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : Math.random().toString(36).slice(2);
+          setSelected([
+            ...selected,
+            {
+              benefit_key: `custom:${id}`,
+              category: activeCategory,
+              value_type: "fixed",
+              custom_label: "",
+              annual_value: 0,
+              monthly_value: null,
+            },
+          ]);
+        }}
+        onUpdate={(key, p) => updateBenefit(key, p)}
+        onRemove={(key) =>
+          setSelected(selected.filter((b) => b.benefit_key !== key))
+        }
+      />
+
       {/* Récap Total Compensation */}
       {selected.length > 0 && (
         <div className="rounded-xl p-5" style={{ background: "#2D2640" }}>
@@ -348,6 +378,122 @@ function Row({
       <span style={{ color: accent ? "#C4A882" : "white" }}>
         {value > 0 ? `${value.toLocaleString("fr-FR")} €` : "—"}
       </span>
+    </div>
+  );
+}
+
+function CustomBenefitsSection({
+  category,
+  benefits,
+  onAdd,
+  onUpdate,
+  onRemove,
+}: {
+  category: BenefitCategory;
+  benefits: PackageBenefit[];
+  onAdd: () => void;
+  onUpdate: (key: string, p: Partial<PackageBenefit>) => void;
+  onRemove: (key: string) => void;
+}) {
+  return (
+    <div
+      className="rounded-xl p-4"
+      style={{ background: "#FAF8F5", border: "1px dashed rgba(45,38,64,0.15)" }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <div className="text-[12px] font-medium text-aubergine">
+            Avantage sur mesure
+          </div>
+          <div className="text-[11px] text-grey mt-0.5">
+            Catégorie « {CATEGORY_LABELS[category]} ». Pour les avantages spécifiques à votre entreprise.
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onAdd}
+          className="text-[11px] font-medium px-3 py-1.5 rounded-md border border-aubergine text-aubergine hover:bg-aubergine hover:text-white transition-colors"
+        >
+          + Ajouter
+        </button>
+      </div>
+
+      {benefits.length > 0 && (
+        <div className="space-y-2">
+          {benefits.map((b) => (
+            <div
+              key={b.benefit_key}
+              className="bg-white rounded-lg p-3 border border-[rgba(45,38,64,0.08)] space-y-2"
+            >
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={b.custom_label ?? ""}
+                  onChange={(e) =>
+                    onUpdate(b.benefit_key, { custom_label: e.target.value })
+                  }
+                  placeholder="Nom de l'avantage (ex : Cours de yoga hebdo)"
+                  className="flex-1 text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white"
+                  maxLength={80}
+                />
+                <button
+                  type="button"
+                  onClick={() => onRemove(b.benefit_key)}
+                  className="text-grey hover:text-danger px-2 text-[12px]"
+                  aria-label="Supprimer"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <select
+                  value={b.value_type}
+                  onChange={(e) =>
+                    onUpdate(b.benefit_key, {
+                      value_type: e.target.value as PackageBenefit["value_type"],
+                      annual_value:
+                        e.target.value === "qualitative" ? null : b.annual_value,
+                    })
+                  }
+                  className="text-[12px] px-2 py-1.5 rounded-md border border-[rgba(45,38,64,0.15)] bg-white"
+                >
+                  <option value="fixed">Valeur fixe</option>
+                  <option value="estimated">Valeur estimée</option>
+                  <option value="qualitative">Qualitatif (non chiffré)</option>
+                </select>
+                {b.value_type !== "qualitative" && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={0}
+                      value={b.annual_value ?? ""}
+                      onChange={(e) =>
+                        onUpdate(b.benefit_key, {
+                          annual_value: parseFloat(e.target.value) || 0,
+                          monthly_value: null,
+                        })
+                      }
+                      placeholder="0"
+                      className="w-28 text-[12px] px-2 py-1.5 rounded-md border border-[rgba(45,38,64,0.15)] bg-white"
+                    />
+                    <span className="text-[11px] text-grey">€/an</span>
+                  </div>
+                )}
+              </div>
+              <input
+                type="text"
+                value={b.custom_note ?? ""}
+                onChange={(e) =>
+                  onUpdate(b.benefit_key, { custom_note: e.target.value })
+                }
+                placeholder="Note (optionnel) — ex : depuis 2 ans, plébiscité par l'équipe"
+                className="w-full text-[11px] px-3 py-1.5 rounded-md border border-[rgba(45,38,64,0.08)] focus:outline-none focus:border-aubergine bg-white text-grey"
+                maxLength={120}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

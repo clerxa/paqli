@@ -2,20 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { useJobs } from "@/hooks/useJobs";
 import { applyJobToConfig } from "@/lib/jobsService";
-import {
-  Chip,
-  EduBanner,
-  NumberField,
-  TextArea,
-  TextField,
-} from "./fields";
-import type {
-  ContractType,
-  GrowthPath,
-  ManagerStyle,
-  ProcessStep,
-  RemotePolicy,
-} from "@/lib/packageConfig";
+import { Chip, TextArea, TextField } from "./fields";
+import type { ContractType, RemotePolicy } from "@/lib/packageConfig";
 
 const CONTRACT_OPTIONS: { value: ContractType; label: string }[] = [
   { value: "cdi", label: "CDI" },
@@ -37,51 +25,6 @@ const REMOTE_OPTIONS: {
   { value: "on_site", icon: "🏬", label: "Sur site", desc: "100 % sur site" },
 ];
 
-const MANAGER_OPTIONS: {
-  value: ManagerStyle;
-  icon: string;
-  label: string;
-  desc: string;
-}[] = [
-  { value: "autonomy", icon: "🎯", label: "Autonomie forte", desc: "Vous gérez votre agenda" },
-  { value: "coaching", icon: "🤝", label: "Coaching", desc: "Manager disponible et impliqué" },
-  { value: "structured", icon: "📋", label: "Structuré", desc: "Processus clairs et cadrés" },
-  { value: "collaborative", icon: "💬", label: "Collaboratif", desc: "Décisions collectives" },
-];
-
-const TEAM_SIZE_OPTIONS = [
-  { v: 3, l: "1-3" },
-  { v: 8, l: "4-8" },
-  { v: 15, l: "9-15" },
-  { v: 99, l: "15+" },
-];
-
-const VALUE_SUGGESTIONS = [
-  "Transparence",
-  "Impact",
-  "Bienveillance",
-  "Excellence",
-  "Agilité",
-  "Diversité",
-  "Équilibre vie pro/perso",
-  "Innovation",
-];
-
-const GROWTH_HORIZONS = ["6 mois", "1 an", "2 ans", "3 ans+"];
-
-const PROCESS_TEMPLATES: Record<string, ProcessStep[]> = {
-  Tech: [
-    { step: "Screening RH", duration: "30 min" },
-    { step: "Entretien technique", duration: "1h" },
-    { step: "Code review", duration: "45 min" },
-    { step: "Rencontre équipe", duration: "30 min" },
-  ],
-  Rapide: [
-    { step: "Screening RH", duration: "30 min" },
-    { step: "Entretien manager", duration: "1h" },
-  ],
-};
-
 export function Step0Job() {
   const { config, setConfig, patch } = usePackageConfig();
   const { jobs } = useJobs();
@@ -99,61 +42,14 @@ export function Step0Job() {
     patch({ missions: config.missions.filter((_, j) => j !== i) });
   }
 
-  function toggleValue(v: string) {
-    const exists = config.companyValues.includes(v);
-    const next = exists
-      ? config.companyValues.filter((x) => x !== v)
-      : config.companyValues.length < 5
-        ? [...config.companyValues, v]
-        : config.companyValues;
-    patch({ companyValues: next });
-  }
-
-  function setGrowth(i: number, p: Partial<GrowthPath>) {
-    const next = [...config.growthPaths];
-    next[i] = { ...next[i], ...p };
-    patch({ growthPaths: next });
-  }
-  function addGrowth() {
-    if (config.growthPaths.length >= 3) return;
-    patch({
-      growthPaths: [...config.growthPaths, { horizon: "1 an", path: "" }],
-    });
-  }
-  function removeGrowth(i: number) {
-    patch({ growthPaths: config.growthPaths.filter((_, j) => j !== i) });
-  }
-
-  function setStep(i: number, p: Partial<ProcessStep>) {
-    const next = [...config.processSteps];
-    next[i] = { ...next[i], ...p };
-    patch({ processSteps: next });
-  }
-  function addStep() {
-    if (config.processSteps.length >= 6) return;
-    patch({
-      processSteps: [...config.processSteps, { step: "", duration: "" }],
-    });
-  }
-  function removeStep(i: number) {
-    patch({ processSteps: config.processSteps.filter((_, j) => j !== i) });
-  }
-  function loadTemplate(t: keyof typeof PROCESS_TEMPLATES) {
-    patch({ processSteps: PROCESS_TEMPLATES[t] });
-  }
-
   return (
     <div className="space-y-7">
       <header>
-        <h2
-          className="font-display text-aubergine"
-          style={{ fontSize: 22, lineHeight: 1.2 }}
-        >
+        <h2 className="font-display text-aubergine" style={{ fontSize: 22, lineHeight: 1.2 }}>
           Le poste
         </h2>
         <p className="text-[12px] text-aubergine-light mt-1.5 leading-relaxed">
-          Ces informations aident le candidat à comprendre pourquoi ce rôle est
-          fait pour lui — avant même de regarder le package financier.
+          Décrivez ce qui rend ce rôle unique — missions, environnement et flexibilité.
         </p>
       </header>
 
@@ -169,8 +65,7 @@ export function Step0Job() {
           </span>
         </div>
         <p className="text-[11px] text-aubergine-light mb-3 leading-relaxed">
-          Sélectionnez une offre existante pour copier toutes les informations
-          du poste. Vous pourrez ensuite tout modifier librement pour ce package.
+          Sélectionnez une offre existante pour copier toutes les informations du poste.
         </p>
         <div className="flex flex-wrap gap-2 items-center">
           <select
@@ -195,16 +90,12 @@ export function Step0Job() {
               </option>
             ))}
           </select>
-          <Link
-            to="/jobs/new"
-            className="text-[12px] text-aubergine hover:underline whitespace-nowrap"
-          >
+          <Link to="/jobs/new" className="text-[12px] text-aubergine hover:underline whitespace-nowrap">
             + Nouvelle offre
           </Link>
         </div>
       </div>
 
-      {/* Titre + Accroche */}
       <Section title="Identité">
         <TextField
           label="Intitulé du poste"
@@ -220,21 +111,16 @@ export function Step0Job() {
             </span>
             <textarea
               value={config.jobSummary}
-              onChange={(e) =>
-                patch({ jobSummary: e.target.value.slice(0, 200) })
-              }
+              onChange={(e) => patch({ jobSummary: e.target.value.slice(0, 200) })}
               placeholder="Rejoignez une équipe de 6 engineers qui construit l'infrastructure data de la prochaine licorne française."
               rows={3}
               className="w-full text-[13px] mt-1 px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white resize-none"
             />
           </label>
-          <div className="text-[11px] text-grey mt-1 text-right">
-            {config.jobSummary.length}/200
-          </div>
+          <div className="text-[11px] text-grey mt-1 text-right">{config.jobSummary.length}/200</div>
         </div>
       </Section>
 
-      {/* Le poste */}
       <Section title="Le poste">
         <div>
           <SubLabel required>Type de contrat</SubLabel>
@@ -253,15 +139,11 @@ export function Step0Job() {
 
         <div>
           <SubLabel required>Missions principales</SubLabel>
-          <div className="text-[11px] text-grey mt-0.5 mb-2">
-            3 à 5 missions, max 5
-          </div>
+          <div className="text-[11px] text-grey mt-0.5 mb-2">3 à 5 missions, max 5</div>
           <div className="space-y-2">
             {config.missions.map((m, i) => (
               <div key={i} className="flex gap-2 items-start">
-                <span className="text-[11px] text-grey mt-2.5 w-4 text-right shrink-0">
-                  {i + 1}.
-                </span>
+                <span className="text-[11px] text-grey mt-2.5 w-4 text-right shrink-0">{i + 1}.</span>
                 <input
                   type="text"
                   value={m}
@@ -301,7 +183,6 @@ export function Step0Job() {
         </div>
       </Section>
 
-      {/* Flexibilité */}
       <Section title="Flexibilité">
         <div>
           <SubLabel required>Politique télétravail</SubLabel>
@@ -351,7 +232,6 @@ export function Step0Job() {
         />
       </Section>
 
-      {/* Localisation */}
       <Section title="Localisation">
         <TextField
           label="Ville / lieu de travail"
@@ -369,264 +249,28 @@ export function Step0Job() {
         />
       </Section>
 
-      {/* Équipe & management */}
-      <Section title="Équipe & management">
-        <div>
-          <SubLabel>Taille de l'équipe directe</SubLabel>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {TEAM_SIZE_OPTIONS.map((o) => (
-              <Chip
-                key={o.v}
-                selected={config.teamSize === o.v}
-                onClick={() => patch({ teamSize: o.v })}
-              >
-                {o.l}
-              </Chip>
-            ))}
-          </div>
-        </div>
-
-        <TextArea
-          label="Description de l'équipe"
-          value={config.teamDescription}
-          onChange={(v) => patch({ teamDescription: v })}
-          placeholder="Une équipe de 6 engineers, 2 PM et 1 designer. Environnement bienveillant, feedback régulier."
-          maxLength={300}
+      <Section title="Démarrage">
+        <TextField
+          label="Date de démarrage souhaitée"
+          value={config.startDate}
+          onChange={(v) => patch({ startDate: v })}
+          placeholder="Dès que possible"
         />
-
-        <div>
-          <SubLabel>Style de management</SubLabel>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {MANAGER_OPTIONS.map((o) => (
-              <CardChoice
-                key={o.value}
-                selected={config.managerStyle === o.value}
-                icon={o.icon}
-                label={o.label}
-                desc={o.desc}
-                onClick={() => patch({ managerStyle: o.value })}
-              />
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      {/* Culture & valeurs */}
-      <Section title="Culture & valeurs">
-        <div>
-          <SubLabel>Valeurs de l'entreprise</SubLabel>
-          <div className="text-[11px] text-grey mt-0.5 mb-2">
-            Sélectionnez jusqu'à 5 valeurs ({config.companyValues.length}/5)
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {VALUE_SUGGESTIONS.map((v) => (
-              <Chip
-                key={v}
-                selected={config.companyValues.includes(v)}
-                onClick={() => toggleValue(v)}
-              >
-                {v}
-              </Chip>
-            ))}
-          </div>
-        </div>
-
-        <TextArea
-          label="Note culture"
-          value={config.cultureNote}
-          onChange={(v) => patch({ cultureNote: v })}
-          placeholder="Réunion d'équipe hebdomadaire, off-site 2x/an, budget team building, pas de réunions après 18h."
-          maxLength={300}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <TextField
-            label="Glassdoor (URL)"
-            value={config.glassdoorUrl}
-            onChange={(v) => patch({ glassdoorUrl: v })}
-            placeholder="https://glassdoor.com/..."
-            maxLength={500}
-          />
-          <TextField
-            label="Welcome to the Jungle (URL)"
-            value={config.wtjUrl}
-            onChange={(v) => patch({ wtjUrl: v })}
-            placeholder="https://welcometothejungle.com/..."
-            maxLength={500}
-          />
-        </div>
-        <EduBanner>
-          Ces liens permettent au candidat de vérifier les avis avant de
-          décider.
-        </EduBanner>
-      </Section>
-
-      {/* Perspectives d'évolution */}
-      <Section title="Perspectives d'évolution">
-        <div>
-          <SubLabel>Évolutions possibles (max 3)</SubLabel>
-          <div className="space-y-2 mt-2">
-            {config.growthPaths.map((g, i) => (
-              <div key={i} className="flex flex-wrap gap-2 items-start">
-                <select
-                  value={g.horizon}
-                  onChange={(e) => setGrowth(i, { horizon: e.target.value })}
-                  className="text-[12px] px-2 py-2 rounded-md border border-[rgba(45,38,64,0.15)] bg-white"
-                >
-                  {GROWTH_HORIZONS.map((h) => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  value={g.path}
-                  onChange={(e) => setGrowth(i, { path: e.target.value })}
-                  placeholder="Lead Engineer possible"
-                  className="flex-1 min-w-[180px] text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeGrowth(i)}
-                  className="text-grey hover:text-danger px-2 text-[12px]"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-            {config.growthPaths.length < 3 && (
-              <button
-                type="button"
-                onClick={addGrowth}
-                className="text-[12px] text-aubergine hover:underline"
-              >
-                + Ajouter une perspective
-              </button>
-            )}
-          </div>
-        </div>
-
-        <NumberField
-          label="Budget formation annuel"
-          value={config.trainingBudget ?? 0}
-          onChange={(v) => patch({ trainingBudget: v || null })}
-          placeholder="2000"
-          suffix="€"
-          hint="Conférences, formations, livres, certifications"
-        />
-
-        <TextArea
-          label="Note onboarding"
-          value={config.onboardingNote}
-          onChange={(v) => patch({ onboardingNote: v })}
-          placeholder="Onboarding structuré sur 3 mois avec buddy dédié, accès à toute la documentation interne dès J1."
-          maxLength={300}
-        />
-      </Section>
-
-      {/* Process */}
-      <Section title="Processus de recrutement">
-        <div>
-          <div className="flex items-center justify-between">
-            <SubLabel>Étapes du process (max 6)</SubLabel>
-            <div className="flex gap-2">
-              {Object.keys(PROCESS_TEMPLATES).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => loadTemplate(t)}
-                  className="text-[11px] text-aubergine hover:underline"
-                >
-                  Modèle {t}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-2 mt-2">
-            {config.processSteps.map((s, i) => (
-              <div key={i} className="flex gap-2 items-start">
-                <span className="text-[11px] text-grey mt-2.5 w-4 text-right shrink-0">
-                  {i + 1}.
-                </span>
-                <input
-                  type="text"
-                  value={s.step}
-                  onChange={(e) => setStep(i, { step: e.target.value })}
-                  placeholder="Entretien RH"
-                  className="flex-1 text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white"
-                />
-                <input
-                  type="text"
-                  value={s.duration}
-                  onChange={(e) => setStep(i, { duration: e.target.value })}
-                  placeholder="30 min"
-                  className="w-24 text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeStep(i)}
-                  className="text-grey hover:text-danger px-2 text-[12px]"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-            {config.processSteps.length < 6 && (
-              <button
-                type="button"
-                onClick={addStep}
-                className="text-[12px] text-aubergine hover:underline"
-              >
-                + Ajouter une étape
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <TextField
-            label="Durée totale du processus"
-            value={config.processDuration}
-            onChange={(v) => patch({ processDuration: v })}
-            placeholder="2 à 3 semaines"
-          />
-          <TextField
-            label="Date de démarrage souhaitée"
-            value={config.startDate}
-            onChange={(v) => patch({ startDate: v })}
-            placeholder="Dès que possible"
-          />
-        </div>
       </Section>
     </div>
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3">
-      <div className="text-[11px] uppercase tracking-[0.15em] text-grey font-medium">
-        {title}
-      </div>
+      <div className="text-[11px] uppercase tracking-[0.15em] text-grey font-medium">{title}</div>
       <div className="space-y-3">{children}</div>
     </section>
   );
 }
 
-function SubLabel({
-  children,
-  required,
-}: {
-  children: React.ReactNode;
-  required?: boolean;
-}) {
+function SubLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
     <span className="text-[12px] text-aubergine-light font-medium">
       {children}
@@ -659,10 +303,7 @@ function CardChoice({
       }}
     >
       <div className="text-[14px]">{icon}</div>
-      <div
-        className="text-[12px] font-medium mt-1"
-        style={{ color: selected ? "#2D2640" : "#524970" }}
-      >
+      <div className="text-[12px] font-medium mt-1" style={{ color: selected ? "#2D2640" : "#524970" }}>
         {label}
       </div>
       <div className="text-[11px] text-grey mt-0.5">{desc}</div>
@@ -684,9 +325,7 @@ function Toggle({
   return (
     <div>
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[12px] text-aubergine-light font-medium">
-          {label}
-        </span>
+        <span className="text-[12px] text-aubergine-light font-medium">{label}</span>
         <button
           type="button"
           onClick={() => onChange(!value)}
@@ -758,9 +397,7 @@ function TagInput({
         }}
         className="w-full text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white"
       />
-      <div className="text-[11px] text-grey mt-1">
-        Entrée ou virgule pour valider
-      </div>
+      <div className="text-[11px] text-grey mt-1">Entrée ou virgule pour valider</div>
     </div>
   );
 }

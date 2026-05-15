@@ -8,6 +8,7 @@ import { LegalNotice } from "@/components/paqli/LegalNotice";
 import { Stepper } from "./Stepper";
 import { PreviewPanel } from "./PreviewPanel";
 import { SaveIndicator } from "./SaveIndicator";
+import { StepCompany } from "./StepCompany";
 import { Step0Job } from "./Step0Job";
 import { Step1Fixed } from "./Step1Fixed";
 import { StepBenefits } from "./StepBenefits";
@@ -40,7 +41,7 @@ export function Configurator() {
       }
     }
     await saveDraft();
-    if (config.currentStep < 6) {
+    if (config.currentStep < 7) {
       const next = config.currentStep + 1;
       setStep(next);
       setMaxReached((m) => Math.max(m, next));
@@ -55,18 +56,20 @@ export function Configurator() {
   const stepNode = useMemo(() => {
     switch (config.currentStep) {
       case 0:
-        return <Step0Job />;
+        return <StepCompany />;
       case 1:
-        return <Step1Fixed />;
+        return <Step0Job />;
       case 2:
-        return <StepBenefits />;
+        return <Step1Fixed />;
       case 3:
-        return <Step2Equity />;
+        return <StepBenefits />;
       case 4:
-        return <Step3Savings />;
+        return <Step2Equity />;
       case 5:
         return <Step4Scenarios />;
       case 6:
+        return <Step3Savings />;
+      case 7:
         return <Step5Preview />;
       default:
         return null;
@@ -97,7 +100,7 @@ export function Configurator() {
               Enregistrer
             </Button>
             <Button onClick={goNext}>
-              {config.currentStep === 6 ? "Terminer" : "Suivant →"}
+              {config.currentStep === 7 ? "Terminer" : "Suivant →"}
             </Button>
           </div>
         }
@@ -121,12 +124,12 @@ export function Configurator() {
               <Button
                 variant="ghost"
                 onClick={goPrev}
-                disabled={config.currentStep === 1}
+                disabled={config.currentStep === 0}
               >
                 ← Précédent
               </Button>
               <Button onClick={goNext}>
-                {config.currentStep === 6 ? "Terminer" : "Suivant →"}
+                {config.currentStep === 7 ? "Terminer" : "Suivant →"}
               </Button>
             </div>
           </Card>

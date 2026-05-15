@@ -302,6 +302,119 @@ export function Step5Preview() {
           </div>
         </div>
 
+        {/* Date limite de décision */}
+        <div className="border-t border-[rgba(45,38,64,0.06)] pt-4">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div>
+              <div className="text-[12px] text-aubergine-light font-medium">
+                Date limite de décision <span className="text-grey">(optionnel)</span>
+              </div>
+              <div className="text-[11px] text-grey mt-0.5">
+                Le candidat verra un compte à rebours sur sa page
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setDeadlineEnabled((v) => {
+                  const next = !v;
+                  if (next && !deadline) setQuickDeadline(7);
+                  return next;
+                });
+              }}
+              className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${
+                deadlineEnabled ? "bg-[#2D2640]" : "bg-[#D3D1C7]"
+              }`}
+              aria-pressed={deadlineEnabled}
+            >
+              <span
+                className="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform"
+                style={{ transform: deadlineEnabled ? "translateX(22px)" : "translateX(2px)" }}
+              />
+            </button>
+          </div>
+
+          {deadlineEnabled && (
+            <div className="space-y-3 mt-3">
+              <div>
+                <div className="text-[11px] text-grey mb-1.5">Délai depuis maintenant</div>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: "3 jours", days: 3 as number | null },
+                    { label: "5 jours", days: 5 as number | null },
+                    { label: "1 semaine", days: 7 as number | null },
+                    { label: "2 semaines", days: 14 as number | null },
+                    { label: "Personnalisé", days: null as number | null },
+                  ].map((opt) => {
+                    const isSelected =
+                      opt.days !== null && !customDeadline && deadline
+                        ? Math.abs(
+                            deadline.getTime() -
+                              new Date(new Date().setHours(18, 0, 0, 0) + opt.days * 86400000).getTime(),
+                          ) < 60_000
+                        : opt.days === null && customDeadline;
+                    return (
+                      <Chip
+                        key={opt.label}
+                        selected={isSelected}
+                        onClick={() => {
+                          if (opt.days !== null) {
+                            setQuickDeadline(opt.days);
+                          } else {
+                            setCustomDeadline(true);
+                          }
+                        }}
+                      >
+                        {opt.label}
+                      </Chip>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {customDeadline && (
+                <div>
+                  <div className="text-[11px] text-grey mb-1.5">Date et heure exactes</div>
+                  <input
+                    type="datetime-local"
+                    value={deadline ? fmtDatetimeLocal(deadline) : ""}
+                    onChange={(e) => {
+                      if (e.target.value) setDeadline(new Date(e.target.value));
+                    }}
+                    className="w-full h-9 px-3 border border-[rgba(45,38,64,0.12)] rounded-lg text-[13px] text-aubergine outline-none"
+                  />
+                </div>
+              )}
+
+              {deadline && (
+                <div className="flex items-start gap-2 rounded-lg p-3" style={{ background: "#FAEEDA" }}>
+                  <span>📅</span>
+                  <div className="text-[12px] text-[#7A5417]">
+                    L'offre expire le{" "}
+                    <strong>
+                      {deadline.toLocaleDateString("fr-FR", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </strong>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-start gap-2 rounded-lg p-3 bg-[rgba(139,127,168,0.08)]">
+                <span>💡</span>
+                <div className="text-[11px] text-aubergine-light leading-relaxed">
+                  Le candidat verra la date limite sur sa page. Après expiration,
+                  l'offre est marquée comme « Expirée » mais la messagerie reste accessible.
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="space-y-3">
           <div className="text-[12px] text-aubergine-light font-medium">
             Envoyer directement par email (optionnel)

@@ -73,6 +73,7 @@ function SettingsPage() {
       {tab === "company" && <CompanyTab />}
       {tab === "users" && <UsersTab />}
       {tab === "benchmark" && <BenchmarkTab />}
+      {tab === "plan" && <PlanTab />}
     </>
   );
 }

@@ -152,8 +152,8 @@ export function Sidebar() {
         }`}
         style={{ width: 220, background: "#2D2640", minHeight: "100vh" }}
       >
-        <div className="px-5 pt-6 pb-2 flex items-center justify-between">
-          <Logo variant="light" />
+        <div className="px-3 pt-6 pb-2 flex items-center justify-between gap-2">
+          <Logo variant="light" className="!h-auto w-full max-w-full" />
           <button
             type="button"
             onClick={() => setOpen(false)}

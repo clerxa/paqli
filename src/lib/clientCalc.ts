@@ -1,5 +1,11 @@
 // Client-side fiscal estimation engine for Paqli candidate view
 // Rates hardcoded for 2026 — used for real-time recalculation
+import {
+  type PackageBenefit,
+  calcBenefitsTotal,
+  estimateBenefitValue,
+  getBenefitDef,
+} from "./benefitCatalog";
 
 export const TAX_2026 = {
   FLAT_TAX: 0.314,

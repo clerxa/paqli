@@ -32,6 +32,10 @@ interface OrgProfile {
   culture_note: string;
   links: CompanyLink[];
   source_urls: string[];
+  siret: string;
+  address_street: string;
+  address_zip: string;
+  address_city: string;
 }
 
 const empty: OrgProfile = {
@@ -42,6 +46,10 @@ const empty: OrgProfile = {
   culture_note: "",
   links: [],
   source_urls: [],
+  siret: "",
+  address_street: "",
+  address_zip: "",
+  address_city: "",
 };
 
 function SettingsPage() {
@@ -59,7 +67,7 @@ function SettingsPage() {
       const { data } = await supabase
         .from("organizations")
         .select(
-          "name, description, key_figures, values, culture_note, links, source_urls",
+          "name, description, key_figures, values, culture_note, links, source_urls, siret, address_street, address_zip, address_city",
         )
         .eq("id", organization.id)
         .maybeSingle();
@@ -74,6 +82,10 @@ function SettingsPage() {
           culture_note: data.culture_note ?? "",
           links: Array.isArray(data.links) ? (data.links as unknown as CompanyLink[]) : [],
           source_urls: Array.isArray(data.source_urls) ? data.source_urls : [],
+          siret: data.siret ?? "",
+          address_street: data.address_street ?? "",
+          address_zip: data.address_zip ?? "",
+          address_city: data.address_city ?? "",
         });
       }
       setLoading(false);
@@ -82,6 +94,10 @@ function SettingsPage() {
 
   async function save() {
     if (!organization?.id) return;
+    if (profile.siret && profile.siret.length !== 14) {
+      toast.error("Le SIRET doit contenir 14 chiffres");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from("organizations")
@@ -93,6 +109,10 @@ function SettingsPage() {
         culture_note: profile.culture_note || null,
         links: profile.links as any,
         source_urls: profile.source_urls,
+        siret: profile.siret || null,
+        address_street: profile.address_street || null,
+        address_zip: profile.address_zip || null,
+        address_city: profile.address_city || null,
       })
       .eq("id", organization.id);
     setSaving(false);
@@ -243,6 +263,58 @@ function SettingsPage() {
               className={inputCls}
             />
           </Field>
+          <div className="mt-4">
+            <Field label="SIRET (requis pour la promesse d'embauche)">
+              <input
+                value={profile.siret}
+                onChange={(e) =>
+                  setProfile((p) => ({
+                    ...p,
+                    siret: e.target.value.replace(/\s/g, ""),
+                  }))
+                }
+                placeholder="12345678900012"
+                maxLength={14}
+                className={inputCls}
+              />
+              {profile.siret && profile.siret.length !== 14 && (
+                <p className="text-[11px] text-danger mt-1">
+                  Le SIRET doit contenir 14 chiffres
+                </p>
+              )}
+            </Field>
+          </div>
+          <div className="mt-4">
+            <Field label="Adresse du siège social">
+              <input
+                value={profile.address_street}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, address_street: e.target.value }))
+                }
+                placeholder="42 Avenue des Champs-Élysées"
+                className={`${inputCls} mb-2`}
+              />
+              <div className="flex gap-2">
+                <input
+                  value={profile.address_zip}
+                  onChange={(e) =>
+                    setProfile((p) => ({ ...p, address_zip: e.target.value }))
+                  }
+                  placeholder="75008"
+                  maxLength={5}
+                  className={`${inputCls} w-24`}
+                />
+                <input
+                  value={profile.address_city}
+                  onChange={(e) =>
+                    setProfile((p) => ({ ...p, address_city: e.target.value }))
+                  }
+                  placeholder="Paris"
+                  className={`${inputCls} flex-1`}
+                />
+              </div>
+            </Field>
+          </div>
         </Card>
 
         {/* Présentation */}

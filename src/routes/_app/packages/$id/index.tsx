@@ -13,6 +13,7 @@ import { CounterOfferModal, type CounterOfferOriginal } from "@/components/paqli
 import { EngagementBadge } from "@/components/paqli/EngagementBadge";
 import { BehaviorView } from "@/components/paqli/BehaviorView";
 import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
+import { OfferLetterModal } from "@/components/paqli/OfferLetterModal";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -64,6 +65,7 @@ function PackageDetail() {
   const [counterOfferFor, setCounterOfferFor] = useState<CounterOfferOriginal | null>(null);
   const [previewPas, setPreviewPas] = useState(0.30);
   const [previewAchievement, setPreviewAchievement] = useState(1);
+  const [offerLetterFor, setOfferLetterFor] = useState<{ linkId: string; name: string } | null>(null);
 
   async function reload() {
     const [p, l] = await Promise.all([
@@ -371,6 +373,19 @@ function PackageDetail() {
                               Contre-offre
                             </button>
                           )}
+                          {l.status === "accepted" && (
+                            <button
+                              onClick={() =>
+                                setOfferLetterFor({
+                                  linkId: l.id,
+                                  name: l.candidate_name || "ce candidat",
+                                })
+                              }
+                              className="text-[11px] text-[#3B6D11] font-medium hover:underline"
+                            >
+                              Promesse d'embauche
+                            </button>
+                          )}
                           <button
                             onClick={() =>
                               setExpandedLinkId(isExpanded ? null : l.id)
@@ -442,6 +457,15 @@ function PackageDetail() {
             setCounterOfferFor(null);
             reload();
           }}
+        />
+      )}
+
+      {offerLetterFor && (
+        <OfferLetterModal
+          linkId={offerLetterFor.linkId}
+          candidateName={offerLetterFor.name}
+          onClose={() => setOfferLetterFor(null)}
+          onSent={reload}
         />
       )}
     </>

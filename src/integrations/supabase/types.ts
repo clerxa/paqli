@@ -537,8 +537,82 @@ export type Database = {
           },
         ]
       }
+      offer_letters: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          link_id: string
+          organization_id: string
+          package_id: string
+          pdf_path: string | null
+          sent_at: string | null
+          snapshot: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          link_id: string
+          organization_id: string
+          package_id: string
+          pdf_path?: string | null
+          sent_at?: string | null
+          snapshot: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          link_id?: string
+          organization_id?: string
+          package_id?: string
+          pdf_path?: string | null
+          sent_at?: string | null
+          snapshot?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_letters_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_letters_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_letters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_letters_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
+          address_city: string | null
+          address_street: string | null
+          address_zip: string | null
           created_at: string
           culture_note: string | null
           description: string | null
@@ -548,12 +622,16 @@ export type Database = {
           logo_url: string | null
           name: string
           plan: string
+          siret: string | null
           slug: string
           source_urls: string[]
           updated_at: string
           values: string[]
         }
         Insert: {
+          address_city?: string | null
+          address_street?: string | null
+          address_zip?: string | null
           created_at?: string
           culture_note?: string | null
           description?: string | null
@@ -563,12 +641,16 @@ export type Database = {
           logo_url?: string | null
           name: string
           plan?: string
+          siret?: string | null
           slug: string
           source_urls?: string[]
           updated_at?: string
           values?: string[]
         }
         Update: {
+          address_city?: string | null
+          address_street?: string | null
+          address_zip?: string | null
           created_at?: string
           culture_note?: string | null
           description?: string | null
@@ -578,6 +660,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           plan?: string
+          siret?: string | null
           slug?: string
           source_urls?: string[]
           updated_at?: string
@@ -622,6 +705,8 @@ export type Database = {
           team_size: number | null
           title: string
           training_budget: number | null
+          trial_period_months: number | null
+          trial_period_renewable: boolean | null
           updated_at: string
           variable_config: Json
           variable_target: number | null
@@ -663,6 +748,8 @@ export type Database = {
           team_size?: number | null
           title: string
           training_budget?: number | null
+          trial_period_months?: number | null
+          trial_period_renewable?: boolean | null
           updated_at?: string
           variable_config?: Json
           variable_target?: number | null
@@ -704,6 +791,8 @@ export type Database = {
           team_size?: number | null
           title?: string
           training_budget?: number | null
+          trial_period_months?: number | null
+          trial_period_renewable?: boolean | null
           updated_at?: string
           variable_config?: Json
           variable_target?: number | null

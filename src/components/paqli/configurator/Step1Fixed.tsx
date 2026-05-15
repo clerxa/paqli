@@ -213,6 +213,56 @@ export function Step1Fixed() {
           )}
         </div>
       )}
+
+      <TrialPeriodSection />
+    </div>
+  );
+}
+
+function TrialPeriodSection() {
+  const { config, patch } = usePackageConfig();
+  const options: { label: string; value: number | null }[] = [
+    { label: "Aucune", value: null },
+    { label: "1 mois", value: 1 },
+    { label: "2 mois", value: 2 },
+    { label: "3 mois", value: 3 },
+    { label: "4 mois", value: 4 },
+  ];
+  return (
+    <div className="pt-4 border-t border-[rgba(45,38,64,0.06)]">
+      <div className="text-[11px] text-grey uppercase tracking-wider mb-2">
+        Période d'essai
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => (
+          <Chip
+            key={String(opt.value)}
+            selected={config.trialPeriodMonths === opt.value}
+            onClick={() => {
+              patch({
+                trialPeriodMonths: opt.value,
+                trialPeriodRenewable: opt.value ? config.trialPeriodRenewable : false,
+              });
+            }}
+          >
+            {opt.label}
+          </Chip>
+        ))}
+      </div>
+      {config.trialPeriodMonths != null && (
+        <label className="mt-3 inline-flex items-center gap-2 text-[12px] text-aubergine cursor-pointer">
+          <input
+            type="checkbox"
+            checked={config.trialPeriodRenewable}
+            onChange={(e) => patch({ trialPeriodRenewable: e.target.checked })}
+            className="rounded"
+          />
+          Renouvelable une fois
+        </label>
+      )}
+      <p className="text-[11px] text-grey mt-2">
+        Ces informations apparaîtront dans la promesse d'embauche.
+      </p>
     </div>
   );
 }

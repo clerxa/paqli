@@ -146,7 +146,7 @@ export const generateOfferLetter = createServerFn({ method: "POST" })
         organization_id: org.id,
         package_id: pkg.id,
         created_by: userId,
-        snapshot: snapshot as unknown as Record<string, unknown>,
+        snapshot: snapshot as any,
         status: "draft",
         pdf_path: pdfPath,
       })
@@ -207,7 +207,7 @@ export const sendOfferLetter = createServerFn({ method: "POST" })
     await supabase.from("link_events").insert({
       link_id: letter.link_id,
       event_type: "offer_letter_sent",
-      metadata: { letterId: letter.id } as unknown as Record<string, unknown>,
+      metadata: { letterId: letter.id } as any,
     });
 
     return { success: true as const };

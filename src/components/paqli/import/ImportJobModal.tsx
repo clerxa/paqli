@@ -536,3 +536,53 @@ function Chip({ children }: { children: React.ReactNode }) {
     </span>
   );
 }
+
+function ErrorBlock({
+  error,
+  alternatives,
+  onPickAlternative,
+}: {
+  error: string | null;
+  alternatives: ImportErrorAlternative[] | null;
+  onPickAlternative: (m: "url" | "text" | "file") => void;
+}) {
+  if (!error) return null;
+  return (
+    <div className="space-y-3 mb-3">
+      <div className="flex items-start gap-2 bg-[#FCEBEB] border border-[rgba(184,90,106,0.2)] rounded-xl px-4 py-3">
+        <span className="text-[14px] flex-shrink-0">⚠️</span>
+        <p className="text-[12px] text-[#A32D2D] font-light leading-relaxed">
+          {error}
+        </p>
+      </div>
+      {alternatives && alternatives.length > 0 && (
+        <div>
+          <p className="text-[11px] text-[#9B97A0] font-medium mb-2">
+            Alternatives disponibles :
+          </p>
+          <div className="space-y-2">
+            {alternatives.map((alt) => (
+              <button
+                key={alt.method}
+                onClick={() => onPickAlternative(alt.method)}
+                className="w-full flex items-start gap-3 p-3 border border-[rgba(45,38,64,0.1)] rounded-xl text-left hover:border-[rgba(139,127,168,0.3)] hover:bg-[#F5F2FA] transition-all"
+              >
+                <span className="text-xl flex-shrink-0">
+                  {alt.method === "text" ? "📝" : alt.method === "url" ? "🔗" : "📄"}
+                </span>
+                <div>
+                  <div className="text-[12px] font-medium text-[#2D2640]">
+                    {alt.label}
+                  </div>
+                  <div className="text-[11px] text-[#9B97A0] font-light mt-0.5">
+                    {alt.description}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

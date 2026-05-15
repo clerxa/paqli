@@ -13,6 +13,7 @@ import { CounterOfferModal, type CounterOfferOriginal } from "@/components/paqli
 import { EngagementBadge } from "@/components/paqli/EngagementBadge";
 import { BehaviorView } from "@/components/paqli/BehaviorView";
 import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
+import { estimatePasRate } from "@/lib/clientCalc";
 import { OfferLetterModal } from "@/components/paqli/OfferLetterModal";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
@@ -64,6 +65,7 @@ function PackageDetail() {
   const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
   const [counterOfferFor, setCounterOfferFor] = useState<CounterOfferOriginal | null>(null);
   const [previewPas, setPreviewPas] = useState(0.30);
+  const [previewPasAuto, setPreviewPasAuto] = useState(true);
   const [previewAchievement, setPreviewAchievement] = useState(1);
   const [offerLetterFor, setOfferLetterFor] = useState<{ linkId: string; name: string } | null>(null);
 
@@ -85,6 +87,16 @@ function PackageDetail() {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // Estimation auto du PAS dès que le package est chargé / changé
+  useEffect(() => {
+    if (!pkg) return;
+    const totalGross = (pkg.grossSalary ?? 0) + (pkg.variableTarget ?? 0);
+    if (totalGross > 0 && previewPasAuto) {
+      setPreviewPas(estimatePasRate(totalGross));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pkg?.grossSalary, pkg?.variableTarget]);
 
   if (loading) {
     return (
@@ -256,7 +268,11 @@ function PackageDetail() {
             <SalaryBreakdown
               grossAnnual={pkg.grossSalary}
               pasRate={previewPas}
-              onPasRateChange={setPreviewPas}
+              pasAuto={previewPasAuto}
+              onPasRateChange={(v) => {
+                setPreviewPasAuto(false);
+                setPreviewPas(v);
+              }}
               variableTarget={pkg.variableTarget}
               achievementPct={previewAchievement}
               onAchievementPctChange={setPreviewAchievement}

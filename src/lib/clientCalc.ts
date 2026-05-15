@@ -15,6 +15,50 @@ export const BSPCE_TAX_HIGH_SENIORITY =
 export const BSPCE_TAX_LOW_SENIORITY =
   TAX_2026.IR_BSPCE_UNDER_3Y + TAX_2026.PS_RATE; // 0.486 < 3 ans
 
+// Barème IR 2026 — célibataire, 1 part fiscale
+const IR_BRACKETS_2026: { upTo: number; rate: number }[] = [
+  { upTo: 11497, rate: 0 },
+  { upTo: 29315, rate: 0.11 },
+  { upTo: 83823, rate: 0.30 },
+  { upTo: 180294, rate: 0.41 },
+  { upTo: Infinity, rate: 0.45 },
+];
+
+/**
+ * Estime un taux de prélèvement à la source moyen à partir du brut annuel
+ * total (fixe + variable cible). Hypothèse : célibataire, 1 part, abattement
+ * forfaitaire 10%. Indicatif uniquement.
+ */
+export function estimatePasRate(grossAnnual: number): number {
+  if (!Number.isFinite(grossAnnual) || grossAnnual <= 0) return 0;
+  // net imposable ≈ brut − cotisations salariales − abattement 10%
+  const netImposable = grossAnnual * (1 - TAX_2026.SOCIAL_CHARGES_SALARY) * 0.9;
+  let remaining = netImposable;
+  let prev = 0;
+  let tax = 0;
+  for (const b of IR_BRACKETS_2026) {
+    const slice = Math.max(0, Math.min(remaining, b.upTo - prev));
+    tax += slice * b.rate;
+    remaining -= slice;
+    prev = b.upTo;
+    if (remaining <= 0) break;
+  }
+  const rate = tax / netImposable;
+  // Borne raisonnable
+  return Math.max(0, Math.min(0.45, Math.round(rate * 1000) / 1000));
+}
+
+/** Estime la TMI applicable au brut annuel donné. */
+export function estimateTmi(grossAnnual: number): TMI {
+  if (!Number.isFinite(grossAnnual) || grossAnnual <= 0) return 0.11;
+  const netImposable = grossAnnual * (1 - TAX_2026.SOCIAL_CHARGES_SALARY) * 0.9;
+  if (netImposable <= 11497) return 0.11;
+  if (netImposable <= 29315) return 0.11;
+  if (netImposable <= 83823) return 0.30;
+  if (netImposable <= 180294) return 0.41;
+  return 0.45;
+}
+
 export type TMI = 0.11 | 0.30 | 0.41 | 0.45;
 
 export interface CandidateParams {

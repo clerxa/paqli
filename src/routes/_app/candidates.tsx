@@ -52,7 +52,7 @@ function CandidatesPage() {
       const { data } = await supabase
         .from("candidate_links")
         .select(
-          "id, package_id, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category, packages(title)",
+          "id, package_id, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category, engagement_score, engagement_label, intent_prediction, packages(title)",
         )
         .eq("organization_id", organization.id)
         .order("created_at", { ascending: false });

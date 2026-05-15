@@ -217,6 +217,13 @@ function PackageView({
         </div>
       </section>
 
+      {data.decisionDeadline && (
+        <DecisionDeadlineBanner
+          deadline={data.decisionDeadline}
+          status={data.offerStatus}
+        />
+      )}
+
       {/* Tabs */}
       <TabBar tab={tab} onChange={setTab} />
 

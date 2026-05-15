@@ -22,6 +22,7 @@ import {
   DecisionBlock,
   CandidateMessagingBlock,
 } from "@/components/paqli/candidate/DecisionBlocks";
+import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
 
 export const Route = createFileRoute("/p/$token")({
   component: PublicPackagePage,
@@ -118,6 +119,12 @@ function PackageView({
     seniority: 3,
     peeContribution: 0,
   });
+  // Taux de prélèvement à la source — pré-rempli depuis la TMI, ajustable
+  const [pasRate, setPasRate] = useState<number>(0.30);
+  const pasTouched = useRef(false);
+  useEffect(() => {
+    if (!pasTouched.current) setPasRate(params.tmi);
+  }, [params.tmi]);
 
   // Debounced tracking
   const trackTimer = useRef<number | null>(null);
@@ -288,13 +295,20 @@ function PackageView({
         </div>
       </div>
 
+      {/* Salaire — bloc pédagogique dépliable */}
+      <div className="mb-4">
+        <SalaryBreakdown
+          grossAnnual={pkg.gross_salary ?? 0}
+          pasRate={pasRate}
+          onPasRateChange={(v) => {
+            pasTouched.current = true;
+            setPasRate(v);
+          }}
+        />
+      </div>
+
       {/* Lignes */}
       <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-4 space-y-3">
-        <DetailLine
-          label="Salaire fixe estimé"
-          value={estimate.salaryEst}
-          info={`Brut ${formatEur(pkg.gross_salary ?? 0)} · estimation après charges sociales et impôt (TMI ${Math.round(params.tmi * 100)}%).`}
-        />
         {(pkg.variable_target ?? 0) > 0 && (
           <DetailLine
             label="Variable estimé"

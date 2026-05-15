@@ -23,6 +23,9 @@ interface Row {
   simulated_at: string | null;
   status: string;
   decline_category: string | null;
+  engagement_score: number | null;
+  engagement_label: string | null;
+  intent_prediction: string | null;
   packages: { title: string } | null;
 }
 

@@ -1265,6 +1265,19 @@ function Assistant({
           </div>
         )}
       </div>
+      {quotaExceeded && (
+        <div
+          className="text-[12px] mb-3 px-3 py-2 rounded-md"
+          style={{
+            background: "#F0EBE8",
+            color: "#2D2640",
+            border: "1px solid rgba(139,127,168,0.2)",
+          }}
+        >
+          💬 Limite de questions atteinte. Utilisez la messagerie ci-dessous pour
+          contacter directement l'équipe RH.
+        </div>
+      )}
       <div className="flex items-end gap-2">
         <textarea
           value={input}
@@ -1275,14 +1288,19 @@ function Assistant({
               void send();
             }
           }}
-          placeholder="Ex : Que se passe-t-il avec mes BSPCE si l'entreprise est rachetée ?"
+          placeholder={
+            quotaExceeded
+              ? "Limite atteinte — utilisez la messagerie."
+              : "Ex : Que se passe-t-il avec mes BSPCE si l'entreprise est rachetée ?"
+          }
           rows={2}
-          className="flex-1 text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white resize-none"
+          disabled={quotaExceeded}
+          className="flex-1 text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white resize-none disabled:opacity-50"
         />
         <button
           type="button"
           onClick={() => void send()}
-          disabled={loading || !input.trim()}
+          disabled={loading || !input.trim() || quotaExceeded}
           className="p-2.5 rounded-md text-lin disabled:opacity-50"
           style={{ background: "#2D2640" }}
           aria-label="Envoyer"

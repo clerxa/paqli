@@ -8,6 +8,24 @@ export async function generateCandidateLink(
   expiresInDays: number | null = 30,
   decisionDeadline?: Date | null,
 ): Promise<{ token: string; id: string }> {
+  // Check monthly quota before creating
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("monthly_link_quota")
+    .eq("id", orgId)
+    .maybeSingle();
+
+  const quota = org?.monthly_link_quota as number | null | undefined;
+  if (quota != null) {
+    const { data: usedRaw } = await supabase.rpc("links_sent_this_month", { _org_id: orgId });
+    const used = typeof usedRaw === "number" ? usedRaw : 0;
+    if (used >= quota) {
+      throw new Error(
+        `Quota mensuel atteint (${used}/${quota} liens). Passez à un plan supérieur pour en envoyer davantage.`,
+      );
+    }
+  }
+
   let expiresAt: string | null = null;
   if (expiresInDays) {
     const d = new Date();

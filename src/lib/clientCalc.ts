@@ -109,7 +109,17 @@ export interface PackageData {
   start_date?: string | null;
   benchmark?: SalaryBenchmark | null;
 
-  organizations: { name: string; logo_url: string | null } | null;
+  organizations:
+    | {
+        name: string;
+        logo_url: string | null;
+        description?: string | null;
+        key_figures?: { label: string; value: string }[];
+        values?: string[];
+        culture_note?: string | null;
+        links?: { label: string; url: string; type?: string | null }[];
+      }
+    | null;
   equity_devices: EquityDeviceRow[];
   savings_devices: SavingsDeviceRow[];
   scenarios: ScenarioRow[];

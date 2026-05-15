@@ -207,42 +207,181 @@ const InputSchema = z
     message: "url, text ou file requis",
   });
 
+// Detection thresholds for PDF / text extraction
+const PDF_MIN_CHARS = 150;
+const PDF_MIN_WORDS = 20;
+
+interface PdfExtractionResult {
+  text: string;
+  charCount: number;
+  wordCount: number;
+  isLikelyScanned: boolean;
+  isInsufficient: boolean;
+}
+
+function analyzePdfExtraction(rawText: string): PdfExtractionResult {
+  const cleaned = (rawText ?? "").replace(/\s+/g, " ").trim();
+  const charCount = cleaned.length;
+  const words = cleaned.match(/[a-zA-ZÀ-ÿ]{2,}/g) ?? [];
+  const wordCount = words.length;
+  const isLikelyScanned = charCount < PDF_MIN_CHARS;
+  const isInsufficient =
+    charCount < PDF_MIN_CHARS || wordCount < PDF_MIN_WORDS;
+  return { text: cleaned, charCount, wordCount, isLikelyScanned, isInsufficient };
+}
+
+export type ImportErrorCode =
+  | "PDF_SCANNED"
+  | "PDF_INSUFFICIENT"
+  | "TEXT_INSUFFICIENT"
+  | "URL_UNREACHABLE"
+  | "URL_TIMEOUT"
+  | "EXTRACTION_FAILED"
+  | "UNSUPPORTED_FORMAT"
+  | "FILE_TOO_LARGE";
+
+export interface ImportErrorAlternative {
+  method: "text" | "url" | "file";
+  label: string;
+  description: string;
+}
+
+export interface ImportJobError {
+  code: ImportErrorCode;
+  message: string;
+  alternatives: ImportErrorAlternative[];
+  debug?: Record<string, unknown>;
+}
+
+export type ImportJobResult =
+  | { success: true; data: ImportedJobData }
+  | { success: false; error: ImportJobError };
+
+const ALT_TEXT: ImportErrorAlternative = {
+  method: "text",
+  label: "Coller le texte de l'annonce",
+  description:
+    "Copiez-collez le contenu depuis votre PDF ouvert dans un lecteur.",
+};
+const ALT_URL: ImportErrorAlternative = {
+  method: "url",
+  label: "Importer depuis une URL",
+  description:
+    "Si l'annonce est publiée en ligne, collez le lien directement.",
+};
+
+function fail(error: ImportJobError): ImportJobResult {
+  return { success: false, error };
+}
+
 export const importJobPostingFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => InputSchema.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<ImportJobResult> => {
     let rawText = "";
     let sourceUrl: string | undefined;
 
     if (data.url) {
       sourceUrl = data.url;
-      rawText = await fetchPageContent(data.url);
+      try {
+        rawText = await fetchPageContent(data.url);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return fail({
+          code: /timeout/i.test(msg) ? "URL_TIMEOUT" : "URL_UNREACHABLE",
+          message: msg || "URL inaccessible",
+          alternatives: [ALT_TEXT],
+        });
+      }
     } else if (data.text) {
-      rawText = data.text;
+      const trimmed = data.text.trim();
+      const wordCount = (trimmed.match(/[a-zA-ZÀ-ÿ]{2,}/g) ?? []).length;
+      if (trimmed.length < PDF_MIN_CHARS || wordCount < PDF_MIN_WORDS) {
+        return fail({
+          code: "TEXT_INSUFFICIENT",
+          message:
+            `Le texte collé est trop court (${wordCount} mots détectés). ` +
+            "Collez l'intégralité de votre annonce pour une extraction fiable.",
+          alternatives: [],
+          debug: { charCount: trimmed.length, wordCount },
+        });
+      }
+      rawText = trimmed;
     } else if (data.file) {
       const bin = Uint8Array.from(atob(data.file.base64), (c) =>
         c.charCodeAt(0),
       );
-      if (bin.byteLength > 5 * 1024 * 1024)
-        throw new Error("Fichier trop volumineux (max 5 Mo)");
+      if (bin.byteLength > 5 * 1024 * 1024) {
+        return fail({
+          code: "FILE_TOO_LARGE",
+          message: "Fichier trop volumineux (max 5 Mo)",
+          alternatives: [ALT_TEXT],
+        });
+      }
       const name = data.file.name.toLowerCase();
       if (name.endsWith(".txt")) {
         rawText = new TextDecoder("utf-8").decode(bin);
       } else if (name.endsWith(".pdf")) {
-        rawText = extractPdfText(bin);
+        let extractedRaw = "";
+        try {
+          extractedRaw = extractPdfText(bin);
+        } catch {
+          extractedRaw = "";
+        }
+        const analysis = analyzePdfExtraction(extractedRaw);
+        if (analysis.isInsufficient) {
+          const isProbablyScanned = analysis.charCount < 50;
+          return fail({
+            code: isProbablyScanned ? "PDF_SCANNED" : "PDF_INSUFFICIENT",
+            message: isProbablyScanned
+              ? "Ce PDF semble être un document scanné (image). " +
+                "L'extraction automatique ne fonctionne pas sur les scans. " +
+                "Utilisez « Coller le texte » pour importer votre annonce."
+              : `Ce PDF contient trop peu de texte exploitable ` +
+                `(${analysis.wordCount} mots détectés, minimum requis : ${PDF_MIN_WORDS}). ` +
+                "Vérifiez que le fichier n'est pas protégé ou corrompu. " +
+                "Utilisez « Coller le texte » comme alternative.",
+            alternatives: [ALT_TEXT, ALT_URL],
+            debug: {
+              charCount: analysis.charCount,
+              wordCount: analysis.wordCount,
+              fileName: data.file.name,
+            },
+          });
+        }
+        rawText = analysis.text;
+        console.log(
+          `[importJob] PDF extrait OK — ${analysis.charCount} chars, ${analysis.wordCount} mots, fichier: ${data.file.name}`,
+        );
       } else if (name.endsWith(".docx")) {
         rawText = extractDocxText(bin);
       } else {
-        throw new Error(
-          "Format non supporté. Utilisez PDF, Word (.docx) ou TXT.",
-        );
+        return fail({
+          code: "UNSUPPORTED_FORMAT",
+          message: "Format non supporté. Utilisez PDF, Word (.docx) ou TXT.",
+          alternatives: [ALT_TEXT],
+        });
       }
     }
 
-    if (!rawText || rawText.trim().length < 50)
-      throw new Error("Contenu insuffisant pour l'analyse");
+    if (!rawText || rawText.trim().length < 50) {
+      return fail({
+        code: "PDF_INSUFFICIENT",
+        message: "Contenu insuffisant pour l'analyse",
+        alternatives: [ALT_TEXT],
+      });
+    }
 
     const truncated = rawText.slice(0, 12000);
-    const extracted = await extractWithClaude(truncated, sourceUrl);
-    return { data: extracted };
+    try {
+      const extracted = await extractWithClaude(truncated, sourceUrl);
+      return { success: true, data: extracted };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return fail({
+        code: "EXTRACTION_FAILED",
+        message: msg || "L'analyse n'a pas pu extraire les informations.",
+        alternatives: [ALT_TEXT],
+      });
+    }
   });

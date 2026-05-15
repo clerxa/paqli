@@ -33,12 +33,13 @@ export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
 });
 
-type TabKey = "company" | "users" | "benchmark";
+type TabKey = "company" | "users" | "benchmark" | "plan";
 
 const TABS: { key: TabKey; label: string; icon: typeof Building2 }[] = [
   { key: "company", label: "Mon entreprise", icon: Building2 },
   { key: "users", label: "Utilisateurs", icon: UsersIcon },
   { key: "benchmark", label: "Benchmark", icon: Target },
+  { key: "plan", label: "Plan", icon: CreditCard },
 ];
 
 function SettingsPage() {

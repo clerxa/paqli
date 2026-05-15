@@ -16,6 +16,9 @@ import {
 import { Logo } from "./Logo";
 import { useAuth } from "@/hooks/useAuth";
 import { useMobileNav } from "./MobileNav";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getLinkQuotaFn } from "@/lib/linkQuota.functions";
 
 interface NavItem {
   to?: string;

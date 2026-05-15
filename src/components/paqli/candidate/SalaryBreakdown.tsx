@@ -52,6 +52,7 @@ const FREQUENCY_LABELS: Record<string, string> = {
 export function SalaryBreakdown({
   grossAnnual,
   pasRate,
+  pasAuto = false,
   onPasRateChange,
   variableTarget = 0,
   achievementPct = 1,
@@ -60,6 +61,7 @@ export function SalaryBreakdown({
 }: {
   grossAnnual: number;
   pasRate: number; // 0..1
+  pasAuto?: boolean;
   onPasRateChange: (v: number) => void;
   variableTarget?: number;
   achievementPct?: number; // 0..1.5 typically

@@ -13,6 +13,8 @@ import {
   Target,
   Trash2,
   CheckCircle2,
+  CreditCard,
+  Zap,
 } from "lucide-react";
 import { Topbar } from "@/components/paqli/Topbar";
 import { Card } from "@/components/paqli/Card";

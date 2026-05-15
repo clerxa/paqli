@@ -373,6 +373,19 @@ function PackageDetail() {
                               Contre-offre
                             </button>
                           )}
+                          {l.status === "accepted" && (
+                            <button
+                              onClick={() =>
+                                setOfferLetterFor({
+                                  linkId: l.id,
+                                  name: l.candidate_name || "ce candidat",
+                                })
+                              }
+                              className="text-[11px] text-[#3B6D11] font-medium hover:underline"
+                            >
+                              Promesse d'embauche
+                            </button>
+                          )}
                           <button
                             onClick={() =>
                               setExpandedLinkId(isExpanded ? null : l.id)

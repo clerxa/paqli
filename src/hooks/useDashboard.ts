@@ -70,6 +70,18 @@ export interface FollowUpAlert {
   declineCategory?: string | null;
 }
 
+export interface EngagementRow {
+  linkId: string;
+  packageId: string | null;
+  candidateName: string;
+  packageTitle: string;
+  score: number;
+  label: string | null;
+  intent: string | null;
+  status: string;
+  createdAt: string;
+}
+
 export function useDashboard() {
   const { organization } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);

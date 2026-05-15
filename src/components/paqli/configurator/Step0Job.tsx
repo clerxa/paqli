@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { reformulateInterviewNotesFn } from "@/lib/aiAssistant.functions";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { useJobs } from "@/hooks/useJobs";
 import { applyJobToConfig } from "@/lib/jobsService";

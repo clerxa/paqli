@@ -171,6 +171,7 @@ export interface PackageConfig {
   processSteps: ProcessStep[];
   processDuration: string;
   startDate: string;
+  interviewNotes: string;
 
   // Steps 1-3
   grossSalary: number;
@@ -233,6 +234,7 @@ export const emptyConfig: PackageConfig = {
   processSteps: [],
   processDuration: "",
   startDate: "",
+  interviewNotes: "",
 
   grossSalary: 0,
   variableTarget: 0,

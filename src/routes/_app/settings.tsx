@@ -1410,7 +1410,7 @@ function PlanTab() {
                     19€
                   </div>
                   <Button
-                    variant="secondary"
+                    variant="ghost"
                     onClick={() =>
                       toast.info("Paiement bientôt disponible — contactez-nous pour ajouter un pack.")
                     }

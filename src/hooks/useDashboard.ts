@@ -280,8 +280,39 @@ export function useDashboard() {
     acceptedCount,
     declinedCount,
     followUpAlerts,
+    engagement,
     loading,
   };
+}
+
+function buildEngagementList(
+  links: Array<{
+    id: string;
+    candidate_name: string | null;
+    package_id: string | null;
+    created_at: string;
+    status: string;
+    engagement_score: number | null;
+    engagement_label: string | null;
+    intent_prediction: string | null;
+    packages?: { title: string } | null;
+  }>,
+): EngagementRow[] {
+  return links
+    .filter((l) => l.engagement_score != null)
+    .map((l) => ({
+      linkId: l.id,
+      packageId: l.package_id,
+      candidateName: l.candidate_name ?? "Candidat",
+      packageTitle: l.packages?.title ?? "",
+      score: l.engagement_score ?? 0,
+      label: l.engagement_label,
+      intent: l.intent_prediction,
+      status: l.status,
+      createdAt: l.created_at,
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6);
 }
 
 const COUNTERABLE_CATEGORIES = new Set(["salary", "equity", "location"]);

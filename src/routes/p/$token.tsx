@@ -1117,6 +1117,7 @@ function Assistant({
   >([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
   const ask = useServerFn(askCandidateAssistant);
   const track = useServerFn(trackLink);
 

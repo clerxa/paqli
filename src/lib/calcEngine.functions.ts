@@ -152,9 +152,12 @@ export const calcEngine = createServerFn({ method: "POST" })
       : 0;
 
     const base = salaryEst + variableEst + benefitsEst + peeEst + interEst + partEst;
-    const realisteEq = equityResults.find((s) => s.label === "realiste")?.estimate ?? 0;
+    const realisteEq = equityResults.find((s) => s.label === "realiste");
+    const realisteHigh = realisteEq?.estimate_high_seniority ?? realisteEq?.estimate ?? 0;
+    const realisteLow = realisteEq?.estimate_low_seniority ?? realisteHigh;
     const pessEq = equityResults.find((s) => s.label === "pessimiste")?.estimate ?? 0;
     const optiEq = equityResults.find((s) => s.label === "optimiste")?.estimate ?? 0;
+    const hasBspce = equityResults.some((s) => s.is_multi_rate);
 
     const result = {
       salary_estimate: salaryEst,
@@ -165,10 +168,13 @@ export const calcEngine = createServerFn({ method: "POST" })
       participation_estimate: partEst,
       equity_by_scenario: equityResults,
       total_range: {
-        low: roundForDisplay(base + (pessEq || realisteEq)),
-        mid: roundForDisplay(base + realisteEq),
-        high: roundForDisplay(base + (optiEq || realisteEq)),
+        low: roundForDisplay(base + (pessEq || realisteHigh)),
+        mid: roundForDisplay(base + realisteHigh),
+        high: roundForDisplay(base + (optiEq || realisteHigh)),
+        low_seniority: roundForDisplay(base + (hasBspce ? realisteLow : realisteHigh)),
+        high_seniority: roundForDisplay(base + realisteHigh),
       },
+      has_bspce: hasBspce,
       disclaimers: DISCLAIMERS,
       computed_at: new Date().toISOString(),
     };

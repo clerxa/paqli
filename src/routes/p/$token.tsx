@@ -555,7 +555,6 @@ function PackageView({
 
       {tab === "next" && (
         <>
-          <ProcessSection pkg={pkg} />
           <div data-section="decision">
             {data.decisionDeadline &&
             new Date(data.decisionDeadline) < new Date() &&

@@ -285,34 +285,38 @@ function SettingsPage() {
             </Field>
           </div>
           <div className="mt-4">
-            <Field label="Adresse du siège social">
+            <Field label="Adresse du siège social (rue)">
               <input
                 value={profile.address_street}
                 onChange={(e) =>
                   setProfile((p) => ({ ...p, address_street: e.target.value }))
                 }
                 placeholder="42 Avenue des Champs-Élysées"
-                className={`${inputCls} mb-2`}
+                className={inputCls}
               />
-              <div className="flex gap-2">
-                <input
-                  value={profile.address_zip}
-                  onChange={(e) =>
-                    setProfile((p) => ({ ...p, address_zip: e.target.value }))
-                  }
-                  placeholder="75008"
-                  maxLength={5}
-                  className={`${inputCls} w-24`}
-                />
-                <input
-                  value={profile.address_city}
-                  onChange={(e) =>
-                    setProfile((p) => ({ ...p, address_city: e.target.value }))
-                  }
-                  placeholder="Paris"
-                  className={`${inputCls} flex-1`}
-                />
-              </div>
+            </Field>
+          </div>
+          <div className="mt-4 grid grid-cols-[120px_1fr] gap-3">
+            <Field label="Code postal">
+              <input
+                value={profile.address_zip}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, address_zip: e.target.value }))
+                }
+                placeholder="75008"
+                maxLength={5}
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Ville">
+              <input
+                value={profile.address_city}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, address_city: e.target.value }))
+                }
+                placeholder="Paris"
+                className={inputCls}
+              />
             </Field>
           </div>
         </Card>

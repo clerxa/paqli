@@ -365,11 +365,23 @@ function PackageView({
           {hasEquity && scenariosToShow.length > 0 && (
             <>
               <SectionTitle className="mt-8">Equity — scénarios de valorisation</SectionTitle>
-              <div data-section="equity_scenarios" className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <div data-section="equity_scenarios" className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                 {scenariosToShow.map((s) => (
                   <ScenarioCard key={s.label} scenario={s} onView={() => behavior.trackScenarioView(s.label)} />
                 ))}
               </div>
+              {estimate.hasBspce && (
+                <div className="mb-4 flex items-start gap-2 rounded-xl px-4 py-3" style={{ background: "#F0EBE8" }}>
+                  <span className="text-[13px] flex-shrink-0">💡</span>
+                  <p className="text-[11px] text-aubergine-light font-light leading-relaxed">
+                    Pour les BSPCE, le taux d'imposition dépend de votre ancienneté
+                    dans l'entreprise au moment de la vente. Après 3 ans, le taux
+                    global passe de <strong>48,6%</strong> à <strong>31,4%</strong> —
+                    une différence significative sur les gains importants. Ces règles
+                    s'appliquent au moment de la <strong>cession</strong>, pas de l'exercice.
+                  </p>
+                </div>
+              )}
               {pkg.scenario_message && (
                 <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-4 mb-4">
                   <p className="text-[13px] text-aubergine-light leading-relaxed italic">« {pkg.scenario_message} »</p>

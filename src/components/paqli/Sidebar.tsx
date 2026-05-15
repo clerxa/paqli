@@ -101,6 +101,59 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+const PLAN_LABELS: Record<string, string> = {
+  starter: "Starter",
+  pro: "Pro",
+  business: "Business",
+  enterprise: "Enterprise",
+};
+
+function PlanWidget() {
+  const fetchQuota = useServerFn(getLinkQuotaFn);
+  const { organization } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["link-quota"],
+    queryFn: () => fetchQuota(),
+    enabled: !!organization,
+    staleTime: 60_000,
+  });
+  if (!data) return null;
+  const { used, quota, plan } = data;
+  const pct = quota == null || quota === 0 ? 0 : Math.min(100, Math.round((used / quota) * 100));
+  const danger = quota != null && used >= quota;
+  return (
+    <Link
+      to="/settings"
+      search={{ tab: "plan" } as never}
+      className="block mt-2 px-3 py-2.5 rounded-lg transition-colors hover:bg-[rgba(250,248,245,0.06)]"
+    >
+      <div className="flex items-center justify-between text-[11px]">
+        <span style={{ color: "#FAF8F5" }} className="font-medium">
+          Plan {PLAN_LABELS[plan ?? "starter"] ?? "Starter"}
+        </span>
+        <span style={{ color: "#B8AECF" }}>
+          {used}
+          {quota != null ? `/${quota}` : ""}
+        </span>
+      </div>
+      {quota != null && (
+        <div
+          className="h-1 mt-1.5 rounded-full overflow-hidden"
+          style={{ background: "rgba(250,248,245,0.10)" }}
+        >
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${pct}%`,
+              background: danger ? "#E07A5F" : "#C4A882",
+            }}
+          />
+        </div>
+      )}
+    </Link>
+  );
+}
+
 export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { profile, organization, signOut, user } = useAuth();

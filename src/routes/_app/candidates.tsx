@@ -4,6 +4,7 @@ import { Topbar } from "@/components/paqli/Topbar";
 import { Card } from "@/components/paqli/Card";
 import { Button } from "@/components/paqli/Button";
 import { Skeleton } from "@/components/paqli/Skeleton";
+import { EngagementBadge } from "@/components/paqli/EngagementBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";

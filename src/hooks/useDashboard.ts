@@ -192,7 +192,7 @@ export function useDashboard() {
   }
 
   async function loadActivity(
-    links: Array<{ id: string; candidate_name: string | null; package_id: string }>,
+    links: Array<{ id: string; candidate_name: string | null; package_id: string | null }>,
   ): Promise<ActivityItem[]> {
     if (!links.length) return [];
     const { data: events } = await supabase
@@ -212,7 +212,7 @@ export function useDashboard() {
         type: event.event_type as ActivityType,
         candidateName: link?.candidate_name ?? "Candidat",
         linkId: event.link_id,
-        packageId: link?.package_id,
+        packageId: link?.package_id ?? undefined,
         createdAt: event.created_at,
       };
     });
@@ -277,7 +277,7 @@ function buildFollowUpAlerts(
     id: string;
     token: string;
     candidate_name: string | null;
-    package_id: string;
+    package_id: string | null;
     created_at: string;
     opened_at: string | null;
     simulated_at: string | null;
@@ -291,6 +291,8 @@ function buildFollowUpAlerts(
   const alerts: FollowUpAlert[] = [];
 
   for (const l of links) {
+    if (!l.package_id) continue; // package supprimé : pas d'action de suivi
+    const packageId = l.package_id;
     const candidateName = l.candidate_name ?? "Candidat";
     const packageTitle = l.packages?.title ?? "";
 
@@ -302,7 +304,7 @@ function buildFollowUpAlerts(
         token: l.token,
         candidateName,
         packageTitle,
-        packageId: l.package_id,
+        packageId,
         message: "A décliné — contre-offre possible",
         cta: "Faire une contre-offre",
         declineCategory: l.decline_category,
@@ -324,7 +326,7 @@ function buildFollowUpAlerts(
           token: l.token,
           candidateName,
           packageTitle,
-          packageId: l.package_id,
+          packageId,
           message: `L'offre expire dans ${Math.max(1, Math.round(hoursLeft))}h — pas encore de réponse`,
           cta: "Relancer",
         });
@@ -338,7 +340,7 @@ function buildFollowUpAlerts(
           token: l.token,
           candidateName,
           packageTitle,
-          packageId: l.package_id,
+          packageId,
           message: "Offre expirée sans réponse — relancer ?",
           cta: "Envoyer un message",
         });
@@ -361,7 +363,7 @@ function buildFollowUpAlerts(
         token: l.token,
         candidateName,
         packageTitle,
-        packageId: l.package_id,
+        packageId,
         message: `A simulé il y a ${Math.round(hSim!)}h sans répondre`,
         cta: "Envoyer un message",
       });
@@ -373,7 +375,7 @@ function buildFollowUpAlerts(
         token: l.token,
         candidateName,
         packageTitle,
-        packageId: l.package_id,
+        packageId,
         message: `A ouvert il y a ${Math.round(hOpened!)}h sans simuler`,
         cta: "Voir le lien",
       });
@@ -385,7 +387,7 @@ function buildFollowUpAlerts(
         token: l.token,
         candidateName,
         packageTitle,
-        packageId: l.package_id,
+        packageId,
         message: `Lien non ouvert depuis ${Math.round(hCreated / 24)} jours`,
         cta: "Vérifier l'email",
       });

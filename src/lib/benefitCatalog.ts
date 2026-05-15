@@ -409,8 +409,21 @@ export const CATEGORY_LABELS: Record<BenefitCategory, string> = {
   training: "📚 Formation",
   family: "👶 Famille",
   equipment: "💻 Équipement",
+  // financial_extra retiré du configurateur — couvert par les étapes Equity et Épargne salariale
   financial_extra: "💰 Financier+",
 };
+
+// Catégories visibles dans l'étape "Avantages" du configurateur
+export const VISIBLE_CATEGORIES: BenefitCategory[] = [
+  "health",
+  "sport",
+  "mental",
+  "mobility",
+  "food",
+  "training",
+  "family",
+  "equipment",
+];
 
 export function getBenefitDef(key: string): BenefitDefinition | undefined {
   return BENEFIT_CATALOG.find((b) => b.key === key);

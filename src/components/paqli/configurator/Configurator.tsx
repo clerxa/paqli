@@ -41,7 +41,7 @@ export function Configurator() {
       }
     }
     await saveDraft();
-    if (config.currentStep < 6) {
+    if (config.currentStep < 7) {
       const next = config.currentStep + 1;
       setStep(next);
       setMaxReached((m) => Math.max(m, next));
@@ -56,18 +56,20 @@ export function Configurator() {
   const stepNode = useMemo(() => {
     switch (config.currentStep) {
       case 0:
-        return <Step0Job />;
+        return <StepCompany />;
       case 1:
-        return <Step1Fixed />;
+        return <Step0Job />;
       case 2:
-        return <StepBenefits />;
+        return <Step1Fixed />;
       case 3:
-        return <Step2Equity />;
+        return <StepBenefits />;
       case 4:
-        return <Step3Savings />;
+        return <Step2Equity />;
       case 5:
         return <Step4Scenarios />;
       case 6:
+        return <Step3Savings />;
+      case 7:
         return <Step5Preview />;
       default:
         return null;

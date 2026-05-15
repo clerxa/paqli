@@ -238,6 +238,7 @@ export const emptyConfig: PackageConfig = {
   variableTarget: 0,
   variableConfig: defaultVariableConfig,
   benefits: defaultBenefits,
+  benefitsV2: [],
   trialPeriodMonths: null,
   trialPeriodRenewable: false,
   equityDevices: [],

@@ -17,7 +17,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
          status, status_updated_at, decision_deadline,
          packages (
            id, title, gross_salary, variable_target, variable_config, benefits,
-           scenario_message, scenario_display,
+           scenario_message, scenario_display, interview_notes,
            job_summary, missions, stack, contract_type, job_type,
            remote_policy, remote_days, remote_guaranteed, flexible_hours,
            location_city, location_details,

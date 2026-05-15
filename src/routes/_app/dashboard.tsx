@@ -278,6 +278,63 @@ function DashboardPage() {
               onCounterOffer={openCounterOffer}
             />
 
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <h2
+                  className="font-display text-aubergine"
+                  style={{ fontSize: 18 }}
+                >
+                  Engagement candidats
+                </h2>
+                <Link to="/candidates">
+                  <Button variant="ghost">Voir tout →</Button>
+                </Link>
+              </div>
+              {loading ? (
+                <ul className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-[40px]" />
+                  ))}
+                </ul>
+              ) : engagement.length === 0 ? (
+                <p className="text-[12px] text-grey italic">
+                  Pas encore de signaux d'engagement.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {engagement.map((e) => (
+                    <li
+                      key={e.linkId}
+                      className="flex items-start justify-between gap-3 cursor-pointer hover:bg-[rgba(45,38,64,0.03)] -mx-2 px-2 py-1 rounded-md transition-colors"
+                      onClick={() =>
+                        e.packageId &&
+                        navigate({
+                          to: "/packages/$id",
+                          params: { id: e.packageId },
+                        })
+                      }
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[12px] text-aubergine font-medium truncate">
+                          {e.candidateName}
+                        </div>
+                        {e.packageTitle && (
+                          <div className="text-[10px] text-grey truncate">
+                            {e.packageTitle}
+                          </div>
+                        )}
+                      </div>
+                      <EngagementBadge
+                        score={e.score}
+                        label={e.label}
+                        intent={e.intent}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+
             {(declinedCount > 0 || acceptedCount > 0) && (
               <Card>
                 <div className="flex items-center justify-between mb-3">

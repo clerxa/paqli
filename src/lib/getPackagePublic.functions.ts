@@ -39,17 +39,11 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (error || !link || !link.packages) {
-      throw new Response(JSON.stringify({ error: "not_found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+      return { ok: false as const, reason: "not_found" as const };
     }
 
     if (link.expires_at && new Date(link.expires_at) < new Date()) {
-      throw new Response(JSON.stringify({ error: "expired" }), {
-        status: 410,
-        headers: { "Content-Type": "application/json" },
-      });
+      return { ok: false as const, reason: "expired" as const };
     }
 
     const { data: messages } = await supabaseAdmin

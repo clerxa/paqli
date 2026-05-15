@@ -359,10 +359,17 @@ function PackageView({
             {estimate.participationEst > 0 && (
               <DetailLine label="Participation moyenne" value={estimate.participationEst} info="Moyenne historique sur les 3 dernières années — non garantie." />
             )}
-            {estimate.benefitsEst > 0 && (
+            {estimate.benefitsBreakdown.length === 0 && estimate.benefitsEst > 0 && (
               <DetailLine label="Avantages valorisés" value={estimate.benefitsEst} info="Mutuelle, tickets restaurant, véhicule, formation — valeur annuelle estimée." />
             )}
           </div>
+
+          {estimate.benefitsBreakdown.length > 0 && (
+            <TotalCompensationBlock
+              breakdown={estimate.benefitsBreakdown}
+              totalAnnual={estimate.benefitsEst}
+            />
+          )}
 
           <DisclaimerBlock>
             Ces montants sont des estimations indicatives arrondies, calculées sur

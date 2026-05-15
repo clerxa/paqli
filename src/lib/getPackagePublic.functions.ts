@@ -113,6 +113,13 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       if (bench) benchmark = bench as any;
     }
 
+    // Benchmark concurrentiel généré par IA (optionnel)
+    const { data: competitorBench } = await supabaseAdmin
+      .from("package_benchmarks")
+      .select("content, generated_at")
+      .eq("package_id", pkg.id)
+      .maybeSingle();
+
     return {
       linkId: link.id as string,
       token: link.token as string,

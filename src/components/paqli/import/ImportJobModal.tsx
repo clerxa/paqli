@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { toast } from "sonner";
 import { X } from "lucide-react";
-import { importJobPostingFn, type ImportedJobData } from "@/lib/importJob.functions";
+import {
+  importJobPostingFn,
+  type ImportedJobData,
+  type ImportErrorAlternative,
+} from "@/lib/importJob.functions";
 
 type Method = "url" | "text" | "file";
 

@@ -13,6 +13,8 @@ import {
   Target,
   Trash2,
   CheckCircle2,
+  CreditCard,
+  Zap,
 } from "lucide-react";
 import { Topbar } from "@/components/paqli/Topbar";
 import { Card } from "@/components/paqli/Card";
@@ -20,6 +22,7 @@ import { Button } from "@/components/paqli/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { generateCompanyProfile } from "@/lib/companyProfile.functions";
+import { getLinkQuotaFn } from "@/lib/linkQuota.functions";
 import {
   generatePackageBenchmarkFn,
   getPackageBenchmarkFn,
@@ -30,12 +33,13 @@ export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
 });
 
-type TabKey = "company" | "users" | "benchmark";
+type TabKey = "company" | "users" | "benchmark" | "plan";
 
 const TABS: { key: TabKey; label: string; icon: typeof Building2 }[] = [
   { key: "company", label: "Mon entreprise", icon: Building2 },
   { key: "users", label: "Utilisateurs", icon: UsersIcon },
   { key: "benchmark", label: "Benchmark", icon: Target },
+  { key: "plan", label: "Plan", icon: CreditCard },
 ];
 
 function SettingsPage() {
@@ -69,6 +73,7 @@ function SettingsPage() {
       {tab === "company" && <CompanyTab />}
       {tab === "users" && <UsersTab />}
       {tab === "benchmark" && <BenchmarkTab />}
+      {tab === "plan" && <PlanTab />}
     </>
   );
 }
@@ -1258,6 +1263,247 @@ function Field({
         {label}
       </label>
       {children}
+    </div>
+  );
+}
+
+/* ============================================================================
+ *  TAB 4 — Plan & facturation
+ * ========================================================================== */
+
+const PLANS: {
+  key: string;
+  label: string;
+  quota: number | null;
+  price: string;
+  highlights: string[];
+}[] = [
+  {
+    key: "starter",
+    label: "Starter",
+    quota: 10,
+    price: "Gratuit",
+    highlights: ["10 liens / mois", "1 utilisateur", "Support email"],
+  },
+  {
+    key: "pro",
+    label: "Pro",
+    quota: 50,
+    price: "49€ / mois",
+    highlights: ["50 liens / mois", "Utilisateurs illimités", "Benchmark IA"],
+  },
+  {
+    key: "business",
+    label: "Business",
+    quota: 200,
+    price: "149€ / mois",
+    highlights: ["200 liens / mois", "Rôles & validation", "Support prioritaire"],
+  },
+  {
+    key: "enterprise",
+    label: "Enterprise",
+    quota: null,
+    price: "Sur devis",
+    highlights: ["Liens illimités", "SSO", "Account manager dédié"],
+  },
+];
+
+function PlanTab() {
+  const fetchQuota = useServerFn(getLinkQuotaFn);
+  const [data, setData] = useState<{ used: number; quota: number | null; plan: string | null } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchQuota()
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, [fetchQuota]);
+
+  const currentPlanKey = data?.plan ?? "starter";
+  const current = PLANS.find((p) => p.key === currentPlanKey) ?? PLANS[0];
+  const used = data?.used ?? 0;
+  const quota = data?.quota ?? current.quota;
+  const remaining = quota == null ? null : Math.max(0, quota - used);
+  const pct = quota == null || quota === 0 ? 0 : Math.min(100, Math.round((used / quota) * 100));
+  const danger = quota != null && remaining! <= Math.max(2, Math.round(quota * 0.1));
+
+  const currentIdx = PLANS.findIndex((p) => p.key === currentPlanKey);
+  const nextPlan = currentIdx >= 0 && currentIdx < PLANS.length - 1 ? PLANS[currentIdx + 1] : null;
+
+  return (
+    <div className="px-4 sm:px-7 py-6 max-w-3xl space-y-6">
+      {loading ? (
+        <div className="flex items-center gap-2 text-grey text-sm">
+          <Loader2 size={14} className="animate-spin" /> Chargement…
+        </div>
+      ) : (
+        <>
+          <Card>
+            <div className="p-5 space-y-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-grey font-medium">
+                    Plan actuel
+                  </div>
+                  <div className="font-display text-aubergine mt-1" style={{ fontSize: 28 }}>
+                    {current.label}
+                  </div>
+                  <div className="text-sm text-grey mt-0.5">{current.price}</div>
+                </div>
+                <div
+                  className="px-3 py-1.5 rounded-full text-[11px] font-medium"
+                  style={{ background: "#F0EBE8", color: "#2D2640" }}
+                >
+                  {quota == null ? "Liens illimités" : `${quota} liens / mois`}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <div className="text-sm text-aubergine font-medium">
+                    {used}
+                    {quota != null && <span className="text-grey"> / {quota}</span>} liens utilisés ce mois
+                  </div>
+                  {quota != null && (
+                    <div className={`text-[12px] font-medium ${danger ? "text-[#B23A1F]" : "text-grey"}`}>
+                      {remaining} restant{(remaining ?? 0) > 1 ? "s" : ""}
+                    </div>
+                  )}
+                </div>
+                {quota != null && (
+                  <div className="h-2 rounded-full bg-[#F0EBE8] overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${pct}%`,
+                        background: danger ? "#B23A1F" : "#2D2640",
+                      }}
+                    />
+                  </div>
+                )}
+                <div className="text-[11px] text-grey">
+                  Le compteur se réinitialise le 1er de chaque mois.
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Card>
+              <div className="p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ background: "#F0EBE8" }}
+                  >
+                    <Plus size={14} className="text-aubergine" />
+                  </div>
+                  <div className="font-display text-aubergine" style={{ fontSize: 16 }}>
+                    Pack de 5 liens
+                  </div>
+                </div>
+                <p className="text-[13px] text-grey leading-relaxed">
+                  Besoin de quelques liens en plus ce mois-ci ? Ajoutez 5 liens valables jusqu'à la fin du mois.
+                </p>
+                <div className="flex items-center justify-between pt-1">
+                  <div className="font-display text-aubergine" style={{ fontSize: 20 }}>
+                    19€
+                  </div>
+                  <Button
+                    variant="ghost"
+                    onClick={() =>
+                      toast.info("Paiement bientôt disponible — contactez-nous pour ajouter un pack.")
+                    }
+                  >
+                    Acheter
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ background: "#2D2640" }}
+                  >
+                    <Zap size={14} className="text-white" />
+                  </div>
+                  <div className="font-display text-aubergine" style={{ fontSize: 16 }}>
+                    {nextPlan ? `Passer au plan ${nextPlan.label}` : "Plan maximum atteint"}
+                  </div>
+                </div>
+                <p className="text-[13px] text-grey leading-relaxed">
+                  {nextPlan
+                    ? `${nextPlan.quota == null ? "Liens illimités" : `${nextPlan.quota} liens / mois`} et plus de fonctionnalités.`
+                    : "Vous bénéficiez déjà du plan le plus complet."}
+                </p>
+                {nextPlan && (
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="font-display text-aubergine" style={{ fontSize: 20 }}>
+                      {nextPlan.price}
+                    </div>
+                    <Button
+                      onClick={() =>
+                        toast.info("Mise à niveau bientôt disponible — contactez-nous.")
+                      }
+                    >
+                      Passer au {nextPlan.label}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+
+          <Card>
+            <div className="p-5">
+              <div className="font-display text-aubergine mb-4" style={{ fontSize: 18 }}>
+                Tous les plans
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {PLANS.map((p) => {
+                  const isCurrent = p.key === currentPlanKey;
+                  return (
+                    <div
+                      key={p.key}
+                      className={`rounded-[10px] p-4 border transition-colors ${
+                        isCurrent
+                          ? "border-aubergine bg-[#FAF8F5]"
+                          : "border-[rgba(45,38,64,0.12)]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="font-display text-aubergine" style={{ fontSize: 16 }}>
+                          {p.label}
+                        </div>
+                        {isCurrent && (
+                          <span
+                            className="text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-medium"
+                            style={{ background: "#2D2640", color: "white" }}
+                          >
+                            Actuel
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-grey mt-1">{p.price}</div>
+                      <ul className="mt-3 space-y-1.5">
+                        {p.highlights.map((h) => (
+                          <li key={h} className="flex items-start gap-1.5 text-[12px] text-aubergine">
+                            <CheckCircle2 size={12} className="mt-0.5 flex-shrink-0 text-[#639922]" />
+                            <span>{h}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

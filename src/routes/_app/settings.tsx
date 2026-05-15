@@ -692,32 +692,10 @@ function UsersTab() {
     if (!organization?.id || !user?.id) return;
     (async () => {
       setLoading(true);
-      const [{ data: profiles }, { data: roles }] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, full_name, email")
-          .eq("organization_id", organization.id),
-        supabase
-          .from("user_roles")
-          .select("user_id, role")
-          .eq("organization_id", organization.id),
-      ]);
-      const rolesByUser = new Map<string, AppRole[]>();
-      (roles ?? []).forEach((r: any) => {
-        const arr = rolesByUser.get(r.user_id) ?? [];
-        arr.push(r.role as AppRole);
-        rolesByUser.set(r.user_id, arr);
-      });
-      const list: Member[] = (profiles ?? []).map((p: any) => ({
-        id: p.id,
-        full_name: p.full_name,
-        email: p.email,
-        roles: rolesByUser.get(p.id) ?? [],
-      }));
-      setMembers(list);
-      setIsAdmin((rolesByUser.get(user.id) ?? []).includes("admin"));
+      await refreshMembers();
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organization?.id, user?.id]);
 
   async function toggleRole(memberId: string, role: AppRole, currentlyHas: boolean) {

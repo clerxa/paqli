@@ -4,6 +4,7 @@ import {
   BENEFIT_CATALOG,
   CATEGORY_LABELS,
   GYMLIB_LEVELS,
+  VISIBLE_CATEGORIES,
   buildSavingsMessage,
   calcBenefitsTotal,
   estimateBenefitValue,
@@ -13,7 +14,7 @@ import {
   type PackageBenefit,
 } from "@/lib/benefitCatalog";
 
-const CATEGORIES = Object.keys(CATEGORY_LABELS) as BenefitCategory[];
+const CATEGORIES = VISIBLE_CATEGORIES;
 
 export function StepBenefits() {
   const { config, patch } = usePackageConfig();

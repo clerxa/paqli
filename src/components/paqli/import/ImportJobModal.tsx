@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { toast } from "sonner";
 import { X } from "lucide-react";
-import { importJobPostingFn, type ImportedJobData } from "@/lib/importJob.functions";
+import {
+  importJobPostingFn,
+  type ImportedJobData,
+  type ImportErrorAlternative,
+} from "@/lib/importJob.functions";
 
 type Method = "url" | "text" | "file";
 
@@ -38,7 +41,15 @@ export function ImportJobModal({ onImported, onClose }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorAlternatives, setErrorAlternatives] = useState<
+    ImportErrorAlternative[] | null
+  >(null);
   const [preview, setPreview] = useState<ImportedJobData | null>(null);
+
+  function clearError() {
+    setError(null);
+    setErrorAlternatives(null);
+  }
 
   function validateAndSetFile(f: File) {
     if (!ALLOWED_TYPES.includes(f.type) && !f.name.match(/\.(pdf|docx|doc|txt)$/i)) {
@@ -49,13 +60,13 @@ export function ImportJobModal({ onImported, onClose }: Props) {
       setError("Fichier trop volumineux. Maximum 5 Mo.");
       return;
     }
-    setError(null);
+    clearError();
     setFile(f);
   }
 
   async function run(payload: { url?: string; text?: string; file?: File }) {
     setLoading(true);
-    setError(null);
+    clearError();
     try {
       let body: { url?: string; text?: string; file?: { name: string; type: string; base64: string } };
       if (payload.file) {
@@ -67,7 +78,14 @@ export function ImportJobModal({ onImported, onClose }: Props) {
         body = { text: payload.text };
       }
       const res = await importFn({ data: body });
-      setPreview(res.data);
+      if (res.success) {
+        setPreview(res.data);
+      } else {
+        setError(res.error.message);
+        setErrorAlternatives(
+          res.error.alternatives?.length ? res.error.alternatives : null,
+        );
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg || "Erreur inattendue. Réessayez.");
@@ -205,9 +223,15 @@ export function ImportJobModal({ onImported, onClose }: Props) {
                 requièrent souvent une connexion — préférez « Coller le texte »
                 pour ces plateformes.
               </div>
-              {error && (
-                <div className="text-[11px] text-danger mb-3">{error}</div>
-              )}
+              <ErrorBlock
+                error={error}
+                alternatives={errorAlternatives}
+                onPickAlternative={(m) => {
+                  clearError();
+                  setInput("");
+                  setMethod(m);
+                }}
+              />
               <button
                 onClick={() => run({ url: input.trim() })}
                 disabled={!input.trim() || loading}
@@ -247,9 +271,15 @@ export function ImportJobModal({ onImported, onClose }: Props) {
                   Min. 100 caractères recommandés
                 </span>
               </div>
-              {error && (
-                <div className="text-[11px] text-danger mb-3">{error}</div>
-              )}
+              <ErrorBlock
+                error={error}
+                alternatives={errorAlternatives}
+                onPickAlternative={(m) => {
+                  clearError();
+                  setInput("");
+                  setMethod(m);
+                }}
+              />
               <button
                 onClick={() => run({ text: input.trim() })}
                 disabled={input.trim().length < 50 || loading}
@@ -326,9 +356,16 @@ export function ImportJobModal({ onImported, onClose }: Props) {
                   </div>
                 )}
               </div>
-              {error && (
-                <div className="text-[11px] text-danger mb-3">{error}</div>
-              )}
+              <ErrorBlock
+                error={error}
+                alternatives={errorAlternatives}
+                onPickAlternative={(m) => {
+                  clearError();
+                  setFile(null);
+                  setInput("");
+                  setMethod(m);
+                }}
+              />
               <button
                 onClick={() => file && run({ file })}
                 disabled={!file || loading}
@@ -497,5 +534,55 @@ function Chip({ children }: { children: React.ReactNode }) {
     <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-brume text-[11px] text-aubergine">
       {children}
     </span>
+  );
+}
+
+function ErrorBlock({
+  error,
+  alternatives,
+  onPickAlternative,
+}: {
+  error: string | null;
+  alternatives: ImportErrorAlternative[] | null;
+  onPickAlternative: (m: "url" | "text" | "file") => void;
+}) {
+  if (!error) return null;
+  return (
+    <div className="space-y-3 mb-3">
+      <div className="flex items-start gap-2 bg-[#FCEBEB] border border-[rgba(184,90,106,0.2)] rounded-xl px-4 py-3">
+        <span className="text-[14px] flex-shrink-0">⚠️</span>
+        <p className="text-[12px] text-[#A32D2D] font-light leading-relaxed">
+          {error}
+        </p>
+      </div>
+      {alternatives && alternatives.length > 0 && (
+        <div>
+          <p className="text-[11px] text-[#9B97A0] font-medium mb-2">
+            Alternatives disponibles :
+          </p>
+          <div className="space-y-2">
+            {alternatives.map((alt) => (
+              <button
+                key={alt.method}
+                onClick={() => onPickAlternative(alt.method)}
+                className="w-full flex items-start gap-3 p-3 border border-[rgba(45,38,64,0.1)] rounded-xl text-left hover:border-[rgba(139,127,168,0.3)] hover:bg-[#F5F2FA] transition-all"
+              >
+                <span className="text-xl flex-shrink-0">
+                  {alt.method === "text" ? "📝" : alt.method === "url" ? "🔗" : "📄"}
+                </span>
+                <div>
+                  <div className="text-[12px] font-medium text-[#2D2640]">
+                    {alt.label}
+                  </div>
+                  <div className="text-[11px] text-[#9B97A0] font-light mt-0.5">
+                    {alt.description}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

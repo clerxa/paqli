@@ -142,11 +142,79 @@ function PackageView({
 
   // Read deep-link from URL
   const initialTab = (() => {
-    if (typeof window === "undefined") return "package" as TabKey;
+    if (typeof window === "undefined") return "welcome" as TabKey;
     const t = new URLSearchParams(window.location.search).get("tab") as TabKey | null;
-    return TABS.some((x) => x.key === t) ? (t as TabKey) : "package";
+    return TABS.some((x) => x.key === t) ? (t as TabKey) : "welcome";
   })();
   const [tab, setTab] = useState<TabKey>(initialTab);
+
+  // Persisted set of visited tabs (sequential gating)
+  const visitedKey = `paqli_visited_${data.token}`;
+  const [visitedTabs, setVisitedTabs] = useState<Set<TabKey>>(() => {
+    if (typeof window === "undefined") return new Set<TabKey>([initialTab]);
+    try {
+      const raw = window.localStorage.getItem(visitedKey);
+      const arr = raw ? (JSON.parse(raw) as TabKey[]) : [];
+      const valid = arr.filter((k) => TABS.some((t) => t.key === k));
+      return new Set<TabKey>([...valid, initialTab]);
+    } catch {
+      return new Set<TabKey>([initialTab]);
+    }
+  });
+
+  const tabOrder = TABS.map((t) => t.key);
+  const allTabsVisited = tabOrder.every((k) => visitedTabs.has(k));
+  const allTabsVisitedRef = useRef(allTabsVisited);
+
+  // When current tab changes, mark visited + track
+  useEffect(() => {
+    setVisitedTabs((prev) => {
+      if (prev.has(tab)) return prev;
+      const next = new Set(prev);
+      next.add(tab);
+      try {
+        window.localStorage.setItem(visitedKey, JSON.stringify([...next]));
+      } catch {
+        /* ignore */
+      }
+      behavior.track("section_view", { section: `tab_${tab}` });
+      const wasComplete = allTabsVisitedRef.current;
+      const nowComplete = tabOrder.every((k) => next.has(k));
+      if (!wasComplete && nowComplete) {
+        allTabsVisitedRef.current = true;
+        behavior.track("section_view", { section: "all_tabs_completed" });
+      }
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  // Guarded tab change — only allow visited or the immediate next tab (until all done)
+  const canGoToTab = useCallback(
+    (target: TabKey) => {
+      if (allTabsVisited) return true;
+      if (visitedTabs.has(target)) return true;
+      const currentIdx = tabOrder.indexOf(tab);
+      const targetIdx = tabOrder.indexOf(target);
+      return targetIdx === currentIdx + 1;
+    },
+    [allTabsVisited, visitedTabs, tab, tabOrder],
+  );
+
+  const tryChangeTab = useCallback(
+    (target: TabKey) => {
+      if (!canGoToTab(target)) return;
+      setTab(target);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
+    [canGoToTab],
+  );
+
+  const currentIndex = tabOrder.indexOf(tab);
+  const prevTab = currentIndex > 0 ? tabOrder[currentIndex - 1] : null;
+  const nextTab = currentIndex < tabOrder.length - 1 ? tabOrder[currentIndex + 1] : null;
 
   useEffect(() => {
     if (typeof window === "undefined") return;

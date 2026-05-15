@@ -13,6 +13,7 @@ import { CounterOfferModal, type CounterOfferOriginal } from "@/components/paqli
 import { EngagementBadge } from "@/components/paqli/EngagementBadge";
 import { BehaviorView } from "@/components/paqli/BehaviorView";
 import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
+import { OfferLetterModal } from "@/components/paqli/OfferLetterModal";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -64,6 +65,7 @@ function PackageDetail() {
   const [counterOfferFor, setCounterOfferFor] = useState<CounterOfferOriginal | null>(null);
   const [previewPas, setPreviewPas] = useState(0.30);
   const [previewAchievement, setPreviewAchievement] = useState(1);
+  const [offerLetterFor, setOfferLetterFor] = useState<{ linkId: string; name: string } | null>(null);
 
   async function reload() {
     const [p, l] = await Promise.all([

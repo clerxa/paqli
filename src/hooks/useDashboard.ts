@@ -192,7 +192,7 @@ export function useDashboard() {
   }
 
   async function loadActivity(
-    links: Array<{ id: string; candidate_name: string | null; package_id: string }>,
+    links: Array<{ id: string; candidate_name: string | null; package_id: string | null }>,
   ): Promise<ActivityItem[]> {
     if (!links.length) return [];
     const { data: events } = await supabase

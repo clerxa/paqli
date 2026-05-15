@@ -69,7 +69,14 @@ export function SalaryBreakdown({
   const [open, setOpen] = useState(false);
 
   const fixe = grossAnnual || 0;
-  const variable = Math.round((variableTarget || 0) * achievementPct);
+
+  const components: LooseComponent[] = (variableConfig?.components ?? []).filter(
+    (c) => (c.amount || 0) > 0 || c.label.trim() || (c.indicators?.length ?? 0) > 0,
+  );
+  const hasComponents = components.length > 0;
+  const componentsSum = components.reduce((s, c) => s + (c.amount || 0), 0);
+  const variableBase = hasComponents ? componentsSum : variableTarget || 0;
+  const variable = Math.round(variableBase * achievementPct);
   const brut = fixe + variable;
   const superBrut = Math.round(brut * (1 + EMPLOYER_TOTAL));
   const net = Math.round(brut * (1 - EMPLOYEE_TOTAL));
@@ -79,11 +86,7 @@ export function SalaryBreakdown({
   const employeeCharges = brut - net;
   const tax = net - netApresImpot;
 
-  const components: LooseComponent[] = (variableConfig?.components ?? []).filter(
-    (c) => (c.amount || 0) > 0 || c.label.trim() || (c.indicators?.length ?? 0) > 0,
-  );
-  const hasComponents = components.length > 0;
-  const hasVariable = (variableTarget || 0) > 0 || hasComponents;
+  const hasVariable = variableBase > 0;
   const legacyIndicators: LooseIndicator[] =
     variableConfig?.indicators?.filter((i) => i.label.trim()) ?? [];
 

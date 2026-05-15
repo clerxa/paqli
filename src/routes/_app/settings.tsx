@@ -263,6 +263,58 @@ function SettingsPage() {
               className={inputCls}
             />
           </Field>
+          <div className="mt-4">
+            <Field label="SIRET (requis pour la promesse d'embauche)">
+              <input
+                value={profile.siret}
+                onChange={(e) =>
+                  setProfile((p) => ({
+                    ...p,
+                    siret: e.target.value.replace(/\s/g, ""),
+                  }))
+                }
+                placeholder="12345678900012"
+                maxLength={14}
+                className={inputCls}
+              />
+              {profile.siret && profile.siret.length !== 14 && (
+                <p className="text-[11px] text-danger mt-1">
+                  Le SIRET doit contenir 14 chiffres
+                </p>
+              )}
+            </Field>
+          </div>
+          <div className="mt-4">
+            <Field label="Adresse du siège social">
+              <input
+                value={profile.address_street}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, address_street: e.target.value }))
+                }
+                placeholder="42 Avenue des Champs-Élysées"
+                className={`${inputCls} mb-2`}
+              />
+              <div className="flex gap-2">
+                <input
+                  value={profile.address_zip}
+                  onChange={(e) =>
+                    setProfile((p) => ({ ...p, address_zip: e.target.value }))
+                  }
+                  placeholder="75008"
+                  maxLength={5}
+                  className={`${inputCls} w-24`}
+                />
+                <input
+                  value={profile.address_city}
+                  onChange={(e) =>
+                    setProfile((p) => ({ ...p, address_city: e.target.value }))
+                  }
+                  placeholder="Paris"
+                  className={`${inputCls} flex-1`}
+                />
+              </div>
+            </Field>
+          </div>
         </Card>
 
         {/* Présentation */}

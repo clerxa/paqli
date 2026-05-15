@@ -459,6 +459,15 @@ function PackageDetail() {
           }}
         />
       )}
+
+      {offerLetterFor && (
+        <OfferLetterModal
+          linkId={offerLetterFor.linkId}
+          candidateName={offerLetterFor.name}
+          onClose={() => setOfferLetterFor(null)}
+          onSent={reload}
+        />
+      )}
     </>
   );
 }

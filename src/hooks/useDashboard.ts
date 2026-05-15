@@ -304,7 +304,7 @@ function buildFollowUpAlerts(
         token: l.token,
         candidateName,
         packageTitle,
-        packageId: l.package_id,
+        packageId,
         message: "A décliné — contre-offre possible",
         cta: "Faire une contre-offre",
         declineCategory: l.decline_category,
@@ -326,7 +326,7 @@ function buildFollowUpAlerts(
           token: l.token,
           candidateName,
           packageTitle,
-          packageId: l.package_id,
+          packageId,
           message: `L'offre expire dans ${Math.max(1, Math.round(hoursLeft))}h — pas encore de réponse`,
           cta: "Relancer",
         });
@@ -340,7 +340,7 @@ function buildFollowUpAlerts(
           token: l.token,
           candidateName,
           packageTitle,
-          packageId: l.package_id,
+          packageId,
           message: "Offre expirée sans réponse — relancer ?",
           cta: "Envoyer un message",
         });
@@ -363,7 +363,7 @@ function buildFollowUpAlerts(
         token: l.token,
         candidateName,
         packageTitle,
-        packageId: l.package_id,
+        packageId,
         message: `A simulé il y a ${Math.round(hSim!)}h sans répondre`,
         cta: "Envoyer un message",
       });
@@ -375,7 +375,7 @@ function buildFollowUpAlerts(
         token: l.token,
         candidateName,
         packageTitle,
-        packageId: l.package_id,
+        packageId,
         message: `A ouvert il y a ${Math.round(hOpened!)}h sans simuler`,
         cta: "Voir le lien",
       });
@@ -387,7 +387,7 @@ function buildFollowUpAlerts(
         token: l.token,
         candidateName,
         packageTitle,
-        packageId: l.package_id,
+        packageId,
         message: `Lien non ouvert depuis ${Math.round(hCreated / 24)} jours`,
         cta: "Vérifier l'email",
       });

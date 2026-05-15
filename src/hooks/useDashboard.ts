@@ -53,7 +53,9 @@ export type FollowUpAlertType =
   | "sim_no_response"
   | "opened_not_sim"
   | "not_opened_72h"
-  | "declined_can_counter";
+  | "declined_can_counter"
+  | "deadline_urgent"
+  | "deadline_expired";
 
 export interface FollowUpAlert {
   type: FollowUpAlertType;
@@ -156,7 +158,7 @@ export function useDashboard() {
     const { data } = await supabase
       .from("candidate_links")
       .select(
-        "id, token, candidate_name, package_id, created_at, opened_at, simulated_at, status, decline_category, packages (title)",
+        "id, token, candidate_name, package_id, created_at, opened_at, simulated_at, status, decline_category, decision_deadline, packages (title)",
       )
       .eq("organization_id", orgId);
     return data ?? [];
@@ -281,6 +283,7 @@ function buildFollowUpAlerts(
     simulated_at: string | null;
     status: string;
     decline_category: string | null;
+    decision_deadline?: string | null;
     packages?: { title: string } | null;
   }>,
 ): FollowUpAlert[] {
@@ -308,6 +311,40 @@ function buildFollowUpAlerts(
     }
 
     if (l.status !== "pending") continue;
+
+    // Deadline alerts take priority over generic follow-ups
+    if (l.decision_deadline) {
+      const deadlineMs = new Date(l.decision_deadline).getTime();
+      const hoursLeft = (deadlineMs - now) / 3_600_000;
+      if (hoursLeft > 0 && hoursLeft <= 24) {
+        alerts.push({
+          type: "deadline_urgent",
+          priority: "high",
+          linkId: l.id,
+          token: l.token,
+          candidateName,
+          packageTitle,
+          packageId: l.package_id,
+          message: `L'offre expire dans ${Math.max(1, Math.round(hoursLeft))}h — pas encore de réponse`,
+          cta: "Relancer",
+        });
+        continue;
+      }
+      if (hoursLeft <= 0 && hoursLeft > -48) {
+        alerts.push({
+          type: "deadline_expired",
+          priority: "medium",
+          linkId: l.id,
+          token: l.token,
+          candidateName,
+          packageTitle,
+          packageId: l.package_id,
+          message: "Offre expirée sans réponse — relancer ?",
+          cta: "Envoyer un message",
+        });
+        continue;
+      }
+    }
 
     const created = new Date(l.created_at).getTime();
     const opened = l.opened_at ? new Date(l.opened_at).getTime() : null;

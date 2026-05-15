@@ -137,6 +137,7 @@ export interface PackageData {
   package_benefits?: PackageBenefit[];
   scenario_message: string | null;
   scenario_display: "all" | "realistic_only" | "realistic_optimistic";
+  interview_notes?: string | null;
 
   // Step 0 — job content
   job_summary?: string | null;

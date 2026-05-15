@@ -12,9 +12,9 @@ export function PreviewPanel({ config }: { config: PackageConfig }) {
   const step = config.currentStep;
 
   const s1 = calcStep1Preview(config);
-  const s2 = step >= 2 ? calcStep2Preview(config) : { equityEst: 0 };
+  const s2 = step >= 4 ? calcStep2Preview(config) : { equityEst: 0 };
   const s3 =
-    step >= 3
+    step >= 6
       ? calcStep3Preview(config)
       : { peeEst: 0, interEst: 0, participationEst: 0 };
 

@@ -28,6 +28,7 @@ import {
   getPackageBenchmarkFn,
   type BenchmarkContent,
 } from "@/lib/competitorBenchmark.functions";
+import { inviteUserFn } from "@/lib/inviteUser.functions";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,

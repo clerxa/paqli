@@ -27,6 +27,7 @@ export interface CandidateLinkData {
   opened_at: string | null;
   offerStatus: string;
   statusUpdatedAt: string | null;
+  decisionDeadline: string | null;
   counterOffer: CounterOfferInfo | null;
   messages: PublicMessage[];
   packages: PackageData;
@@ -63,6 +64,7 @@ export function useCandidateLink(token: string) {
           opened_at: ok.openedAt,
           offerStatus: ok.offerStatus,
           statusUpdatedAt: ok.statusUpdatedAt,
+          decisionDeadline: (ok as any).decisionDeadline ?? null,
           counterOffer: (ok as any).counterOffer ?? null,
           messages: ok.messages,
           packages: ok.package as unknown as PackageData,

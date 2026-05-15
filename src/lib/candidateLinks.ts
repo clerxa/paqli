@@ -6,6 +6,7 @@ export async function generateCandidateLink(
   candidateEmail?: string,
   candidateName?: string,
   expiresInDays: number | null = 30,
+  decisionDeadline?: Date | null,
 ): Promise<{ token: string; id: string }> {
   let expiresAt: string | null = null;
   if (expiresInDays) {
@@ -22,6 +23,7 @@ export async function generateCandidateLink(
       candidate_email: candidateEmail || null,
       candidate_name: candidateName || null,
       expires_at: expiresAt,
+      decision_deadline: decisionDeadline ? decisionDeadline.toISOString() : null,
     })
     .select("id, token")
     .single();

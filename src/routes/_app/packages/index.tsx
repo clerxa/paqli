@@ -101,7 +101,7 @@ function PackagesPage() {
         ) : packages.length === 0 ? (
           <EmptyState />
         ) : (
-          <Card className="!p-0 overflow-hidden">
+          <Card className="!p-0">
             <div className="divide-y divide-[rgba(45,38,64,0.06)]">
               {packages.map((p) => (
                 <PackageRow

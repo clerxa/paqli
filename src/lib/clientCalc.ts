@@ -399,6 +399,7 @@ export function calcPackageEstimate(
     salaryEst,
     variableEst,
     benefitsEst,
+    benefitsBreakdown,
     equityByScenario,
     peeEst,
     interEst,

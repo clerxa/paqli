@@ -68,11 +68,11 @@ function SettingsPage() {
           name: data.name ?? "",
           description: data.description ?? "",
           key_figures: Array.isArray(data.key_figures)
-            ? (data.key_figures as KeyFigure[])
+            ? (data.key_figures as unknown as KeyFigure[])
             : [],
           values: Array.isArray(data.values) ? (data.values as string[]) : [],
           culture_note: data.culture_note ?? "",
-          links: Array.isArray(data.links) ? (data.links as CompanyLink[]) : [],
+          links: Array.isArray(data.links) ? (data.links as unknown as CompanyLink[]) : [],
           source_urls: Array.isArray(data.source_urls) ? data.source_urls : [],
         });
       }

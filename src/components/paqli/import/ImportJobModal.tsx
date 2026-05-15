@@ -59,18 +59,16 @@ export function ImportJobModal({ onImported, onClose }: Props) {
     setLoading(true);
     setError(null);
     try {
-      let data: typeof payload extends never ? never : Parameters<typeof importFn>[0]["data"];
+      let body: { url?: string; text?: string; file?: { name: string; type: string; base64: string } };
       if (payload.file) {
         const base64 = await fileToBase64(payload.file);
-        data = {
-          file: { name: payload.file.name, type: payload.file.type, base64 },
-        };
+        body = { file: { name: payload.file.name, type: payload.file.type, base64 } };
       } else if (payload.url) {
-        data = { url: payload.url };
+        body = { url: payload.url };
       } else {
-        data = { text: payload.text };
+        body = { text: payload.text };
       }
-      const res = await importFn({ data });
+      const res = await importFn({ data: body });
       setPreview(res.data);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);

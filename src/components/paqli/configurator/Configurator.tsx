@@ -124,12 +124,12 @@ export function Configurator() {
               <Button
                 variant="ghost"
                 onClick={goPrev}
-                disabled={config.currentStep === 1}
+                disabled={config.currentStep === 0}
               >
                 ← Précédent
               </Button>
               <Button onClick={goNext}>
-                {config.currentStep === 6 ? "Terminer" : "Suivant →"}
+                {config.currentStep === 7 ? "Terminer" : "Suivant →"}
               </Button>
             </div>
           </Card>

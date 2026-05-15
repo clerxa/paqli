@@ -34,6 +34,22 @@ export function Step5Preview() {
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [deadlineEnabled, setDeadlineEnabled] = useState(false);
+  const [deadline, setDeadline] = useState<Date | null>(null);
+  const [customDeadline, setCustomDeadline] = useState(false);
+
+  function setQuickDeadline(days: number) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    d.setHours(18, 0, 0, 0);
+    setDeadline(d);
+    setCustomDeadline(false);
+  }
+
+  function fmtDatetimeLocal(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
 
   const s1 = calcStep1Preview(config);
   const s2 = calcStep2Preview(config);
@@ -80,6 +96,7 @@ export function Step5Preview() {
         candidateEmail || undefined,
         [firstName, lastName].filter(Boolean).join(" ") || undefined,
         expiresInDays,
+        deadlineEnabled ? deadline : null,
       );
       setGeneratedToken(token);
       if (candidateEmail) {

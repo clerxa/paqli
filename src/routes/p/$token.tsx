@@ -155,9 +155,7 @@ function PackageView({
   });
   const [pasRate, setPasRate] = useState<number>(0.30);
   const pasTouched = useRef(false);
-  useEffect(() => {
-    if (!pasTouched.current) setPasRate(params.tmi);
-  }, [params.tmi]);
+  const [pasAuto, setPasAuto] = useState(true);
   const [achievementPct, setAchievementPct] = useState(1);
 
   const trackTimer = useRef<number | null>(null);

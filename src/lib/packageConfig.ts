@@ -328,6 +328,10 @@ export function calcStep3Preview(c: PackageConfig) {
 
 export function validateStep(c: PackageConfig, step: number): string | null {
   if (step === 0) {
+    // L'entreprise — toutes les infos sont optionnelles côté validation
+    return null;
+  }
+  if (step === 1) {
     if (!c.title || c.title.trim().length < 3)
       return "L'intitulé du poste est obligatoire (min. 3 caractères).";
     if (!c.jobSummary || c.jobSummary.trim().length < 10)
@@ -339,38 +343,30 @@ export function validateStep(c: PackageConfig, step: number): string | null {
       return "Indiquez la ville / lieu de travail.";
     return null;
   }
-  if (step === 1) {
+  if (step === 2) {
     if (!c.title || c.title.trim().length < 3)
       return "L'intitulé du poste est obligatoire (min. 3 caractères).";
     if (!c.grossSalary || c.grossSalary <= 0)
       return "Le salaire brut annuel est obligatoire.";
-    const b = c.benefits;
-    if (b.mutuelle && !b.mutuelleMontant)
-      return "Indiquez la part employeur mutuelle.";
-    if (b.ticketsResto && !b.ticketsRestoValeur)
-      return "Indiquez la valeur faciale des tickets restaurant.";
-    if (b.vehicule && !b.vehiculeMontant)
-      return "Indiquez la valeur du véhicule.";
-    if (b.rtt && !b.rttJours) return "Indiquez le nombre de jours RTT.";
-    if (b.formation && !b.formationBudget)
-      return "Indiquez le budget formation.";
     return null;
   }
-  if (step === 2) {
+  if (step === 3) {
+    // Avantages — pas de validation bloquante
+    return null;
+  }
+  if (step === 4) {
     for (const d of c.equityDevices) {
-      if (!d.quantity || d.quantity <= 0)
-        return "Quantité equity manquante.";
+      if (!d.quantity || d.quantity <= 0) return "Quantité equity manquante.";
       if (
         (d.type === "bspce" || d.type === "stock_options") &&
         d.strikePrice <= 0
       )
         return "Prix d'exercice manquant.";
-      if (d.currentValuationM <= 0)
-        return "Valorisation actuelle manquante.";
+      if (d.currentValuationM <= 0) return "Valorisation actuelle manquante.";
     }
     return null;
   }
-  if (step === 3) {
+  if (step === 6) {
     for (const d of c.savingsDevices) {
       if (d.type === "pee" || d.type === "perco") {
         if (!d.matchingRate) return "Taux d'abondement manquant.";

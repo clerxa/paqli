@@ -283,6 +283,99 @@ export function Step0Job() {
         />
       </Section>
 
+      <Section title="Équipe & management">
+        <div>
+          <SubLabel>Taille de l'équipe directe</SubLabel>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {TEAM_SIZE_OPTIONS.map((o) => (
+              <Chip
+                key={o.v}
+                selected={config.teamSize === o.v}
+                onClick={() => patch({ teamSize: o.v })}
+              >
+                {o.l}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        <TextArea
+          label="Description de l'équipe"
+          value={config.teamDescription}
+          onChange={(v) => patch({ teamDescription: v })}
+          placeholder="Une équipe de 6 engineers, 2 PM et 1 designer. Environnement bienveillant, feedback régulier."
+          maxLength={300}
+        />
+
+        <div>
+          <SubLabel>Style de management</SubLabel>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {MANAGER_OPTIONS.map((o) => (
+              <CardChoice
+                key={o.value}
+                selected={config.managerStyle === o.value}
+                icon={o.icon}
+                label={o.label}
+                desc={o.desc}
+                onClick={() => patch({ managerStyle: o.value })}
+              />
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Perspectives d'évolution">
+        <div>
+          <SubLabel>Évolutions possibles (max 3)</SubLabel>
+          <div className="space-y-2 mt-2">
+            {config.growthPaths.map((g, i) => (
+              <div key={i} className="flex flex-wrap gap-2 items-start">
+                <select
+                  value={g.horizon}
+                  onChange={(e) => setGrowth(i, { horizon: e.target.value })}
+                  className="text-[12px] px-2 py-2 rounded-md border border-[rgba(45,38,64,0.15)] bg-white"
+                >
+                  {GROWTH_HORIZONS.map((h) => (
+                    <option key={h} value={h}>{h}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={g.path}
+                  onChange={(e) => setGrowth(i, { path: e.target.value })}
+                  placeholder="Lead Engineer possible"
+                  className="flex-1 min-w-[180px] text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeGrowth(i)}
+                  className="text-grey hover:text-danger px-2 text-[12px]"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            {config.growthPaths.length < 3 && (
+              <button
+                type="button"
+                onClick={addGrowth}
+                className="text-[12px] text-aubergine hover:underline"
+              >
+                + Ajouter une perspective
+              </button>
+            )}
+          </div>
+        </div>
+
+        <TextArea
+          label="Note onboarding"
+          value={config.onboardingNote}
+          onChange={(v) => patch({ onboardingNote: v })}
+          placeholder="Onboarding structuré sur 3 mois avec buddy dédié, accès à toute la documentation interne dès J1."
+          maxLength={300}
+        />
+      </Section>
+
       <Section title="Démarrage">
         <TextField
           label="Date de démarrage souhaitée"
@@ -291,8 +384,14 @@ export function Step0Job() {
           placeholder="Dès que possible"
         />
       </Section>
+
+      <InterviewNotesSection />
     </div>
   );
+}
+
+function InterviewNotesSection() {
+  return null; // Defined separately below — placeholder for split file
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

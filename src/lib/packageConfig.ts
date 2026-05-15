@@ -84,18 +84,57 @@ export interface VariableIndicator {
   weight: number; // % (0-100), optional
 }
 
-export interface VariableConfig {
+export interface VariableComponent {
+  id: string;
+  label: string;
+  frequency: VariablePayoutFrequency;
+  amount: number; // montant annuel cible (€)
   objectiveType: VariableObjectiveType | null;
-  payoutFrequency: VariablePayoutFrequency | null;
-  calcMethod: string;
   indicators: VariableIndicator[];
+  calcMethod: string;
+}
+
+export interface VariableConfig {
+  // Nouveau modèle : plusieurs composants en parallèle (mensuel + trimestriel + ...)
+  components: VariableComponent[];
+  // Legacy (lecture seule, conservé pour compat ascendante des packages existants)
+  objectiveType?: VariableObjectiveType | null;
+  payoutFrequency?: VariablePayoutFrequency | null;
+  calcMethod?: string;
+  indicators?: VariableIndicator[];
 }
 
 export const defaultVariableConfig: VariableConfig = {
+  components: [],
   objectiveType: null,
   payoutFrequency: null,
   calcMethod: "",
   indicators: [],
+};
+
+export function makeVariableComponent(
+  freq: VariablePayoutFrequency = "annual",
+  amount = 0,
+): VariableComponent {
+  return {
+    id:
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2),
+    label: "",
+    frequency: freq,
+    amount,
+    objectiveType: null,
+    indicators: [],
+    calcMethod: "",
+  };
+}
+
+export const FREQUENCY_LABELS_FR: Record<VariablePayoutFrequency, string> = {
+  monthly: "Mensuel",
+  quarterly: "Trimestriel",
+  semestrial: "Semestriel",
+  annual: "Annuel",
 };
 
 export interface PackageConfig {

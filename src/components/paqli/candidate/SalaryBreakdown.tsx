@@ -1,11 +1,23 @@
 import { useState } from "react";
 import { ChevronDown, Info, Target } from "lucide-react";
 import { formatEur } from "@/lib/clientCalc";
-type LooseVariableConfig = {
+type Frequency = "monthly" | "quarterly" | "semestrial" | "annual";
+type LooseIndicator = { label: string; weight: number };
+type LooseComponent = {
+  id: string;
+  label: string;
+  frequency: Frequency;
+  amount: number;
   objectiveType?: "individual" | "collective" | "mixed" | null;
-  payoutFrequency?: "monthly" | "quarterly" | "semestrial" | "annual" | null;
+  indicators?: LooseIndicator[];
   calcMethod?: string;
-  indicators?: { label: string; weight: number }[];
+};
+type LooseVariableConfig = {
+  components?: LooseComponent[];
+  objectiveType?: "individual" | "collective" | "mixed" | null;
+  payoutFrequency?: Frequency | null;
+  calcMethod?: string;
+  indicators?: LooseIndicator[];
 };
 
 // Estimations 2026 — cadre standard. Pédagogique, pas un calcul juridique.
@@ -57,7 +69,14 @@ export function SalaryBreakdown({
   const [open, setOpen] = useState(false);
 
   const fixe = grossAnnual || 0;
-  const variable = Math.round((variableTarget || 0) * achievementPct);
+
+  const components: LooseComponent[] = (variableConfig?.components ?? []).filter(
+    (c) => (c.amount || 0) > 0 || c.label.trim() || (c.indicators?.length ?? 0) > 0,
+  );
+  const hasComponents = components.length > 0;
+  const componentsSum = components.reduce((s, c) => s + (c.amount || 0), 0);
+  const variableBase = hasComponents ? componentsSum : variableTarget || 0;
+  const variable = Math.round(variableBase * achievementPct);
   const brut = fixe + variable;
   const superBrut = Math.round(brut * (1 + EMPLOYER_TOTAL));
   const net = Math.round(brut * (1 - EMPLOYEE_TOTAL));
@@ -67,8 +86,8 @@ export function SalaryBreakdown({
   const employeeCharges = brut - net;
   const tax = net - netApresImpot;
 
-  const hasVariable = (variableTarget || 0) > 0;
-  const indicators: { label: string; weight: number }[] =
+  const hasVariable = variableBase > 0;
+  const legacyIndicators: LooseIndicator[] =
     variableConfig?.indicators?.filter((i) => i.label.trim()) ?? [];
 
   return (
@@ -108,7 +127,12 @@ export function SalaryBreakdown({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-[12px] font-medium" style={{ color: "#633806" }}>
                   <Target size={13} />
-                  Variable cible {formatEur(variableTarget)} / an
+                  Variable cible {formatEur(variableBase)} / an
+                  {hasComponents && (
+                    <span className="text-[11px] font-normal" style={{ opacity: 0.75 }}>
+                      · {components.length} composant{components.length > 1 ? "s" : ""} en parallèle
+                    </span>
+                  )}
                 </div>
                 <div className="text-[12px] tabular-nums" style={{ color: "#633806" }}>
                   Atteinte : <strong>{Math.round(achievementPct * 100)}%</strong> ·{" "}
@@ -134,33 +158,96 @@ export function SalaryBreakdown({
                   </div>
                 </div>
               )}
-              {(variableConfig?.objectiveType ||
-                variableConfig?.payoutFrequency ||
-                indicators.length > 0 ||
-                variableConfig?.calcMethod) && (
-                <div
-                  className="space-y-2 pt-2"
-                  style={{ borderTop: "0.5px dashed rgba(99,56,6,0.25)" }}
-                >
-                  {variableConfig?.objectiveType && (
-                    <div className="text-[11px]" style={{ color: "#633806" }}>
-                      <span style={{ opacity: 0.7 }}>Type :</span>{" "}
-                      {OBJECTIVE_LABELS[variableConfig.objectiveType]}
-                    </div>
-                  )}
-                  {variableConfig?.payoutFrequency && (
-                    <div className="text-[11px]" style={{ color: "#633806" }}>
-                      <span style={{ opacity: 0.7 }}>Fréquence :</span>{" "}
-                      {FREQUENCY_LABELS[variableConfig.payoutFrequency]}
-                    </div>
-                  )}
-                  {indicators.length > 0 && (
-                    <div>
-                      <div className="text-[11px] mb-1" style={{ color: "#633806", opacity: 0.7 }}>
-                        Indicateurs :
+
+              {/* Composants en parallèle */}
+              {hasComponents && (
+                <div className="space-y-2 pt-2" style={{ borderTop: "0.5px dashed rgba(99,56,6,0.25)" }}>
+                  {components.map((c) => {
+                    const compVar = Math.round((c.amount || 0) * achievementPct);
+                    const compIndicators = (c.indicators ?? []).filter((i) => i.label.trim());
+                    return (
+                      <div
+                        key={c.id}
+                        className="rounded-[8px] p-2.5 bg-white/60"
+                        style={{ border: "0.5px solid rgba(99,56,6,0.15)" }}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0"
+                              style={{ background: "#FAEEDA", color: "#633806" }}
+                            >
+                              {FREQUENCY_LABELS[c.frequency]}
+                            </span>
+                            <span className="text-[12px] font-medium truncate" style={{ color: "#633806" }}>
+                              {c.label || "Variable"}
+                            </span>
+                          </div>
+                          <div className="text-[11px] tabular-nums shrink-0" style={{ color: "#633806" }}>
+                            <span style={{ opacity: 0.7 }}>cible {formatEur(c.amount)}</span>{" "}
+                            · <strong>{formatEur(compVar)}</strong>
+                          </div>
+                        </div>
+                        {(c.objectiveType || compIndicators.length > 0 || c.calcMethod) && (
+                          <div className="mt-1.5 space-y-1 pl-1">
+                            {c.objectiveType && (
+                              <div className="text-[10.5px]" style={{ color: "#633806", opacity: 0.85 }}>
+                                {OBJECTIVE_LABELS[c.objectiveType]}
+                              </div>
+                            )}
+                            {compIndicators.length > 0 && (
+                              <ul className="space-y-0.5">
+                                {compIndicators.map((ind, i) => (
+                                  <li
+                                    key={i}
+                                    className="flex items-center justify-between text-[10.5px]"
+                                    style={{ color: "#633806" }}
+                                  >
+                                    <span>• {ind.label}</span>
+                                    {ind.weight > 0 && (
+                                      <span className="tabular-nums" style={{ opacity: 0.75 }}>
+                                        {ind.weight}%
+                                      </span>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                            {c.calcMethod && (
+                              <div className="text-[10.5px] leading-relaxed" style={{ color: "#633806", opacity: 0.85 }}>
+                                {c.calcMethod}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Legacy fallback (anciens packages sans components) */}
+              {!hasComponents &&
+                (variableConfig?.objectiveType ||
+                  variableConfig?.payoutFrequency ||
+                  legacyIndicators.length > 0 ||
+                  variableConfig?.calcMethod) && (
+                  <div className="space-y-2 pt-2" style={{ borderTop: "0.5px dashed rgba(99,56,6,0.25)" }}>
+                    {variableConfig?.objectiveType && (
+                      <div className="text-[11px]" style={{ color: "#633806" }}>
+                        <span style={{ opacity: 0.7 }}>Type :</span>{" "}
+                        {OBJECTIVE_LABELS[variableConfig.objectiveType]}
+                      </div>
+                    )}
+                    {variableConfig?.payoutFrequency && (
+                      <div className="text-[11px]" style={{ color: "#633806" }}>
+                        <span style={{ opacity: 0.7 }}>Fréquence :</span>{" "}
+                        {FREQUENCY_LABELS[variableConfig.payoutFrequency]}
+                      </div>
+                    )}
+                    {legacyIndicators.length > 0 && (
                       <ul className="space-y-1">
-                        {indicators.map((ind, i) => (
+                        {legacyIndicators.map((ind, i) => (
                           <li
                             key={i}
                             className="flex items-center justify-between text-[11px]"
@@ -175,16 +262,15 @@ export function SalaryBreakdown({
                           </li>
                         ))}
                       </ul>
-                    </div>
-                  )}
-                  {variableConfig?.calcMethod && (
-                    <div className="text-[11px] leading-relaxed" style={{ color: "#633806" }}>
-                      <span style={{ opacity: 0.7 }}>Méthode de calcul :</span>{" "}
-                      {variableConfig.calcMethod}
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                    {variableConfig?.calcMethod && (
+                      <div className="text-[11px] leading-relaxed" style={{ color: "#633806" }}>
+                        <span style={{ opacity: 0.7 }}>Méthode de calcul :</span>{" "}
+                        {variableConfig.calcMethod}
+                      </div>
+                    )}
+                  </div>
+                )}
             </div>
           )}
 

@@ -1515,3 +1515,160 @@ function CounterOfferBanner({
   );
 }
 
+/* -------------------- Decision deadline countdown -------------------- */
+
+interface TimeLeft {
+  total: number;
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+function calcTimeLeft(deadline: string): TimeLeft {
+  const total = Math.max(0, new Date(deadline).getTime() - Date.now());
+  return {
+    total,
+    days: Math.floor(total / 86_400_000),
+    hours: Math.floor((total % 86_400_000) / 3_600_000),
+    minutes: Math.floor((total % 3_600_000) / 60_000),
+    seconds: Math.floor((total % 60_000) / 1000),
+  };
+}
+
+function DecisionDeadlineBanner({
+  deadline,
+  status,
+}: {
+  deadline: string;
+  status: string;
+}) {
+  const [timeLeft, setTimeLeft] = useState(() => calcTimeLeft(deadline));
+
+  useEffect(() => {
+    if (status !== "pending") return;
+    const id = window.setInterval(() => setTimeLeft(calcTimeLeft(deadline)), 1000);
+    return () => window.clearInterval(id);
+  }, [deadline, status]);
+
+  if (status === "accepted" || status === "declined") return null;
+
+  const isExpired = timeLeft.total <= 0;
+  const isUrgent = timeLeft.total > 0 && timeLeft.total < 24 * 3_600_000;
+
+  if (isExpired) {
+    return (
+      <div className="rounded-2xl p-5 mb-5 flex items-start gap-3" style={{ background: "#FCEBEB", border: "1px solid rgba(184,90,106,0.25)" }}>
+        <span style={{ fontSize: 22 }}>⏰</span>
+        <div className="flex-1">
+          <div className="font-display text-[#A32D2D]" style={{ fontSize: 16 }}>
+            Cette offre a expiré
+          </div>
+          <div className="text-[12px] text-[#A32D2D] opacity-80 mt-1 leading-relaxed">
+            Le délai de décision est passé. Vous pouvez toujours envoyer un
+            message à l'équipe RH si vous souhaitez donner suite.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const deadlineFr = new Date(deadline).toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const accent = isUrgent ? "#C46A1F" : "#8B7FA8";
+  const bg = isUrgent ? "#FCEEE6" : "#F5F2FA";
+
+  return (
+    <div
+      className="rounded-2xl p-5 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      style={{ background: bg, border: `1px solid ${accent}33` }}
+    >
+      <div className="flex items-start gap-3">
+        <span style={{ fontSize: 22 }}>{isUrgent ? "⚡" : "📅"}</span>
+        <div>
+          <div className="font-display text-aubergine" style={{ fontSize: 15 }}>
+            Offre disponible jusqu'au {deadlineFr}
+          </div>
+          <div className="text-[12px] text-aubergine-light mt-1 leading-relaxed">
+            {isUrgent
+              ? "Dernière chance de donner suite à cette offre."
+              : "Prenez le temps d'étudier l'offre et de simuler votre package."}
+          </div>
+        </div>
+      </div>
+      <CountdownDisplay timeLeft={timeLeft} accent={accent} />
+    </div>
+  );
+}
+
+function CountdownDisplay({ timeLeft, accent }: { timeLeft: TimeLeft; accent: string }) {
+  const blocks =
+    timeLeft.days > 0
+      ? [
+          { value: timeLeft.days, label: "j" },
+          { value: timeLeft.hours, label: "h" },
+          { value: timeLeft.minutes, label: "mn" },
+        ]
+      : [
+          { value: timeLeft.hours, label: "h" },
+          { value: timeLeft.minutes, label: "mn" },
+          { value: timeLeft.seconds, label: "s" },
+        ];
+
+  return (
+    <div className="flex items-end gap-2 flex-shrink-0">
+      {blocks.map((b, i) => (
+        <div key={b.label} className="flex items-end gap-2">
+          <div className="flex flex-col items-center">
+            <div
+              className="font-display tabular-nums leading-none"
+              style={{ fontSize: 24, color: accent }}
+            >
+              {String(b.value).padStart(2, "0")}
+            </div>
+            <div className="text-[10px] uppercase tracking-wider text-aubergine-light mt-1">
+              {b.label}
+            </div>
+          </div>
+          {i < blocks.length - 1 && (
+            <span className="font-display pb-3" style={{ color: accent, fontSize: 18 }}>
+              :
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ExpiredDecisionBlock({ onContact }: { onContact: () => void }) {
+  return (
+    <section className="mb-6">
+      <div className="text-[11px] uppercase tracking-[0.15em] text-aubergine-light font-medium mb-3">
+        Votre décision
+      </div>
+      <div className="rounded-[12px] p-5" style={{ background: "#FCEBEB" }}>
+        <div className="font-display text-[#A32D2D]" style={{ fontSize: 16 }}>
+          Le délai de décision est passé
+        </div>
+        <p className="text-[12px] text-[#A32D2D] opacity-80 mt-2 leading-relaxed">
+          L'offre officielle a expiré, mais vous pouvez toujours contacter
+          l'équipe RH si vous souhaitez donner suite.
+        </p>
+        <button
+          onClick={onContact}
+          className="mt-3 text-[12px] font-medium text-[#A32D2D] underline"
+        >
+          Envoyer un message →
+        </button>
+      </div>
+    </section>
+  );
+}
+

@@ -46,13 +46,6 @@ const eventLabels: Record<ActivityType, string> = {
   sent: "a reçu un lien",
 };
 
-const engagementByDevice: { label: string; value: number; color: string }[] = [
-  { label: "BSPCE", value: 86, color: "#8B7FA8" },
-  { label: "PEE", value: 71, color: "#C4A882" },
-  { label: "AGA", value: 64, color: "#8B7FA8" },
-  { label: "Intéressement", value: 43, color: "#D3D1C7" },
-  { label: "PERCO", value: 29, color: "#C4A882" },
-];
 
 function pkgInitials(title: string) {
   return title

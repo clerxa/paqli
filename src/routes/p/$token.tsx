@@ -117,8 +117,8 @@ const TABS: { key: TabKey; label: string; highlight?: boolean }[] = [
   { key: "team", label: "Équipe & culture" },
   { key: "package", label: "Package", highlight: true },
   { key: "comparatif", label: "Comparatif" },
-  { key: "questions", label: "Questions" },
-  { key: "next", label: "Next steps" },
+  { key: "questions", label: "Échanger" },
+  { key: "next", label: "Ma décision" },
 ];
 
 function PackageView({

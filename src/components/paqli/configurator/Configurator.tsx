@@ -97,7 +97,7 @@ export function Configurator() {
               Enregistrer
             </Button>
             <Button onClick={goNext}>
-              {config.currentStep === 5 ? "Terminer" : "Suivant →"}
+              {config.currentStep === 6 ? "Terminer" : "Suivant →"}
             </Button>
           </div>
         }
@@ -126,7 +126,7 @@ export function Configurator() {
                 ← Précédent
               </Button>
               <Button onClick={goNext}>
-                {config.currentStep === 5 ? "Terminer" : "Suivant →"}
+                {config.currentStep === 6 ? "Terminer" : "Suivant →"}
               </Button>
             </div>
           </Card>

@@ -81,22 +81,26 @@ export function Step1Fixed() {
           />
           <CoachTipInline tip={tips.gross_salary} />
         </div>
-        <NumberField
-          label="Variable cible annuel"
-          suffix="€"
-          value={config.variableTarget}
-          onChange={(v) => patch({ variableTarget: v })}
-          placeholder="8 000"
+        <VariableTotalField
+          variableConfig={config.variableConfig ?? defaultVariableConfig}
+          variableTarget={config.variableTarget}
+          onChangeTarget={(v) => patch({ variableTarget: v })}
         />
       </div>
 
-      {config.variableTarget > 0 && (
-        <VariableConfigSection
-          value={config.variableConfig ?? defaultVariableConfig}
-          onChange={(v) => patch({ variableConfig: v })}
-          variableTarget={config.variableTarget}
-        />
-      )}
+      <VariableConfigSection
+        value={config.variableConfig ?? defaultVariableConfig}
+        onChange={(v) => {
+          // Si des composants existent, on aligne le total sur leur somme
+          const sum = v.components.reduce((s, c) => s + (c.amount || 0), 0);
+          if (v.components.length > 0) {
+            patch({ variableConfig: v, variableTarget: sum });
+          } else {
+            patch({ variableConfig: v });
+          }
+        }}
+        variableTarget={config.variableTarget}
+      />
 
       <CoachTipInline tip={tips.remote_days} />
 

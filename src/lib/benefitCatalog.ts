@@ -462,7 +462,9 @@ export function calcBenefitsTotal(benefits: PackageBenefit[]): number {
   return benefits
     .filter((b) => {
       const def = getBenefitDef(b.benefit_key);
-      return def && def.valueType !== "qualitative";
+      if (def) return def.valueType !== "qualitative";
+      // Avantage personnalisé (pas dans le catalogue) : on s'appuie sur value_type
+      return b.value_type !== "qualitative";
     })
     .reduce((sum, b) => sum + estimateBenefitValue(b), 0);
 }

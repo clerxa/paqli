@@ -175,6 +175,8 @@ export interface PackageConfig {
   variableTarget: number;
   variableConfig: VariableConfig;
   benefits: BenefitsConfig;
+  trialPeriodMonths: number | null;
+  trialPeriodRenewable: boolean;
 
   equityDevices: EquityDeviceForm[];
   savingsDevices: SavingsDeviceForm[];
@@ -233,6 +235,8 @@ export const emptyConfig: PackageConfig = {
   variableTarget: 0,
   variableConfig: defaultVariableConfig,
   benefits: defaultBenefits,
+  trialPeriodMonths: null,
+  trialPeriodRenewable: false,
   equityDevices: [],
   savingsDevices: [],
   scenarios: defaultScenarios,

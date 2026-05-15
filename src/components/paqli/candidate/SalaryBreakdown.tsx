@@ -127,7 +127,7 @@ export function SalaryBreakdown({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-[12px] font-medium" style={{ color: "#633806" }}>
                   <Target size={13} />
-                  Variable cible {formatEur(variableTarget)} / an
+                  Variable cible {formatEur(variableBase)} / an
                   {hasComponents && (
                     <span className="text-[11px] font-normal" style={{ opacity: 0.75 }}>
                       · {components.length} composant{components.length > 1 ? "s" : ""} en parallèle

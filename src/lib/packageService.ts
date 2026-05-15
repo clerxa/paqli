@@ -24,6 +24,7 @@ export async function upsertPackage(
     status: config.status,
     gross_salary: config.grossSalary || null,
     variable_target: config.variableTarget || null,
+    variable_config: (config.variableConfig ?? defaultVariableConfig) as unknown as Json,
     benefits: config.benefits as unknown as Json,
     scenario_message: config.scenarioMessage || null,
     scenario_display: config.scenarioDisplay,

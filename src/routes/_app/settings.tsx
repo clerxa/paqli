@@ -32,6 +32,10 @@ interface OrgProfile {
   culture_note: string;
   links: CompanyLink[];
   source_urls: string[];
+  siret: string;
+  address_street: string;
+  address_zip: string;
+  address_city: string;
 }
 
 const empty: OrgProfile = {
@@ -42,6 +46,10 @@ const empty: OrgProfile = {
   culture_note: "",
   links: [],
   source_urls: [],
+  siret: "",
+  address_street: "",
+  address_zip: "",
+  address_city: "",
 };
 
 function SettingsPage() {
@@ -59,7 +67,7 @@ function SettingsPage() {
       const { data } = await supabase
         .from("organizations")
         .select(
-          "name, description, key_figures, values, culture_note, links, source_urls",
+          "name, description, key_figures, values, culture_note, links, source_urls, siret, address_street, address_zip, address_city",
         )
         .eq("id", organization.id)
         .maybeSingle();
@@ -74,6 +82,10 @@ function SettingsPage() {
           culture_note: data.culture_note ?? "",
           links: Array.isArray(data.links) ? (data.links as unknown as CompanyLink[]) : [],
           source_urls: Array.isArray(data.source_urls) ? data.source_urls : [],
+          siret: data.siret ?? "",
+          address_street: data.address_street ?? "",
+          address_zip: data.address_zip ?? "",
+          address_city: data.address_city ?? "",
         });
       }
       setLoading(false);
@@ -82,6 +94,10 @@ function SettingsPage() {
 
   async function save() {
     if (!organization?.id) return;
+    if (profile.siret && profile.siret.length !== 14) {
+      toast.error("Le SIRET doit contenir 14 chiffres");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from("organizations")
@@ -93,6 +109,10 @@ function SettingsPage() {
         culture_note: profile.culture_note || null,
         links: profile.links as any,
         source_urls: profile.source_urls,
+        siret: profile.siret || null,
+        address_street: profile.address_street || null,
+        address_zip: profile.address_zip || null,
+        address_city: profile.address_city || null,
       })
       .eq("id", organization.id);
     setSaving(false);

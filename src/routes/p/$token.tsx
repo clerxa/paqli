@@ -106,6 +106,7 @@ type TabKey =
   | "flex"
   | "team"
   | "package"
+  | "comparatif"
   | "questions"
   | "next";
 
@@ -115,6 +116,7 @@ const TABS: { key: TabKey; label: string; highlight?: boolean }[] = [
   { key: "flex", label: "Flexibilité" },
   { key: "team", label: "Équipe & culture" },
   { key: "package", label: "Package", highlight: true },
+  { key: "comparatif", label: "Comparatif" },
   { key: "questions", label: "Questions" },
   { key: "next", label: "Next steps" },
 ];

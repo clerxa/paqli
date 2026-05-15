@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Lock, Info, Calendar, Sparkles, Send, Loader2, MapPin, Users, TrendingUp, ListChecks, ExternalLink, Clock } from "lucide-react";
 import { Logo } from "@/components/paqli/Logo";
@@ -101,6 +101,7 @@ function ErrorState({ kind }: { kind: "not_found" | "expired" }) {
 /* -------------------- Main view -------------------- */
 
 type TabKey =
+  | "welcome"
   | "offre"
   | "entreprise"
   | "flex"
@@ -111,6 +112,7 @@ type TabKey =
   | "next";
 
 const TABS: { key: TabKey; label: string; highlight?: boolean }[] = [
+  { key: "welcome", label: "Bienvenue" },
   { key: "offre", label: "Offre" },
   { key: "entreprise", label: "Entreprise" },
   { key: "flex", label: "Flexibilité" },
@@ -140,11 +142,79 @@ function PackageView({
 
   // Read deep-link from URL
   const initialTab = (() => {
-    if (typeof window === "undefined") return "package" as TabKey;
+    if (typeof window === "undefined") return "welcome" as TabKey;
     const t = new URLSearchParams(window.location.search).get("tab") as TabKey | null;
-    return TABS.some((x) => x.key === t) ? (t as TabKey) : "package";
+    return TABS.some((x) => x.key === t) ? (t as TabKey) : "welcome";
   })();
   const [tab, setTab] = useState<TabKey>(initialTab);
+
+  // Persisted set of visited tabs (sequential gating)
+  const visitedKey = `paqli_visited_${data.token}`;
+  const [visitedTabs, setVisitedTabs] = useState<Set<TabKey>>(() => {
+    if (typeof window === "undefined") return new Set<TabKey>([initialTab]);
+    try {
+      const raw = window.localStorage.getItem(visitedKey);
+      const arr = raw ? (JSON.parse(raw) as TabKey[]) : [];
+      const valid = arr.filter((k) => TABS.some((t) => t.key === k));
+      return new Set<TabKey>([...valid, initialTab]);
+    } catch {
+      return new Set<TabKey>([initialTab]);
+    }
+  });
+
+  const tabOrder = TABS.map((t) => t.key);
+  const allTabsVisited = tabOrder.every((k) => visitedTabs.has(k));
+  const allTabsVisitedRef = useRef(allTabsVisited);
+
+  // When current tab changes, mark visited + track
+  useEffect(() => {
+    setVisitedTabs((prev) => {
+      if (prev.has(tab)) return prev;
+      const next = new Set(prev);
+      next.add(tab);
+      try {
+        window.localStorage.setItem(visitedKey, JSON.stringify([...next]));
+      } catch {
+        /* ignore */
+      }
+      behavior.track("section_view", { section: `tab_${tab}` });
+      const wasComplete = allTabsVisitedRef.current;
+      const nowComplete = tabOrder.every((k) => next.has(k));
+      if (!wasComplete && nowComplete) {
+        allTabsVisitedRef.current = true;
+        behavior.track("section_view", { section: "all_tabs_completed" });
+      }
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  // Guarded tab change — only allow visited or the immediate next tab (until all done)
+  const canGoToTab = useCallback(
+    (target: TabKey) => {
+      if (allTabsVisited) return true;
+      if (visitedTabs.has(target)) return true;
+      const currentIdx = tabOrder.indexOf(tab);
+      const targetIdx = tabOrder.indexOf(target);
+      return targetIdx === currentIdx + 1;
+    },
+    [allTabsVisited, visitedTabs, tab, tabOrder],
+  );
+
+  const tryChangeTab = useCallback(
+    (target: TabKey) => {
+      if (!canGoToTab(target)) return;
+      setTab(target);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
+    [canGoToTab],
+  );
+
+  const currentIndex = tabOrder.indexOf(tab);
+  const prevTab = currentIndex > 0 ? tabOrder[currentIndex - 1] : null;
+  const nextTab = currentIndex < tabOrder.length - 1 ? tabOrder[currentIndex + 1] : null;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -206,107 +276,6 @@ function PackageView({
     <PageShell>
       {data.counterOffer && <CounterOfferBanner info={data.counterOffer} />}
 
-      {/* Hero — Bienvenue */}
-      <section
-        data-section="hero"
-        className="relative overflow-hidden rounded-2xl p-8 mb-4"
-        style={{
-          background:
-            "radial-gradient(120% 100% at 0% 0%, #3D3458 0%, #2D2640 55%, #1F1A2E 100%)",
-        }}
-      >
-        {/* glow */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full"
-          style={{ background: "radial-gradient(closest-side, rgba(196,168,130,0.35), transparent)" }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-20 -left-20 w-72 h-72 rounded-full"
-          style={{ background: "radial-gradient(closest-side, rgba(139,127,168,0.25), transparent)" }}
-        />
-
-        <div className="relative">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.18em]"
-            style={{ background: "rgba(196,168,130,0.18)", color: "#E8D6B5", border: "0.5px solid rgba(196,168,130,0.35)" }}
-          >
-            <Sparkles size={10} /> Félicitations
-          </div>
-
-          <h1 className="font-display text-white mt-4" style={{ fontSize: 30, lineHeight: 1.1 }}>
-            {data.candidate_name ? `${data.candidate_name}, ` : ""}
-            <span style={{ color: "#E8D6B5" }}>{org?.name ?? "L'équipe"}</span>{" "}
-            vous propose de rejoindre l'aventure.
-          </h1>
-
-          <p className="text-[14px] mt-3 leading-relaxed" style={{ color: "#D6CDE8", maxWidth: 540 }}>
-            Voici votre offre pour le poste de <strong className="text-white">{pkg.title}</strong>.
-            Prenez le temps d'explorer chaque élément — package, équipe,
-            flexibilité — et de simuler votre rémunération. Toutes vos
-            interactions ici restent privées.
-          </p>
-
-          <div className="flex items-center gap-3 mt-6">
-            {org?.logo_url ? (
-              <img src={org.logo_url} alt={org.name} className="w-12 h-12 rounded-xl object-cover ring-1 ring-white/20" />
-            ) : (
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center font-display text-xl text-white ring-1 ring-white/20">
-                {org?.name?.[0] ?? "?"}
-              </div>
-            )}
-            <div>
-              <div className="font-display text-white" style={{ fontSize: 16 }}>
-                {org?.name ?? "—"}
-              </div>
-              <div className="text-[12px]" style={{ color: "#B8AECF" }}>
-                {pkg.title}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mot personnel de l'équipe */}
-      {pkg.interview_notes && pkg.interview_notes.trim().length > 0 && (
-        <section
-          className="rounded-2xl p-5 mb-4"
-          style={{ background: "#FFFFFF", border: "0.5px solid rgba(196,168,130,0.45)", boxShadow: "0 4px 16px rgba(45,38,64,0.05)" }}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <span style={{ fontSize: 18 }}>💬</span>
-            <div className="text-[11px] uppercase tracking-[0.15em] font-medium" style={{ color: "#7A5417" }}>
-              Un mot de l'équipe {org?.name ? `de ${org.name}` : ""}
-            </div>
-          </div>
-          <p className="text-[14px] text-aubergine leading-relaxed whitespace-pre-line italic">
-            « {pkg.interview_notes} »
-          </p>
-        </section>
-      )}
-
-      {/* Pourquoi Paqli */}
-      <section
-        className="rounded-2xl p-4 mb-5 flex items-start gap-3"
-        style={{ background: "#F5F2FA", border: "0.5px solid rgba(139,127,168,0.25)" }}
-      >
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#2D2640" }}>
-          <Sparkles size={14} className="text-white" />
-        </div>
-        <div className="flex-1">
-          <div className="font-display text-aubergine" style={{ fontSize: 14 }}>
-            Pourquoi {org?.name ?? "l'entreprise"} a choisi Paqli pour vous ?
-          </div>
-          <p className="text-[12px] text-aubergine-light mt-1 leading-relaxed">
-            Une offre, ce n'est pas qu'un salaire. C'est un package complet —
-            equity, épargne, avantages, culture, projet. Paqli rend tout ça
-            transparent et personnalisable, pour que <strong>vous</strong>{" "}
-            puissiez prendre la meilleure décision, en toute clarté.
-          </p>
-        </div>
-      </section>
-
-
       {data.decisionDeadline && (
         <DecisionDeadlineBanner
           deadline={data.decisionDeadline}
@@ -315,7 +284,115 @@ function PackageView({
       )}
 
       {/* Tabs */}
-      <TabBar tab={tab} onChange={setTab} />
+      <TabBar
+        tab={tab}
+        onChange={tryChangeTab}
+        visitedTabs={visitedTabs}
+        allUnlocked={allTabsVisited}
+      />
+
+      {tab === "welcome" && (
+        <>
+          {/* Hero — Bienvenue */}
+          <section
+            data-section="hero"
+            className="relative overflow-hidden rounded-2xl p-8 mb-4"
+            style={{
+              background:
+                "radial-gradient(120% 100% at 0% 0%, #3D3458 0%, #2D2640 55%, #1F1A2E 100%)",
+            }}
+          >
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full"
+              style={{ background: "radial-gradient(closest-side, rgba(196,168,130,0.35), transparent)" }}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -bottom-20 -left-20 w-72 h-72 rounded-full"
+              style={{ background: "radial-gradient(closest-side, rgba(139,127,168,0.25), transparent)" }}
+            />
+
+            <div className="relative">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.18em]"
+                style={{ background: "rgba(196,168,130,0.18)", color: "#E8D6B5", border: "0.5px solid rgba(196,168,130,0.35)" }}
+              >
+                <Sparkles size={10} /> Félicitations
+              </div>
+
+              <h1 className="font-display text-white mt-4" style={{ fontSize: 30, lineHeight: 1.1 }}>
+                {data.candidate_name ? `${data.candidate_name}, ` : ""}
+                <span style={{ color: "#E8D6B5" }}>{org?.name ?? "L'équipe"}</span>{" "}
+                vous propose de rejoindre l'aventure.
+              </h1>
+
+              <p className="text-[14px] mt-3 leading-relaxed" style={{ color: "#D6CDE8", maxWidth: 540 }}>
+                Voici votre offre pour le poste de <strong className="text-white">{pkg.title}</strong>.
+                Prenez le temps d'explorer chaque élément — package, équipe,
+                flexibilité — et de simuler votre rémunération. Toutes vos
+                interactions ici restent privées.
+              </p>
+
+              <div className="flex items-center gap-3 mt-6">
+                {org?.logo_url ? (
+                  <img src={org.logo_url} alt={org.name} className="w-12 h-12 rounded-xl object-cover ring-1 ring-white/20" />
+                ) : (
+                  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center font-display text-xl text-white ring-1 ring-white/20">
+                    {org?.name?.[0] ?? "?"}
+                  </div>
+                )}
+                <div>
+                  <div className="font-display text-white" style={{ fontSize: 16 }}>
+                    {org?.name ?? "—"}
+                  </div>
+                  <div className="text-[12px]" style={{ color: "#B8AECF" }}>
+                    {pkg.title}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Mot personnel de l'équipe */}
+          {pkg.interview_notes && pkg.interview_notes.trim().length > 0 && (
+            <section
+              className="rounded-2xl p-5 mb-4"
+              style={{ background: "#FFFFFF", border: "0.5px solid rgba(196,168,130,0.45)", boxShadow: "0 4px 16px rgba(45,38,64,0.05)" }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span style={{ fontSize: 18 }}>💬</span>
+                <div className="text-[11px] uppercase tracking-[0.15em] font-medium" style={{ color: "#7A5417" }}>
+                  Un mot de l'équipe {org?.name ? `de ${org.name}` : ""}
+                </div>
+              </div>
+              <p className="text-[14px] text-aubergine leading-relaxed whitespace-pre-line italic">
+                « {pkg.interview_notes} »
+              </p>
+            </section>
+          )}
+
+          {/* Pourquoi Paqli */}
+          <section
+            className="rounded-2xl p-4 mb-5 flex items-start gap-3"
+            style={{ background: "#F5F2FA", border: "0.5px solid rgba(139,127,168,0.25)" }}
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#2D2640" }}>
+              <Sparkles size={14} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <div className="font-display text-aubergine" style={{ fontSize: 14 }}>
+                Pourquoi {org?.name ?? "l'entreprise"} a choisi Paqli pour vous ?
+              </div>
+              <p className="text-[12px] text-aubergine-light mt-1 leading-relaxed">
+                Une offre, ce n'est pas qu'un salaire. C'est un package complet —
+                equity, épargne, avantages, culture, projet. Paqli rend tout ça
+                transparent et personnalisable, pour que <strong>vous</strong>{" "}
+                puissiez prendre la meilleure décision, en toute clarté.
+              </p>
+            </div>
+          </section>
+        </>
+      )}
 
       {tab === "offre" && (
         <OfferTab pkg={pkg} />
@@ -604,6 +681,16 @@ function PackageView({
         </>
       )}
 
+      <TabFooterNav
+        prevTab={prevTab}
+        nextTab={nextTab}
+        prevLabel={prevTab ? TABS.find((x) => x.key === prevTab)?.label ?? null : null}
+        nextLabel={nextTab ? TABS.find((x) => x.key === nextTab)?.label ?? null : null}
+        onPrev={() => prevTab && tryChangeTab(prevTab)}
+        onNext={() => nextTab && tryChangeTab(nextTab)}
+        allUnlocked={allTabsVisited}
+      />
+
       <FooterDisclaimer />
     </PageShell>
   );
@@ -611,42 +698,126 @@ function PackageView({
 
 /* -------------------- Tabs -------------------- */
 
-function TabBar({ tab, onChange }: { tab: TabKey; onChange: (t: TabKey) => void }) {
+function TabBar({
+  tab,
+  onChange,
+  visitedTabs,
+  allUnlocked,
+}: {
+  tab: TabKey;
+  onChange: (t: TabKey) => void;
+  visitedTabs: Set<TabKey>;
+  allUnlocked: boolean;
+}) {
+  const order = TABS.map((t) => t.key);
+  const currentIdx = order.indexOf(tab);
   return (
     <div
       className="flex flex-wrap gap-1.5 p-1.5 rounded-2xl mb-6 sticky top-2 z-10"
       style={{ background: "#FFFFFF", border: "0.5px solid rgba(45,38,64,0.08)", boxShadow: "0 4px 16px rgba(45,38,64,0.04)" }}
     >
-      {TABS.map((t) => {
+      {TABS.map((t, idx) => {
         const active = tab === t.key;
         const isHL = t.highlight;
+        const visited = visitedTabs.has(t.key);
+        const isNext = idx === currentIdx + 1;
+        const unlocked = allUnlocked || visited || isNext;
+        const locked = !unlocked;
         return (
           <button
             key={t.key}
             onClick={() => onChange(t.key)}
-            className="px-3 py-2 rounded-xl text-[12px] transition-all"
+            disabled={locked}
+            title={locked ? "Terminez l'étape précédente pour débloquer" : undefined}
+            className="px-3 py-2 rounded-xl text-[12px] transition-all flex items-center gap-1"
             style={
-              isHL
+              locked
                 ? {
-                    background: active ? "#C4A882" : "#FAEEDA",
-                    color: active ? "#FFFFFF" : "#7A5417",
-                    fontWeight: 600,
-                    fontSize: 13,
-                    boxShadow: active ? "0 2px 8px rgba(196,168,130,0.4)" : undefined,
-                    border: "1px solid rgba(196,168,130,0.4)",
+                    background: "transparent",
+                    color: "#C7C3CC",
+                    cursor: "not-allowed",
+                    opacity: 0.55,
                   }
-                : {
-                    background: active ? "#2D2640" : "transparent",
-                    color: active ? "#FAF8F5" : "#524970",
-                    fontWeight: active ? 500 : 400,
-                  }
+                : isHL
+                  ? {
+                      background: active ? "#C4A882" : "#FAEEDA",
+                      color: active ? "#FFFFFF" : "#7A5417",
+                      fontWeight: 600,
+                      fontSize: 13,
+                      boxShadow: active ? "0 2px 8px rgba(196,168,130,0.4)" : undefined,
+                      border: "1px solid rgba(196,168,130,0.4)",
+                    }
+                  : {
+                      background: active ? "#2D2640" : "transparent",
+                      color: active ? "#FAF8F5" : "#524970",
+                      fontWeight: active ? 500 : 400,
+                    }
             }
           >
-            {isHL && <Sparkles size={11} className="inline mr-1" />}
+            {locked && <Lock size={10} />}
+            {!locked && isHL && <Sparkles size={11} />}
+            {!locked && visited && !active && (
+              <span style={{ color: "#5B8C7B", fontSize: 10 }}>✓</span>
+            )}
             {t.label}
           </button>
         );
       })}
+    </div>
+  );
+}
+
+function TabFooterNav({
+  prevTab,
+  nextTab,
+  prevLabel,
+  nextLabel,
+  onPrev,
+  onNext,
+  allUnlocked,
+}: {
+  prevTab: TabKey | null;
+  nextTab: TabKey | null;
+  prevLabel: string | null;
+  nextLabel: string | null;
+  onPrev: () => void;
+  onNext: () => void;
+  allUnlocked: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 mt-8 mb-4">
+      <button
+        type="button"
+        onClick={onPrev}
+        disabled={!prevTab}
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-medium transition"
+        style={{
+          background: "transparent",
+          color: prevTab ? "#524970" : "#C7C3CC",
+          border: "1px solid rgba(45,38,64,0.15)",
+          cursor: prevTab ? "pointer" : "not-allowed",
+        }}
+      >
+        ← {prevLabel ?? "Précédent"}
+      </button>
+      <div className="text-[11px] text-grey">
+        {allUnlocked
+          ? "Vous pouvez naviguer librement"
+          : "Avancez étape par étape pour tout débloquer"}
+      </div>
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={!nextTab}
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-medium transition"
+        style={{
+          background: nextTab ? "#2D2640" : "#E5E1EC",
+          color: nextTab ? "#FAF8F5" : "#9C95B0",
+          cursor: nextTab ? "pointer" : "not-allowed",
+        }}
+      >
+        {nextLabel ?? "Terminer"} →
+      </button>
     </div>
   );
 }

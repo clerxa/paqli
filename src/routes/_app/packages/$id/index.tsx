@@ -254,6 +254,10 @@ function PackageDetail() {
               grossAnnual={pkg.grossSalary}
               pasRate={previewPas}
               onPasRateChange={setPreviewPas}
+              variableTarget={pkg.variableTarget}
+              achievementPct={previewAchievement}
+              onAchievementPctChange={setPreviewAchievement}
+              variableConfig={pkg.variableConfig}
             />
           </Card>
         </div>

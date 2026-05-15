@@ -63,6 +63,19 @@ export function Step0Job() {
     patch({ missions: config.missions.filter((_, j) => j !== i) });
   }
 
+  function setGrowth(i: number, p: Partial<GrowthPath>) {
+    const next = [...config.growthPaths];
+    next[i] = { ...next[i], ...p };
+    patch({ growthPaths: next });
+  }
+  function addGrowth() {
+    if (config.growthPaths.length >= 3) return;
+    patch({ growthPaths: [...config.growthPaths, { horizon: "1 an", path: "" }] });
+  }
+  function removeGrowth(i: number) {
+    patch({ growthPaths: config.growthPaths.filter((_, j) => j !== i) });
+  }
+
   return (
     <div className="space-y-7">
       <header>

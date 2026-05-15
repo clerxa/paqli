@@ -134,6 +134,7 @@ export interface PackageData {
     indicators?: { label: string; weight: number }[];
   } | null;
   benefits: Record<string, any> | null;
+  package_benefits?: PackageBenefit[];
   scenario_message: string | null;
   scenario_display: "all" | "realistic_only" | "realistic_optimistic";
 

@@ -50,8 +50,16 @@ export function PreviewPanel({ config }: { config: PackageConfig }) {
       </div>
 
       <div className="px-4 py-3 space-y-2 text-[12px]">
-        <Row label="Fixe net estimé" value={formatEur(s1.salaryEst)} />
-        <Row label="Variable estimé" value={formatEur(s1.variableEst)} />
+        <Row
+          label="Fixe net estimé"
+          value={formatEur(s1.salaryEst)}
+          monthly={s1.salaryEst > 0 ? formatEur(Math.round(s1.salaryEst / 12)) : undefined}
+        />
+        <Row
+          label="Variable estimé"
+          value={formatEur(s1.variableEst)}
+          monthly={s1.variableEst > 0 ? formatEur(Math.round(s1.variableEst / 12)) : undefined}
+        />
         <Row
           label="Equity (réaliste)"
           value={step >= 2 ? formatEur(s2.equityEst) : "— —"}
@@ -96,21 +104,30 @@ export function PreviewPanel({ config }: { config: PackageConfig }) {
 function Row({
   label,
   value,
+  monthly,
   dimmed,
 }: {
   label: string;
   value: string;
+  monthly?: string;
   dimmed?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-start justify-between">
       <span style={{ color: dimmed ? "#C7C3CC" : "#524970" }}>{label}</span>
-      <span
-        className="font-medium"
-        style={{ color: dimmed ? "#C7C3CC" : "#2D2640" }}
-      >
-        {value}
-      </span>
+      <div className="text-right">
+        <div
+          className="font-medium"
+          style={{ color: dimmed ? "#C7C3CC" : "#2D2640" }}
+        >
+          {value}
+        </div>
+        {monthly && (
+          <div className="text-[10px]" style={{ color: "#8B7FA8" }}>
+            soit {monthly} / mois
+          </div>
+        )}
+      </div>
     </div>
   );
 }

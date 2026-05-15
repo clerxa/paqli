@@ -62,6 +62,7 @@ function PackageDetail() {
   const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
   const [counterOfferFor, setCounterOfferFor] = useState<CounterOfferOriginal | null>(null);
   const [previewPas, setPreviewPas] = useState(0.30);
+  const [previewAchievement, setPreviewAchievement] = useState(1);
 
   async function reload() {
     const [p, l] = await Promise.all([

@@ -1117,6 +1117,7 @@ function Assistant({
   >([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
   const ask = useServerFn(askCandidateAssistant);
   const track = useServerFn(trackLink);
 
@@ -1166,17 +1167,52 @@ function Assistant({
           orgName: pkg.organizations?.name ?? "l'entreprise",
           jobTitle: pkg.title,
           messages: next,
+          candidateLinkToken: token,
         },
       });
-      setMessages((m) => [
-        ...m,
-        { role: "assistant", content: res.answer },
-      ]);
+      if (res.error) {
+        if (res.error.code === "RETRY") {
+          // Retry automatique une fois après 500ms
+          await new Promise((r) => setTimeout(r, 500));
+          const retry = await ask({
+            data: {
+              packageContext,
+              candidateContext,
+              orgName: pkg.organizations?.name ?? "l'entreprise",
+              jobTitle: pkg.title,
+              messages: next,
+              candidateLinkToken: token,
+            },
+          });
+          if (retry.error) {
+            setMessages((m) => [
+              ...m,
+              { role: "assistant" as const, content: retry.error!.message },
+            ]);
+          } else {
+            setMessages((m) => [
+              ...m,
+              { role: "assistant" as const, content: retry.answer ?? "" },
+            ]);
+          }
+        } else {
+          if (res.error.code === "QUOTA_EXCEEDED") setQuotaExceeded(true);
+          setMessages((m) => [
+            ...m,
+            { role: "assistant" as const, content: res.error!.message },
+          ]);
+        }
+      } else {
+        setMessages((m) => [
+          ...m,
+          { role: "assistant" as const, content: res.answer ?? "" },
+        ]);
+      }
     } catch (e: any) {
       setMessages((m) => [
         ...m,
         {
-          role: "assistant",
+          role: "assistant" as const,
           content:
             e?.message ?? "Désolé, une erreur est survenue. Réessayez plus tard.",
         },
@@ -1229,6 +1265,19 @@ function Assistant({
           </div>
         )}
       </div>
+      {quotaExceeded && (
+        <div
+          className="text-[12px] mb-3 px-3 py-2 rounded-md"
+          style={{
+            background: "#F0EBE8",
+            color: "#2D2640",
+            border: "1px solid rgba(139,127,168,0.2)",
+          }}
+        >
+          💬 Limite de questions atteinte. Utilisez la messagerie ci-dessous pour
+          contacter directement l'équipe RH.
+        </div>
+      )}
       <div className="flex items-end gap-2">
         <textarea
           value={input}
@@ -1239,14 +1288,19 @@ function Assistant({
               void send();
             }
           }}
-          placeholder="Ex : Que se passe-t-il avec mes BSPCE si l'entreprise est rachetée ?"
+          placeholder={
+            quotaExceeded
+              ? "Limite atteinte — utilisez la messagerie."
+              : "Ex : Que se passe-t-il avec mes BSPCE si l'entreprise est rachetée ?"
+          }
           rows={2}
-          className="flex-1 text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white resize-none"
+          disabled={quotaExceeded}
+          className="flex-1 text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white resize-none disabled:opacity-50"
         />
         <button
           type="button"
           onClick={() => void send()}
-          disabled={loading || !input.trim()}
+          disabled={loading || !input.trim() || quotaExceeded}
           className="p-2.5 rounded-md text-lin disabled:opacity-50"
           style={{ background: "#2D2640" }}
           aria-label="Envoyer"

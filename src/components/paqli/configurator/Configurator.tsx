@@ -8,6 +8,7 @@ import { LegalNotice } from "@/components/paqli/LegalNotice";
 import { Stepper } from "./Stepper";
 import { PreviewPanel } from "./PreviewPanel";
 import { SaveIndicator } from "./SaveIndicator";
+import { StepCompany } from "./StepCompany";
 import { Step0Job } from "./Step0Job";
 import { Step1Fixed } from "./Step1Fixed";
 import { StepBenefits } from "./StepBenefits";

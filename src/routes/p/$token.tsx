@@ -288,9 +288,20 @@ function PackageView({
             <div className="text-[10px] uppercase tracking-[0.15em]" style={{ color: "#B8AECF" }}>
               Estimation de votre package
             </div>
-            <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
-              {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
-            </div>
+            {estimate.hasBspce ? (
+              <>
+                <div className="font-display text-white mt-2" style={{ fontSize: 34, lineHeight: 1.05 }}>
+                  ~{formatEur(estimate.totalRange.lowSeniority)} – ~{formatEur(estimate.totalRange.highSeniority)}
+                </div>
+                <div className="text-[11px] mt-1" style={{ color: "#B8AECF" }}>
+                  selon votre ancienneté au moment de la cession des BSPCE
+                </div>
+              </>
+            ) : (
+              <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
+                {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
+              </div>
+            )}
             <div className="text-[12px] mt-3 leading-relaxed" style={{ color: "#8B7FA8" }}>
               Ordre de grandeur basé sur le scénario réaliste — règles fiscales 2026 (taux en vigueur).
             </div>

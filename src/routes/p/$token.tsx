@@ -9,8 +9,11 @@ import {
 } from "@/hooks/useCandidateLink";
 import {
   calcPackageEstimate,
+  estimatePasRate,
+  estimateTmi,
   formatEur,
   formatRange,
+  formatRange as _r,
   type CandidateParams,
   type PackageData,
   type TMI,

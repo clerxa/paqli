@@ -10,6 +10,7 @@ import { PreviewPanel } from "./PreviewPanel";
 import { SaveIndicator } from "./SaveIndicator";
 import { Step0Job } from "./Step0Job";
 import { Step1Fixed } from "./Step1Fixed";
+import { StepBenefits } from "./StepBenefits";
 import { Step2Equity } from "./Step2Equity";
 import { Step3Savings } from "./Step3Savings";
 import { Step4Scenarios } from "./Step4Scenarios";

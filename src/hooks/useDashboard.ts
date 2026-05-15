@@ -146,6 +146,7 @@ export function useDashboard() {
       setRecentActivity(activity);
       setTodos(buildTodos(pkgList));
       setFollowUpAlerts(buildFollowUpAlerts(links));
+      setEngagement(buildEngagementList(links));
 
       const accepted = links.filter((l) => l.status === "accepted").length;
       const declined = links.filter((l) => l.status === "declined");

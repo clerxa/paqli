@@ -536,44 +536,68 @@ function KeyVal({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function OfferTab({ pkg }: { pkg: Pkg }) {
+  const hasJobOverview = !!pkg.job_summary || !!pkg.location_city || !!pkg.remote_policy;
+  const missions = (pkg.missions ?? []).filter((m) => m && m.trim());
+  const stack = pkg.stack ?? [];
   return (
     <>
-      <SectionTitle>Le poste</SectionTitle>
-      <InfoCard>
-        {pkg.job_summary && (
-          <p className="text-[13px] text-aubergine leading-relaxed">{pkg.job_summary}</p>
-        )}
-        <KeyVal label="Type de contrat" value={pkg.contract_type} />
-        <KeyVal label="Date de prise de poste" value={pkg.start_date} />
-        <KeyVal label="Localisation" value={pkg.location_city} />
-        {pkg.location_details && (
-          <p className="text-[12px] text-aubergine-light"><MapPin size={12} className="inline mr-1" />{pkg.location_details}</p>
-        )}
-      </InfoCard>
-
-      {pkg.missions && pkg.missions.length > 0 && (
+      {hasJobOverview && (
         <>
-          <SectionTitle>Missions</SectionTitle>
-          <InfoCard>
-            <ul className="space-y-2 text-[13px] text-aubergine">
-              {pkg.missions.map((m, i) => (
-                <li key={i} className="flex gap-2"><ListChecks size={14} className="mt-0.5 text-aubergine-light shrink-0" /><span>{m}</span></li>
-              ))}
-            </ul>
-          </InfoCard>
+          <SectionTitle>Le poste</SectionTitle>
+          <div data-section="poste" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-4">
+            {pkg.job_summary && (
+              <p className="text-[14px] text-aubergine leading-relaxed">{pkg.job_summary}</p>
+            )}
+            <div className="flex flex-wrap gap-2 text-[12px]">
+              {pkg.location_city && (
+                <Tag>
+                  <MapPin size={11} />
+                  {pkg.location_city}
+                  {pkg.location_details ? ` · ${pkg.location_details}` : ""}
+                </Tag>
+              )}
+              {pkg.remote_policy && (
+                <Tag>{REMOTE_LABEL[pkg.remote_policy] ?? pkg.remote_policy}</Tag>
+              )}
+              {pkg.contract_type && <Tag>{pkg.contract_type.toUpperCase()}</Tag>}
+              {pkg.start_date && (
+                <Tag>
+                  <Calendar size={11} />
+                  Démarrage {pkg.start_date}
+                </Tag>
+              )}
+            </div>
+          </div>
         </>
       )}
 
-      {pkg.stack && pkg.stack.length > 0 && (
+      {missions.length > 0 && (
         <>
-          <SectionTitle>Stack & outils</SectionTitle>
-          <InfoCard>
-            <div className="flex flex-wrap gap-2">
-              {pkg.stack.map((s) => (
-                <span key={s} className="text-[12px] px-2.5 py-1 rounded-full" style={{ background: "#F0EBE8", color: "#3D3554" }}>{s}</span>
+          <SectionTitle>Missions principales</SectionTitle>
+          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6">
+            <ul className="space-y-2">
+              {missions.map((m, i) => (
+                <li key={i} className="flex gap-2 text-[13px] text-aubergine leading-relaxed">
+                  <span style={{ color: "#8B7FA8" }}>●</span>
+                  <span>{m}</span>
+                </li>
               ))}
-            </div>
-          </InfoCard>
+            </ul>
+            {stack.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-[rgba(45,38,64,0.06)]">
+                <div className="text-[11px] uppercase tracking-[0.15em] text-aubergine-light mb-2">
+                  Stack & outils
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {stack.map((s, i) => (
+                    <span key={i} className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "#F0EBE8", color: "#524970" }}>
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </>
       )}
     </>
@@ -581,22 +605,28 @@ function OfferTab({ pkg }: { pkg: Pkg }) {
 }
 
 function CompanyTab({ org }: { org: Org }) {
-  if (!org) return <InfoCard><p className="text-[13px] text-grey">Aucune information entreprise renseignée.</p></InfoCard>;
+  if (!org) {
+    return (
+      <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6">
+        <p className="text-[13px] text-grey">Aucune information entreprise renseignée.</p>
+      </div>
+    );
+  }
   return (
     <>
       {org.description && (
         <>
           <SectionTitle>Présentation & produit</SectionTitle>
-          <InfoCard>
+          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6">
             <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line">{org.description}</p>
-          </InfoCard>
+          </div>
         </>
       )}
 
       {org.key_figures && org.key_figures.length > 0 && (
         <>
           <SectionTitle>Chiffres clés</SectionTitle>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
             {org.key_figures.map((kf, i) => (
               <div key={i} className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-4">
                 <div className="font-display text-aubergine" style={{ fontSize: 22 }}>{kf.value}</div>
@@ -610,33 +640,31 @@ function CompanyTab({ org }: { org: Org }) {
       {((org.values && org.values.length > 0) || org.culture_note) && (
         <>
           <SectionTitle>Valeurs & culture</SectionTitle>
-          <InfoCard>
+          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-3">
             {org.values && org.values.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {org.values.map((v) => (
-                  <span key={v} className="text-[12px] px-2.5 py-1 rounded-full" style={{ background: "#FAEEDA", color: "#7A5417" }}>{v}</span>
+                  <span key={v} className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "#FAEEDA", color: "#7A5417" }}>{v}</span>
                 ))}
               </div>
             )}
             {org.culture_note && (
               <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line">{org.culture_note}</p>
             )}
-          </InfoCard>
+          </div>
         </>
       )}
 
       {org.links && org.links.length > 0 && (
         <>
           <SectionTitle>Liens & médias</SectionTitle>
-          <InfoCard>
-            <div className="flex flex-col gap-2">
-              {org.links.map((l, i) => (
-                <a key={i} href={l.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[13px] text-aubergine hover:underline">
-                  <ExternalLink size={13} /> {l.label}
-                </a>
-              ))}
-            </div>
-          </InfoCard>
+          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 flex flex-col gap-2">
+            {org.links.map((l, i) => (
+              <a key={i} href={l.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[13px] text-aubergine hover:underline">
+                <ExternalLink size={13} /> {l.label}
+              </a>
+            ))}
+          </div>
         </>
       )}
     </>
@@ -644,88 +672,131 @@ function CompanyTab({ org }: { org: Org }) {
 }
 
 function FlexibilityTab({ pkg }: { pkg: Pkg }) {
+  const hasFlex = !!pkg.remote_policy || typeof pkg.remote_days === "number" || pkg.flexible_hours;
+  if (!hasFlex) {
+    return (
+      <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6">
+        <p className="text-[13px] text-grey">Aucune information de flexibilité renseignée.</p>
+      </div>
+    );
+  }
   return (
     <>
       <SectionTitle>Flexibilité & rythme</SectionTitle>
-      <InfoCard>
-        <KeyVal label="Politique remote" value={pkg.remote_policy} />
-        <KeyVal label="Jours de remote" value={pkg.remote_days != null ? `${pkg.remote_days} j/sem` : null} />
-        <KeyVal label="Remote garanti" value={pkg.remote_guaranteed ? "Oui" : null} />
-        <KeyVal label="Horaires flexibles" value={pkg.flexible_hours ? "Oui" : null} />
-        <KeyVal label="Localisation" value={pkg.location_city} />
-        {!pkg.remote_policy && !pkg.remote_days && !pkg.flexible_hours && (
-          <p className="text-[13px] text-grey">Aucune information renseignée.</p>
+      <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-2 text-[13px] text-aubergine">
+        {pkg.remote_policy && (
+          <div>
+            <strong>Télétravail</strong> :{" "}
+            {REMOTE_LABEL[pkg.remote_policy] ?? pkg.remote_policy}
+            {typeof pkg.remote_days === "number" && pkg.remote_days > 0
+              ? ` — ${pkg.remote_days} j/sem.`
+              : ""}
+            {pkg.remote_guaranteed ? " · garanti par contrat" : ""}
+          </div>
         )}
-      </InfoCard>
+        {pkg.flexible_hours && (
+          <div>
+            <strong>Horaires</strong> : flexibles
+          </div>
+        )}
+      </div>
     </>
   );
 }
 
 function TeamCultureTab({ pkg, onExternalLink }: { pkg: Pkg; onExternalLink: (url: string) => void }) {
+  const values = pkg.company_values ?? [];
+  const growth = pkg.growth_paths ?? [];
+  const hasTeam =
+    !!pkg.team_size || !!pkg.team_description || !!pkg.manager_style ||
+    values.length > 0 || !!pkg.culture_note || !!pkg.glassdoor_url || !!pkg.wtj_url;
+  const hasGrowth = growth.length > 0 || !!pkg.training_budget || !!pkg.onboarding_note;
+
   return (
     <>
-      <SectionTitle>L'équipe</SectionTitle>
-      <InfoCard>
-        <KeyVal label="Taille d'équipe" value={pkg.team_size ? `${pkg.team_size} personnes` : null} />
-        {pkg.team_description && (
-          <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line"><Users size={13} className="inline mr-1" />{pkg.team_description}</p>
-        )}
-        {pkg.manager_style && (
-          <div>
-            <div className="text-[11px] uppercase tracking-wider text-aubergine-light mb-1">Style de management</div>
-            <p className="text-[13px] text-aubergine leading-relaxed">{pkg.manager_style}</p>
-          </div>
-        )}
-      </InfoCard>
-
-      {((pkg.company_values && pkg.company_values.length > 0) || pkg.culture_note) && (
+      {hasTeam && (
         <>
-          <SectionTitle>Culture</SectionTitle>
-          <InfoCard>
-            {pkg.company_values && pkg.company_values.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {pkg.company_values.map((v) => (
-                  <span key={v} className="text-[12px] px-2.5 py-1 rounded-full" style={{ background: "#FAEEDA", color: "#7A5417" }}>{v}</span>
-                ))}
+          <SectionTitle>L'équipe & la culture</SectionTitle>
+          <div data-section="equipe_culture" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-3">
+            {(pkg.team_size || pkg.manager_style) && (
+              <div className="flex flex-wrap gap-2 text-[12px]">
+                {pkg.team_size ? (
+                  <Tag>
+                    <Users size={11} />
+                    Équipe de {pkg.team_size}
+                  </Tag>
+                ) : null}
+                {pkg.manager_style && (
+                  <Tag>Management : {MANAGER_LABEL[pkg.manager_style] ?? pkg.manager_style}</Tag>
+                )}
+              </div>
+            )}
+            {pkg.team_description && (
+              <p className="text-[13px] text-aubergine leading-relaxed">{pkg.team_description}</p>
+            )}
+            {values.length > 0 && (
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.15em] text-aubergine-light mb-2">Valeurs</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {values.map((v, i) => (
+                    <span key={i} className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "#F0EBE8", color: "#524970" }}>{v}</span>
+                  ))}
+                </div>
               </div>
             )}
             {pkg.culture_note && (
-              <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line">{pkg.culture_note}</p>
+              <p className="text-[12px] text-aubergine-light italic leading-relaxed">« {pkg.culture_note} »</p>
             )}
-          </InfoCard>
+            {(pkg.glassdoor_url || pkg.wtj_url) && (
+              <div className="flex flex-wrap gap-3 pt-2 text-[12px]">
+                {pkg.glassdoor_url && (
+                  <a href={pkg.glassdoor_url} target="_blank" rel="noopener noreferrer" onClick={() => onExternalLink(pkg.glassdoor_url!)} className="inline-flex items-center gap-1 text-aubergine underline">
+                    Glassdoor <ExternalLink size={11} />
+                  </a>
+                )}
+                {pkg.wtj_url && (
+                  <a href={pkg.wtj_url} target="_blank" rel="noopener noreferrer" onClick={() => onExternalLink(pkg.wtj_url!)} className="inline-flex items-center gap-1 text-aubergine underline">
+                    Welcome to the Jungle <ExternalLink size={11} />
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
         </>
       )}
 
-      {(pkg.training_budget || pkg.onboarding_note) && (
+      {hasGrowth && (
         <>
-          <SectionTitle>Développement & onboarding</SectionTitle>
-          <InfoCard>
-            <KeyVal label="Budget formation" value={pkg.training_budget ? formatEur(pkg.training_budget) : null} />
+          <SectionTitle>Évolution & développement</SectionTitle>
+          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6 space-y-3">
+            {growth.length > 0 && (
+              <ul className="space-y-2">
+                {growth.map((g, i) => (
+                  <li key={i} className="flex gap-3 text-[13px] text-aubergine">
+                    <TrendingUp size={14} className="text-aubergine-light mt-0.5 flex-shrink-0" />
+                    <div>
+                      <strong>{g.horizon}</strong> — {g.path}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {pkg.training_budget ? (
+              <div className="text-[13px] text-aubergine">
+                <strong>Budget formation</strong> : {formatEur(pkg.training_budget)} / an
+              </div>
+            ) : null}
             {pkg.onboarding_note && (
-              <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line"><TrendingUp size={13} className="inline mr-1" />{pkg.onboarding_note}</p>
+              <p className="text-[12px] text-aubergine-light leading-relaxed">{pkg.onboarding_note}</p>
             )}
-          </InfoCard>
+          </div>
         </>
       )}
 
-      {(pkg.glassdoor_url || pkg.wtj_url) && (
-        <>
-          <SectionTitle>En savoir plus</SectionTitle>
-          <InfoCard>
-            <div className="flex flex-col gap-2">
-              {pkg.glassdoor_url && (
-                <a href={pkg.glassdoor_url} target="_blank" rel="noreferrer" onClick={() => onExternalLink(pkg.glassdoor_url!)} className="flex items-center gap-2 text-[13px] text-aubergine hover:underline">
-                  <ExternalLink size={13} /> Glassdoor
-                </a>
-              )}
-              {pkg.wtj_url && (
-                <a href={pkg.wtj_url} target="_blank" rel="noreferrer" onClick={() => onExternalLink(pkg.wtj_url!)} className="flex items-center gap-2 text-[13px] text-aubergine hover:underline">
-                  <ExternalLink size={13} /> Welcome to the Jungle
-                </a>
-              )}
-            </div>
-          </InfoCard>
-        </>
+      {!hasTeam && !hasGrowth && (
+        <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6">
+          <p className="text-[13px] text-grey">Aucune information équipe & culture renseignée.</p>
+        </div>
       )}
     </>
   );
@@ -736,24 +807,34 @@ function ProcessSection({ pkg }: { pkg: Pkg }) {
   if (steps.length === 0 && !pkg.process_duration) return null;
   return (
     <>
-      <SectionTitle>Process de recrutement</SectionTitle>
-      <InfoCard>
-        {pkg.process_duration && (
-          <div className="text-[12px] text-aubergine-light flex items-center gap-1.5">
-            <Clock size={13} /> Durée estimée : {pkg.process_duration}
-          </div>
-        )}
+      <SectionTitle>Processus de recrutement</SectionTitle>
+      <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6">
         {steps.length > 0 && (
-          <ol className="space-y-2 mt-2">
-            {steps.map((s: any, i: number) => (
+          <ol className="space-y-3">
+            {steps.map((s, i) => (
               <li key={i} className="flex gap-3 text-[13px] text-aubergine">
-                <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-medium shrink-0" style={{ background: "#2D2640", color: "#FAF8F5" }}>{i + 1}</span>
-                <span>{typeof s === "string" ? s : s.label ?? s.name ?? JSON.stringify(s)}</span>
+                <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-medium" style={{ background: "#2D2640", color: "#FAF8F5" }}>
+                  {i + 1}
+                </span>
+                <div className="flex-1">
+                  <div>{s.step}</div>
+                  {s.duration && (
+                    <div className="text-[11px] text-grey mt-0.5">
+                      <Clock size={10} className="inline mr-1" />
+                      {s.duration}
+                    </div>
+                  )}
+                </div>
               </li>
             ))}
           </ol>
         )}
-      </InfoCard>
+        {pkg.process_duration && (
+          <div className="text-[12px] text-aubergine-light mt-4 pt-3 border-t border-[rgba(45,38,64,0.06)]">
+            Durée totale estimée : <strong>{pkg.process_duration}</strong>
+          </div>
+        )}
+      </div>
     </>
   );
 }

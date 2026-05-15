@@ -1,8 +1,16 @@
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { usePackageCoach } from "@/hooks/usePackageCoach";
 import { CoachTipInline } from "@/components/paqli/CoachTipInline";
-import { Chip, NumberField, TextField } from "./fields";
-import type { BenefitsConfig } from "@/lib/packageConfig";
+import { Chip, NumberField, TextArea, TextField } from "./fields";
+import type {
+  BenefitsConfig,
+  VariableConfig,
+  VariableIndicator,
+  VariableObjectiveType,
+  VariablePayoutFrequency,
+} from "@/lib/packageConfig";
+import { defaultVariableConfig } from "@/lib/packageConfig";
+import { Plus, X } from "lucide-react";
 
 const benefitChips: { key: keyof BenefitsConfig; label: string }[] = [
   { key: "mutuelle", label: "Mutuelle premium" },

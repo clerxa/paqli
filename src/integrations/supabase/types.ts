@@ -428,30 +428,48 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          culture_note: string | null
+          description: string | null
           id: string
+          key_figures: Json
+          links: Json
           logo_url: string | null
           name: string
           plan: string
           slug: string
+          source_urls: string[]
           updated_at: string
+          values: string[]
         }
         Insert: {
           created_at?: string
+          culture_note?: string | null
+          description?: string | null
           id?: string
+          key_figures?: Json
+          links?: Json
           logo_url?: string | null
           name: string
           plan?: string
           slug: string
+          source_urls?: string[]
           updated_at?: string
+          values?: string[]
         }
         Update: {
           created_at?: string
+          culture_note?: string | null
+          description?: string | null
           id?: string
+          key_figures?: Json
+          links?: Json
           logo_url?: string | null
           name?: string
           plan?: string
           slug?: string
+          source_urls?: string[]
           updated_at?: string
+          values?: string[]
         }
         Relationships: []
       }

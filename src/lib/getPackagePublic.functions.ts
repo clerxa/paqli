@@ -25,7 +25,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
            glassdoor_url, wtj_url,
            growth_paths, training_budget, onboarding_note,
            process_steps, process_duration, start_date,
-           organizations ( name, logo_url ),
+           organizations ( name, logo_url, description, key_figures, values, culture_note, links ),
            equity_devices (
              id, type, quantity, strike_price,
              current_valuation_m, vesting_years, cliff_months,
@@ -161,7 +161,23 @@ export const getPackagePublic = createServerFn({ method: "POST" })
         process_duration: pkg.process_duration ?? null,
         start_date: pkg.start_date ?? null,
         benchmark,
-        organizations: pkg.organizations,
+        organizations: pkg.organizations
+          ? {
+              name: (pkg.organizations as any).name,
+              logo_url: (pkg.organizations as any).logo_url ?? null,
+              description: (pkg.organizations as any).description ?? null,
+              key_figures: Array.isArray((pkg.organizations as any).key_figures)
+                ? (pkg.organizations as any).key_figures
+                : [],
+              values: Array.isArray((pkg.organizations as any).values)
+                ? (pkg.organizations as any).values
+                : [],
+              culture_note: (pkg.organizations as any).culture_note ?? null,
+              links: Array.isArray((pkg.organizations as any).links)
+                ? (pkg.organizations as any).links
+                : [],
+            }
+          : null,
         equity_devices: pkg.equity_devices ?? [],
         savings_devices: pkg.savings_devices ?? [],
         scenarios,

@@ -1,94 +1,80 @@
-# Prompt 14 — Analyse comportementale candidat
+# Refonte page candidat en onglets + profil entreprise
 
-Implémentation du tracking comportemental fin, du score d'engagement IA, et de la vue "Comportement" dans le dashboard RH. Adapté à la stack TanStack Start + Lovable Cloud (pas d'Edge Functions Deno : on utilise des **server functions** + **server routes publiques** + **Lovable AI Gateway** au lieu de l'API Anthropic directe).
+## 1. Profil entreprise (paramétré au niveau du compte)
 
-## 1. Migration base de données
+### Base de données
+Nouvelles colonnes sur `organizations` :
+- `description` (text) — pitch / présentation / produit
+- `key_figures` (jsonb) — `[{label, value}]` (effectif, création, levée, croissance…)
+- `values` (text[]) — valeurs
+- `culture_note` (text) — manifeste / ambiance
+- `links` (jsonb) — `[{label, url, type}]` (site, LinkedIn, WTJ, Glassdoor, presse…)
+- `source_urls` (text[]) — liens web utilisés par l'IA pour générer le contenu
 
-**Enrichir `candidate_links`** :
-- `behavior_data jsonb default '{}'`
-- `engagement_score integer`
-- `engagement_label text` (`cold` | `lukewarm` | `warm` | `hot`)
-- `intent_prediction text` (`likely_accept` | `uncertain` | `likely_decline` | `unknown` | `accepted` | `declined`)
-- `intent_computed_at timestamptz`
-- `return_visits integer default 0`
-- `time_on_page_total integer default 0` (secondes cumulées)
+RLS : déjà en place (membres voient leur org, admins éditent).
 
-**Nouvelle table `behavior_events`** :
-- `id uuid pk`, `link_id uuid fk → candidate_links(id) on delete cascade`
-- `event_type text` (`section_view`, `section_time`, `simulation_change`, `scenario_view`, `external_link`, `page_exit`, `page_return`)
-- `section text nullable`, `value text nullable`, `duration_s integer nullable`, `created_at timestamptz default now()`
-- RLS : RH peuvent lire les events de leur org (via `current_user_org()`), pas d'INSERT direct (passe par server route publique avec service role)
-- Index : `(link_id, created_at desc)` et `(event_type)`
+### Page Paramètres (`/settings`)
+Refonte de la page actuelle (qui n'a que des champs mock) en vraie page d'édition du profil entreprise :
+- Section "Liens sources" : champ multi-URL (ajout/suppression de liens) + bouton **« Générer avec l'IA »**
+- Section "Présentation & produit" (textarea)
+- Section "Chiffres clés" (liste éditable label/valeur)
+- Section "Valeurs & culture" (chips + textarea)
+- Section "Liens & médias" (liste éditable label/url)
+- Auto-save type configurateur de package
 
-## 2. Tracking côté serveur (route publique)
+### Génération IA
+Nouveau server function `generateCompanyProfile.functions.ts` :
+- Input : `urls: string[]`
+- Pour chaque URL : scrape via `fetch` + extraction texte (HTML simple, pas besoin de Firecrawl pour démarrer — on peut basculer plus tard si besoin)
+- Concatène les contenus, passe à Lovable AI Gateway (`google/gemini-3-flash-preview`) avec tool calling pour extraire les 4 blocs en JSON structuré
+- Renvoie le profil ; le client fait l'upsert sur `organizations`
 
-**`src/routes/api/public/track-behavior.ts`** — server route POST qui :
-- Valide le payload avec Zod (token, eventType enum, section, value, durationS)
-- Vérifie le lien via `supabaseAdmin` par token
-- Insère dans `behavior_events`
-- Met à jour les colonnes agrégées sur `candidate_links` (`return_visits`, `time_on_page_total`, `opened_at`, `simulated_at` selon eventType)
-- Déclenche `compute-engagement` en fire-and-forget (appel interne via fetch absolu)
-- CORS ouvert (la page candidat est publique)
+## 2. Page candidat en onglets
 
-## 3. Server function `computeEngagementFn`
+### Refonte `src/routes/p/$token.tsx`
+Remplacer le scroll long actuel par un système d'onglets :
 
-**`src/lib/engagement.functions.ts`** — `createServerFn({ method: "POST" })` :
-- Input : `{ linkId: string }`
-- Lit `candidate_links` + `link_events` + `behavior_events`
-- Calcule un score 0-100 selon les règles du prompt (ouverture, retours, temps total, simulations, scénarios consultés, AI questions, messages, RDV, liens externes, malus si `declined`)
-- Détermine `engagement_label` (cold/lukewarm/warm/hot) et `intent_prediction`
-- Met à jour `candidate_links` (score, label, intent, computed_at)
-- Pas de middleware auth (appelée depuis `track-behavior` via service role)
+```text
+┌──────────────────────────────────────────────┐
+│ Header (logo entreprise, titre du poste)     │
+├──────────────────────────────────────────────┤
+│ [Offre] [Flexibilité] [Équipe & culture]     │
+│ [ ✦ PACKAGE ✦ ] [Questions] [Next steps]     │  ← Package mis en avant
+└──────────────────────────────────────────────┘
+```
 
-**`src/routes/api/public/compute-engagement.ts`** — server route qui wrap la même logique pour appel HTTP interne depuis `track-behavior`.
+**Mise en avant de l'onglet Package** :
+- Couleur d'accent (lavande / aubergine), badge ou pastille
+- Police plus grande, bordure visible
+- Bouton plein vs ghost pour les autres
 
-## 4. Server function `interpretBehaviorFn` (Lovable AI)
+**Contenu des onglets** (mapping depuis le contenu existant de la page) :
+- **Offre** : `job_summary`, `missions`, `stack`, `contract_type`, `start_date`
+- **Flexibilité** : `remote_policy`, `remote_days`, `remote_guaranteed`, `flexible_hours`, `location_*`
+- **Équipe & culture** : `team_*`, `manager_style`, `company_values`, `culture_note`, `growth_paths`, `training_budget`, `onboarding_note`, `glassdoor_url`, `wtj_url`
+- **Entreprise** (nouvel onglet, entre Offre et Flexibilité) : `organizations.description`, `key_figures`, `values`, `culture_note`, `links`
+- **Package** : `SalaryBreakdown` (fixe + variable simulé + benefits + equity scenarios + savings)
+- **Questions** : zone de chat existante (`messages`)
+- **Next steps** : `process_steps`, `process_duration`, `DecisionBlocks` (accept / counter-offer / decline)
 
-**`src/lib/behaviorInterpret.functions.ts`** — protégée par `requireSupabaseAuth` :
-- Input : `{ linkId }`
-- Vérifie que le link appartient à l'org du user (via `current_user_org()`)
-- Construit le `behaviorSummary` (score, intent, visites, temps, scénarios consultés, sections top 3, etc.)
-- Appelle Lovable AI Gateway (`https://ai.gateway.lovable.dev/v1/chat/completions`, modèle `google/gemini-2.5-flash`, `LOVABLE_API_KEY`) avec le system prompt du brief (factuel, nuancé, bienveillant, 3-4 phrases)
-- Retourne `{ interpretation: string }`
+### Récupération des données entreprise
+Étendre `getPackagePublic.functions.ts` pour renvoyer aussi le profil étendu de `organizations` (description, key_figures, values, culture_note, links).
 
-## 5. Hooks frontend
+### URL deep-link
+Onglet actif synchronisé via search param (`?tab=package`) pour que l'employeur puisse pointer un candidat directement sur le package, et que les liens partagés conservent l'onglet.
 
-- **`src/hooks/useBehaviorTracker.ts`** : helper `track()` qui POST vers `/api/public/track-behavior` (avec `sendBeacon` pour `page_exit`). Expose `trackSectionView`, `trackSectionTime`, `trackSimulationChange`, `trackScenarioView`, `trackExternalLink`. Gère `visibilitychange` + `beforeunload` + Intersection Observer init dans le composant.
-- **`src/hooks/useBehaviorData.ts`** : charge `behavior_events` + `candidate_links` enrichi, avec realtime sur INSERT `behavior_events` et UPDATE `candidate_links`.
+## 3. Aperçu côté employeur
+La preview existante (page `/packages/$id`) doit aussi afficher la page candidat avec les onglets pour que l'entreprise voie exactement ce que recevra le candidat.
 
-## 6. Intégration page candidat `/p/$token`
+## Ordre d'implémentation
+1. Migration DB (colonnes `organizations`)
+2. Server fn `generateCompanyProfile` + lecture étendue dans `getPackagePublic`
+3. Refonte page `/settings` (édition + génération IA)
+4. Refonte `src/routes/p/$token.tsx` en onglets (composant `CandidateTabs`)
+5. Aligner la preview employeur sur la nouvelle structure
 
-- Wrapper le contenu dans des `<section data-section="...">` (hero, poste, equipe_culture, simulation, equity_scenarios, epargne, faq, assistant_ia, messagerie, decision)
-- Brancher Intersection Observer (threshold 0.3) → `trackSectionView` / `trackSectionTime`
-- Brancher `trackSimulationChange` sur les changements TMI/ancienneté/PEE (debounce 1s pour le slider)
-- Brancher `trackScenarioView` sur les scénarios equity au clic
-- Brancher `trackExternalLink` sur les liens externes (Glassdoor, WTJ, LinkedIn)
-
-## 7. Composants RH
-
-- **`EngagementBadge`** : badge visuel (icône + label + score + intent) avec tokens design
-- **`BehaviorView`** : panneau dans le détail package
-  - Score global avec barre de progression
-  - 3 stats : visites, temps total, nb simulations
-  - Barres temps/section
-  - Scénarios equity consultés (chips ✓/○)
-  - TMI testées (chips actives/inactives) + "compare activement" si ≥2
-  - `AIBehaviorInterpretation` avec génération à la demande
-- Affichage du badge dans la liste des liens dans `/packages/$id`
-
-## 8. Notes techniques
-
-**Stack** :
-- Pas d'Edge Functions Deno → server routes TanStack (`/api/public/track-behavior`, `/api/public/compute-engagement`) + server functions (`computeEngagementFn`, `interpretBehaviorFn`)
-- L'IA passe par **Lovable AI Gateway** (déjà la décision actée du Prompt 13 si on souhaite, mais ici je garde Anthropic comme tout le projet via `claudeApi.server.ts` pour cohérence — dis-moi si tu préfères basculer)
-- `sendBeacon` cible bien la route publique HTTP (pas un server fn RPC)
-- Le score est recalculé à chaque insert dans `behavior_events` (appel fire-and-forget depuis `track-behavior`) et reste calculable manuellement
-
-**RGPD** :
-- Pas d'IP stockée, pas de fingerprint, pas de tracking hors page
-- Les events sont liés au link (anonyme côté candidat)
-- Mention CGU à ajouter (légère modif `src/components/paqli/LegalNotice.tsx`)
-
-## Question avant build
-
-Je pars sur **Anthropic Claude** (cohérent avec `claudeApi.server.ts` du Prompt 13) pour `interpretBehaviorFn` ? Ou bascule sur Lovable AI Gateway (gratuit) ?
+## Détails techniques
+- **Tabs** : composant local custom (cohérent avec le design Paqli) ou `@/components/ui/tabs` (shadcn) si déjà présent
+- **Scrape** : `fetch` + regex pour stripper HTML ; `Response.text()` ; cap à 50KB par URL pour éviter de saturer le contexte LLM
+- **Tool calling Lovable AI** : schéma JSON strict pour `description`, `key_figures[]`, `values[]`, `culture_note`, `links[]`
+- **Pas de breaking change** sur les packages : on ajoute, on ne retire rien

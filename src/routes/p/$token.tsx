@@ -288,9 +288,20 @@ function PackageView({
             <div className="text-[10px] uppercase tracking-[0.15em]" style={{ color: "#B8AECF" }}>
               Estimation de votre package
             </div>
-            <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
-              {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
-            </div>
+            {estimate.hasBspce ? (
+              <>
+                <div className="font-display text-white mt-2" style={{ fontSize: 34, lineHeight: 1.05 }}>
+                  ~{formatEur(estimate.totalRange.lowSeniority)} – ~{formatEur(estimate.totalRange.highSeniority)}
+                </div>
+                <div className="text-[11px] mt-1" style={{ color: "#B8AECF" }}>
+                  selon votre ancienneté au moment de la cession des BSPCE
+                </div>
+              </>
+            ) : (
+              <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
+                {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
+              </div>
+            )}
             <div className="text-[12px] mt-3 leading-relaxed" style={{ color: "#8B7FA8" }}>
               Ordre de grandeur basé sur le scénario réaliste — règles fiscales 2026 (taux en vigueur).
             </div>
@@ -354,11 +365,23 @@ function PackageView({
           {hasEquity && scenariosToShow.length > 0 && (
             <>
               <SectionTitle className="mt-8">Equity — scénarios de valorisation</SectionTitle>
-              <div data-section="equity_scenarios" className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <div data-section="equity_scenarios" className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                 {scenariosToShow.map((s) => (
                   <ScenarioCard key={s.label} scenario={s} onView={() => behavior.trackScenarioView(s.label)} />
                 ))}
               </div>
+              {estimate.hasBspce && (
+                <div className="mb-4 flex items-start gap-2 rounded-xl px-4 py-3" style={{ background: "#F0EBE8" }}>
+                  <span className="text-[13px] flex-shrink-0">💡</span>
+                  <p className="text-[11px] text-aubergine-light font-light leading-relaxed">
+                    Pour les BSPCE, le taux d'imposition dépend de votre ancienneté
+                    dans l'entreprise au moment de la vente. Après 3 ans, le taux
+                    global passe de <strong>48,6%</strong> à <strong>31,4%</strong> —
+                    une différence significative sur les gains importants. Ces règles
+                    s'appliquent au moment de la <strong>cession</strong>, pas de l'exercice.
+                  </p>
+                </div>
+              )}
               {pkg.scenario_message && (
                 <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-4 mb-4">
                   <p className="text-[13px] text-aubergine-light leading-relaxed italic">« {pkg.scenario_message} »</p>
@@ -983,6 +1006,11 @@ function ScenarioCard({
     targetValuationM: number;
     horizonYears: number;
     taxRate: number;
+    estimateHighSeniority: number;
+    estimateLowSeniority: number;
+    taxRateHighSeniority: number;
+    taxRateLowSeniority: number;
+    isMultiRate: boolean;
   };
   onView?: () => void;
 }) {
@@ -997,6 +1025,59 @@ function ScenarioCard({
     realiste: "Réaliste",
     optimiste: "Optimiste",
   };
+  const fmtRate = (r: number) =>
+    `${(r * 100).toFixed(1).replace(".", ",")}%`;
+
+  if (scenario.isMultiRate) {
+    return (
+      <div
+        onMouseEnter={onView}
+        onClick={onView}
+        className="rounded-[12px] p-4 cursor-pointer"
+        style={{ background: p.bg }}
+      >
+        <div
+          className="text-[10px] uppercase tracking-[0.15em] font-medium mb-3"
+          style={{ color: p.fg }}
+        >
+          {labelMap[scenario.label] ?? scenario.label}
+        </div>
+
+        <div className="mb-3">
+          <div className="text-[11px] text-aubergine-light font-light mb-1">
+            Si vous restez ≥ 3 ans
+          </div>
+          <div className="font-display" style={{ fontSize: 22, color: "#2D2640", lineHeight: 1.1 }}>
+            ~{formatEur(scenario.estimateHighSeniority)}
+          </div>
+          <div className="text-[10px] text-grey font-light mt-0.5">
+            après {fmtRate(scenario.taxRateHighSeniority)} de taxes
+          </div>
+        </div>
+
+        <div className="border-t my-3" style={{ borderColor: "rgba(45,38,64,0.08)" }} />
+
+        <div>
+          <div className="text-[11px] text-aubergine-light font-light mb-1">
+            Si vous partez avant 3 ans
+          </div>
+          <div className="font-display" style={{ fontSize: 18, color: "#524970", lineHeight: 1.1 }}>
+            ~{formatEur(scenario.estimateLowSeniority)}
+          </div>
+          <div className="text-[10px] text-grey font-light mt-0.5">
+            après {fmtRate(scenario.taxRateLowSeniority)} de taxes
+          </div>
+        </div>
+
+        <div className="mt-3 pt-3 border-t" style={{ borderColor: "rgba(45,38,64,0.06)" }}>
+          <div className="text-[10px] text-grey font-light">
+            Valor. {scenario.targetValuationM} M€ · Horizon {scenario.horizonYears} ans
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       onMouseEnter={onView}
@@ -1025,7 +1106,7 @@ function ScenarioCard({
       </div>
       <div className="text-[10px] mt-2 text-grey">
         Taux fiscal appliqué :{" "}
-        <strong>{(scenario.taxRate * 100).toFixed(1).replace(".", ",")}%</strong>
+        <strong>{fmtRate(scenario.taxRate)}</strong>
       </div>
     </div>
   );

@@ -10,6 +10,11 @@ export const TAX_2026 = {
   SOCIAL_CHARGES_SALARY: 0.22,
 };
 
+export const BSPCE_TAX_HIGH_SENIORITY =
+  TAX_2026.IR_BSPCE_3Y_PLUS + TAX_2026.PS_RATE; // 0.314 ≥ 3 ans
+export const BSPCE_TAX_LOW_SENIORITY =
+  TAX_2026.IR_BSPCE_UNDER_3Y + TAX_2026.PS_RATE; // 0.486 < 3 ans
+
 export type TMI = 0.11 | 0.30 | 0.41 | 0.45;
 
 export interface CandidateParams {
@@ -127,10 +132,20 @@ export interface PackageData {
 
 export interface ScenarioEstimate {
   label: string;
+  /** Backwards-compat: high-seniority estimate (≥ 3 ans for BSPCE, sinon PFU). */
   estimate: number;
   targetValuationM: number;
   horizonYears: number;
+  /** Backwards-compat: tax rate displayed for legacy single-rate UI. */
   taxRate: number;
+
+  // New seniority-aware fields
+  estimateHighSeniority: number; // ≥ 3 ans (ou PFU pour AGA/RSU)
+  estimateLowSeniority: number; // < 3 ans (BSPCE uniquement)
+  taxRateHighSeniority: number;
+  taxRateLowSeniority: number;
+  /** true uniquement pour les BSPCE avec un gain > 0. */
+  isMultiRate: boolean;
 }
 
 export interface PackageEstimate {
@@ -141,7 +156,15 @@ export interface PackageEstimate {
   peeEst: number;
   interEst: number;
   participationEst: number;
-  totalRange: { low: number; mid: number; high: number };
+  /** Total range. lowSeniority/highSeniority pertinents si hasBspce=true. */
+  totalRange: {
+    low: number;
+    mid: number;
+    high: number;
+    lowSeniority: number; // total réaliste avec equity < 3 ans
+    highSeniority: number; // total réaliste avec equity ≥ 3 ans
+  };
+  hasBspce: boolean;
 }
 
 export function roundForDisplay(value: number): number {
@@ -169,22 +192,20 @@ export function formatRange(low: number, high: number): string {
 
 function calcEquityScenarios(
   pkg: PackageData,
-  params: CandidateParams,
+  _params: CandidateParams,
 ): ScenarioEstimate[] {
   const device = pkg.equity_devices?.[0];
   const scenarios = pkg.scenarios ?? [];
   if (!device || scenarios.length === 0) return [];
 
-  const irRate =
-    params.seniority >= 3
-      ? TAX_2026.IR_BSPCE_3Y_PLUS
-      : TAX_2026.IR_BSPCE_UNDER_3Y;
-  const totalTaxRate = irRate + TAX_2026.PS_RATE;
+  const isBspce = device.type === "bspce" || device.type === "stock_options";
+  const taxHigh = isBspce ? BSPCE_TAX_HIGH_SENIORITY : TAX_2026.FLAT_TAX;
+  const taxLow = BSPCE_TAX_LOW_SENIORITY;
 
   return [...scenarios]
     .sort((a, b) => a.display_order - b.display_order)
     .map((scenario) => {
-      let estimate = 0;
+      let grossGain = 0;
       if (
         device.strike_price > 0 &&
         device.current_valuation_m > 0 &&
@@ -194,17 +215,28 @@ function calcEquityScenarios(
           (device.current_valuation_m * 1_000_000) / device.strike_price;
         const exitPrice =
           (scenario.target_valuation_m * 1_000_000) / totalShares;
-        const grossGain = (exitPrice - device.strike_price) * device.quantity;
-        if (grossGain > 0) {
-          estimate = roundForDisplay(grossGain * (1 - totalTaxRate));
-        }
+        grossGain = Math.max(
+          0,
+          (exitPrice - device.strike_price) * device.quantity,
+        );
       }
+      const estimateHigh =
+        grossGain > 0 ? roundForDisplay(grossGain * (1 - taxHigh)) : 0;
+      const estimateLow =
+        grossGain > 0 && isBspce
+          ? roundForDisplay(grossGain * (1 - taxLow))
+          : 0;
       return {
         label: scenario.label,
-        estimate,
+        estimate: estimateHigh,
         targetValuationM: scenario.target_valuation_m,
         horizonYears: scenario.horizon_years,
-        taxRate: totalTaxRate,
+        taxRate: taxHigh,
+        estimateHighSeniority: estimateHigh,
+        estimateLowSeniority: estimateLow,
+        taxRateHighSeniority: taxHigh,
+        taxRateLowSeniority: taxLow,
+        isMultiRate: isBspce && grossGain > 0,
       };
     });
 }
@@ -259,8 +291,10 @@ export function calcPackageEstimate(
     ? roundForDisplay(partDevice.avg_3y * (1 - TAX_2026.CSG_CRDS))
     : 0;
 
-  const realiste =
-    equityByScenario.find((s) => s.label === "realiste")?.estimate ?? 0;
+  const realisteScenario = equityByScenario.find((s) => s.label === "realiste");
+  const realiste = realisteScenario?.estimate ?? 0;
+  const realisteLow =
+    realisteScenario?.estimateLowSeniority ?? 0;
   const pess =
     equityByScenario.find((s) => s.label === "pessimiste")?.estimate ?? 0;
   const opti =
@@ -272,6 +306,8 @@ export function calcPackageEstimate(
     peeEst +
     interEst +
     participationEst;
+
+  const hasBspce = equityByScenario.some((s) => s.isMultiRate);
 
   return {
     salaryEst,
@@ -285,6 +321,11 @@ export function calcPackageEstimate(
       low: roundForDisplay(baseTotal + (pess || realiste)),
       mid: roundForDisplay(baseTotal + realiste),
       high: roundForDisplay(baseTotal + (opti || realiste)),
+      lowSeniority: roundForDisplay(
+        baseTotal + (hasBspce ? realisteLow : realiste),
+      ),
+      highSeniority: roundForDisplay(baseTotal + realiste),
     },
+    hasBspce,
   };
 }

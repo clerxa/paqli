@@ -102,6 +102,15 @@ function PackagesPage() {
           <EmptyState />
         ) : (
           <Card className="!p-0">
+            <div className="px-5 py-2.5 flex items-center gap-4 border-b border-[rgba(45,38,64,0.08)] bg-[#FAF8F5] text-[10px] uppercase tracking-[0.1em] text-grey font-medium">
+              <div className="w-10 shrink-0" />
+              <div className="flex-1 min-w-0">Package</div>
+              <div className="hidden sm:block text-right w-24 shrink-0">Liens</div>
+              <div className="hidden md:block w-20 shrink-0 text-center">Attractivité</div>
+              <div className="hidden md:block w-20 shrink-0 text-right">Complétude</div>
+              <div className="w-20 shrink-0 text-center">Statut</div>
+              <div className="w-8 shrink-0" />
+            </div>
             <div className="divide-y divide-[rgba(45,38,64,0.06)]">
               {packages.map((p) => (
                 <PackageRow

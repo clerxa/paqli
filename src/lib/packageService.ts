@@ -244,7 +244,7 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
     processSteps,
     processDuration: pkg.process_duration ?? "",
     startDate: pkg.start_date ?? "",
-    interviewNotes: (pkg as { interview_notes?: string | null }).interview_notes ?? "",
+    interviewNotes: pkg.interview_notes ?? "",
     trialPeriodMonths: pkg.trial_period_months ?? null,
     trialPeriodRenewable: !!pkg.trial_period_renewable,
 

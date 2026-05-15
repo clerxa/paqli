@@ -67,6 +67,30 @@ export async function computeEngagement(linkId: string): Promise<EngagementResul
   if (sectionsViewed.includes("decision")) score += 5;
   if (sectionsViewed.includes("equipe_culture")) score += 3;
 
+  // Onglets visités dans le parcours séquentiel candidat
+  const tabsViewed = new Set(
+    sectionsViewed.filter((s): s is string => !!s && s.startsWith("tab_")),
+  );
+  if (tabsViewed.size >= 2) score += 4;
+  if (tabsViewed.size >= 4) score += 4;
+  if (tabsViewed.size >= 6) score += 4;
+
+  // Parcours complet
+  if (sectionsViewed.includes("all_tabs_completed")) score += 10;
+
+  // Temps cumulé sur les onglets
+  const tabTime = behaviors
+    .filter(
+      (b) =>
+        b.event_type === "section_time" &&
+        b.section &&
+        b.section.startsWith("tab_"),
+    )
+    .reduce((acc, b) => acc + (b.duration_s ?? 0), 0);
+  if (tabTime >= 60) score += 3;
+  if (tabTime >= 180) score += 4;
+  if (tabTime >= 360) score += 3;
+
   const simTime = behaviors
     .filter((b) => b.event_type === "section_time" && b.section === "simulation")
     .reduce((acc, b) => acc + (b.duration_s ?? 0), 0);

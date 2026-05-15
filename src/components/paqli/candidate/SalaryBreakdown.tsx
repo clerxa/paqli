@@ -1,11 +1,23 @@
 import { useState } from "react";
 import { ChevronDown, Info, Target } from "lucide-react";
 import { formatEur } from "@/lib/clientCalc";
-type LooseVariableConfig = {
+type Frequency = "monthly" | "quarterly" | "semestrial" | "annual";
+type LooseIndicator = { label: string; weight: number };
+type LooseComponent = {
+  id: string;
+  label: string;
+  frequency: Frequency;
+  amount: number;
   objectiveType?: "individual" | "collective" | "mixed" | null;
-  payoutFrequency?: "monthly" | "quarterly" | "semestrial" | "annual" | null;
+  indicators?: LooseIndicator[];
   calcMethod?: string;
-  indicators?: { label: string; weight: number }[];
+};
+type LooseVariableConfig = {
+  components?: LooseComponent[];
+  objectiveType?: "individual" | "collective" | "mixed" | null;
+  payoutFrequency?: Frequency | null;
+  calcMethod?: string;
+  indicators?: LooseIndicator[];
 };
 
 // Estimations 2026 — cadre standard. Pédagogique, pas un calcul juridique.

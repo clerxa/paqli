@@ -230,6 +230,31 @@ function PackageDetail() {
               </Section>
             )}
           </Card>
+
+          <Card>
+            <div className="flex items-center justify-between mb-1">
+              <h2
+                className="font-display text-aubergine"
+                style={{ fontSize: 18 }}
+              >
+                Aperçu côté candidat
+              </h2>
+              <span
+                className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full"
+                style={{ background: "#FAEEDA", color: "#633806" }}
+              >
+                Vue candidat
+              </span>
+            </div>
+            <p className="text-[12px] text-grey mb-4">
+              Ce que verra le candidat sur la fiche : du super brut payé par l'employeur au net après impôt qu'il touche.
+            </p>
+            <SalaryBreakdown
+              grossAnnual={pkg.grossSalary}
+              pasRate={previewPas}
+              onPasRateChange={setPreviewPas}
+            />
+          </Card>
         </div>
 
         <div className="col-span-12 lg:col-span-4 space-y-5">

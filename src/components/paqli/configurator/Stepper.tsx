@@ -6,13 +6,14 @@ interface Step {
 }
 
 const steps: Step[] = [
-  { n: 0, label: "Le poste" },
-  { n: 1, label: "Rémunération fixe" },
-  { n: 2, label: "Avantages" },
-  { n: 3, label: "Equity" },
-  { n: 4, label: "Épargne salariale" },
+  { n: 0, label: "L'entreprise" },
+  { n: 1, label: "Le poste" },
+  { n: 2, label: "Rémunération fixe" },
+  { n: 3, label: "Avantages" },
+  { n: 4, label: "Equity" },
   { n: 5, label: "Scénarios" },
-  { n: 6, label: "Aperçu & envoi" },
+  { n: 6, label: "Épargne salariale" },
+  { n: 7, label: "Aperçu & envoi" },
 ];
 
 export function Stepper({

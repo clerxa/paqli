@@ -28,6 +28,7 @@ import {
   getPackageBenchmarkFn,
   type BenchmarkContent,
 } from "@/lib/competitorBenchmark.functions";
+import { inviteUserFn } from "@/lib/inviteUser.functions";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -619,37 +620,82 @@ function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState<Member[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviting, setInviting] = useState(false);
+  const [inviteDraft, setInviteDraft] = useState<{
+    email: string;
+    full_name: string;
+    roles: AppRole[];
+  }>({ email: "", full_name: "", roles: ["member"] });
+  const inviteUser = useServerFn(inviteUserFn);
+
+  async function refreshMembers() {
+    if (!organization?.id || !user?.id) return;
+    const [{ data: profiles }, { data: roles }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .eq("organization_id", organization.id),
+      supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .eq("organization_id", organization.id),
+    ]);
+    const rolesByUser = new Map<string, AppRole[]>();
+    (roles ?? []).forEach((r: any) => {
+      const arr = rolesByUser.get(r.user_id) ?? [];
+      arr.push(r.role as AppRole);
+      rolesByUser.set(r.user_id, arr);
+    });
+    const list: Member[] = (profiles ?? []).map((p: any) => ({
+      id: p.id,
+      full_name: p.full_name,
+      email: p.email,
+      roles: rolesByUser.get(p.id) ?? [],
+    }));
+    setMembers(list);
+    setIsAdmin((rolesByUser.get(user.id) ?? []).includes("admin"));
+  }
+
+  async function handleInvite() {
+    const email = inviteDraft.email.trim();
+    const fullName = inviteDraft.full_name.trim();
+    if (!email || !fullName) {
+      toast.error("Email et nom requis");
+      return;
+    }
+    if (inviteDraft.roles.length === 0) {
+      toast.error("Sélectionnez au moins un rôle");
+      return;
+    }
+    setInviting(true);
+    try {
+      await inviteUser({
+        data: {
+          email,
+          full_name: fullName,
+          roles: inviteDraft.roles,
+        },
+      });
+      toast.success("Invitation envoyée");
+      setInviteDraft({ email: "", full_name: "", roles: ["member"] });
+      setInviteOpen(false);
+      await refreshMembers();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec de l'invitation");
+    } finally {
+      setInviting(false);
+    }
+  }
 
   useEffect(() => {
     if (!organization?.id || !user?.id) return;
     (async () => {
       setLoading(true);
-      const [{ data: profiles }, { data: roles }] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, full_name, email")
-          .eq("organization_id", organization.id),
-        supabase
-          .from("user_roles")
-          .select("user_id, role")
-          .eq("organization_id", organization.id),
-      ]);
-      const rolesByUser = new Map<string, AppRole[]>();
-      (roles ?? []).forEach((r: any) => {
-        const arr = rolesByUser.get(r.user_id) ?? [];
-        arr.push(r.role as AppRole);
-        rolesByUser.set(r.user_id, arr);
-      });
-      const list: Member[] = (profiles ?? []).map((p: any) => ({
-        id: p.id,
-        full_name: p.full_name,
-        email: p.email,
-        roles: rolesByUser.get(p.id) ?? [],
-      }));
-      setMembers(list);
-      setIsAdmin((rolesByUser.get(user.id) ?? []).includes("admin"));
+      await refreshMembers();
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organization?.id, user?.id]);
 
   async function toggleRole(memberId: string, role: AppRole, currentlyHas: boolean) {
@@ -701,17 +747,126 @@ function UsersTab() {
   return (
     <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-6">
       <Card>
-        <h2 className="font-display text-aubergine mb-2" style={{ fontSize: 20 }}>
-          Utilisateurs & rôles
-        </h2>
-        <p className="text-[12px] text-grey mb-4">
-          Attribuez un ou plusieurs rôles à chaque membre. Les rôles définissent
-          qui peut créer ou valider les packages.
-        </p>
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div>
+            <h2 className="font-display text-aubergine" style={{ fontSize: 20 }}>
+              Utilisateurs & rôles
+            </h2>
+            <p className="text-[12px] text-grey mt-1">
+              Attribuez un ou plusieurs rôles à chaque membre. Les rôles
+              définissent qui peut créer ou valider les packages.
+            </p>
+          </div>
+          {isAdmin && !inviteOpen && (
+            <Button
+              onClick={() => setInviteOpen(true)}
+              className="shrink-0"
+            >
+              <Plus size={14} className="mr-1" /> Inviter
+            </Button>
+          )}
+        </div>
 
         {!isAdmin && (
           <div className="mb-4 p-3 rounded-lg bg-[#FAF8F5] border-[0.5px] border-[rgba(45,38,64,0.08)] text-[12px] text-grey">
             Vous devez être administrateur pour modifier les rôles.
+          </div>
+        )}
+
+        {inviteOpen && (
+          <div className="mb-4 p-4 rounded-lg bg-[#FAF8F5] border-[0.5px] border-[rgba(45,38,64,0.12)] space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[13px] font-medium text-aubergine">
+                Inviter un nouvel utilisateur
+              </h3>
+              <button
+                onClick={() => setInviteOpen(false)}
+                className="text-grey hover:text-aubergine"
+                aria-label="Fermer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] text-grey block mb-1">
+                  Nom complet
+                </label>
+                <input
+                  type="text"
+                  value={inviteDraft.full_name}
+                  onChange={(e) =>
+                    setInviteDraft((d) => ({ ...d, full_name: e.target.value }))
+                  }
+                  placeholder="Jeanne Dupont"
+                  className="w-full text-[13px] px-3 py-2 rounded-md border-[0.5px] border-[rgba(45,38,64,0.15)] bg-white"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-grey block mb-1">Email</label>
+                <input
+                  type="email"
+                  value={inviteDraft.email}
+                  onChange={(e) =>
+                    setInviteDraft((d) => ({ ...d, email: e.target.value }))
+                  }
+                  placeholder="jeanne@entreprise.fr"
+                  className="w-full text-[13px] px-3 py-2 rounded-md border-[0.5px] border-[rgba(45,38,64,0.15)] bg-white"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] text-grey block mb-1.5">
+                Rôles
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {(Object.keys(ROLE_LABELS) as AppRole[]).map((r) => {
+                  const has = inviteDraft.roles.includes(r);
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() =>
+                        setInviteDraft((d) => ({
+                          ...d,
+                          roles: has
+                            ? d.roles.filter((x) => x !== r)
+                            : [...d.roles, r],
+                        }))
+                      }
+                      className={`text-[11px] px-2.5 py-1 rounded-full border-[0.5px] transition-colors ${
+                        has
+                          ? "bg-aubergine text-lin border-aubergine"
+                          : "bg-white text-grey border-[rgba(45,38,64,0.15)] hover:border-aubergine"
+                      }`}
+                    >
+                      {ROLE_LABELS[r]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                onClick={() => setInviteOpen(false)}
+                className="text-[12px] text-grey hover:text-aubergine px-3 py-1.5"
+              >
+                Annuler
+              </button>
+              <Button onClick={handleInvite} disabled={inviting}>
+                {inviting ? (
+                  <>
+                    <Loader2 size={14} className="mr-1 animate-spin" />
+                    Envoi…
+                  </>
+                ) : (
+                  "Envoyer l'invitation"
+                )}
+              </Button>
+            </div>
+            <p className="text-[11px] text-grey">
+              Un email d'invitation sera envoyé pour définir le mot de passe.
+            </p>
           </div>
         )}
 

@@ -105,11 +105,14 @@ export function SalaryBreakdown({
         </div>
         <div className="flex items-center gap-2">
           <div
-            className="text-[14px] font-medium tabular-nums"
+            className="text-[14px] font-medium tabular-nums text-right"
             style={{ color: "#2D2640" }}
           >
             ~{formatEur(netApresImpot)}
             <span className="text-[11px] text-grey ml-1">/ an net après impôt</span>
+            <div className="text-[11px] text-grey font-normal">
+              soit ~{formatEur(Math.round(netApresImpot / 12))} / mois
+            </div>
           </div>
           <ChevronDown
             size={14}
@@ -286,6 +289,7 @@ export function SalaryBreakdown({
               label="Super brut"
               sub="Coût total pour l'employeur"
               value={superBrut}
+              monthly={Math.round(superBrut / 12)}
               valueColor="#633806"
               accent="#C4A882"
             />
@@ -294,6 +298,7 @@ export function SalaryBreakdown({
               label="Brut"
               sub={hasVariable ? "Fixe + variable estimé" : "Montant inscrit sur le contrat"}
               value={brut}
+              monthly={Math.round(brut / 12)}
               valueColor="#2D2640"
               accent="#8B7FA8"
             />
@@ -302,6 +307,7 @@ export function SalaryBreakdown({
               label="Net avant impôt"
               sub="Ce qui apparaît sur la fiche de paie"
               value={net}
+              monthly={Math.round(net / 12)}
               valueColor="#2D2640"
               accent="#8B7FA8"
             />
@@ -310,6 +316,7 @@ export function SalaryBreakdown({
               label="Net après impôt"
               sub="Ce que vous touchez vraiment"
               value={netApresImpot}
+              monthly={Math.round(netApresImpot / 12)}
               valueColor="#2D2640"
               accent="#5B8C7B"
               bold
@@ -388,6 +395,7 @@ function CascadeRow({
   label,
   sub,
   value,
+  monthly,
   valueColor,
   accent,
   bold,
@@ -395,6 +403,7 @@ function CascadeRow({
   label: string;
   sub: string;
   value: number;
+  monthly?: number;
   valueColor: string;
   accent: string;
   bold?: boolean;
@@ -415,11 +424,18 @@ function CascadeRow({
           <div className="text-[11px] text-grey">{sub}</div>
         </div>
       </div>
-      <div
-        className={`tabular-nums ${bold ? "text-[16px] font-semibold" : "text-[14px] font-medium"}`}
-        style={{ color: valueColor }}
-      >
-        {formatEur(value)}
+      <div className="text-right">
+        <div
+          className={`tabular-nums ${bold ? "text-[16px] font-semibold" : "text-[14px] font-medium"}`}
+          style={{ color: valueColor }}
+        >
+          {formatEur(value)}
+        </div>
+        {monthly !== undefined && monthly > 0 && (
+          <div className="text-[10.5px] text-grey tabular-nums">
+            soit ~{formatEur(monthly)} / mois
+          </div>
+        )}
       </div>
     </div>
   );

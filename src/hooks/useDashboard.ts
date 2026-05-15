@@ -277,7 +277,7 @@ function buildFollowUpAlerts(
     id: string;
     token: string;
     candidate_name: string | null;
-    package_id: string;
+    package_id: string | null;
     created_at: string;
     opened_at: string | null;
     simulated_at: string | null;

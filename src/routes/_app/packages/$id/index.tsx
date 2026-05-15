@@ -12,6 +12,7 @@ import { LinkActivityPanel } from "@/components/paqli/LinkActivityPanel";
 import { CounterOfferModal, type CounterOfferOriginal } from "@/components/paqli/CounterOfferModal";
 import { EngagementBadge } from "@/components/paqli/EngagementBadge";
 import { BehaviorView } from "@/components/paqli/BehaviorView";
+import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +61,7 @@ function PackageDetail() {
   const [deleteLinkId, setDeleteLinkId] = useState<string | null>(null);
   const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
   const [counterOfferFor, setCounterOfferFor] = useState<CounterOfferOriginal | null>(null);
+  const [previewPas, setPreviewPas] = useState(0.30);
 
   async function reload() {
     const [p, l] = await Promise.all([
@@ -227,6 +229,31 @@ function PackageDetail() {
                 ))}
               </Section>
             )}
+          </Card>
+
+          <Card>
+            <div className="flex items-center justify-between mb-1">
+              <h2
+                className="font-display text-aubergine"
+                style={{ fontSize: 18 }}
+              >
+                Aperçu côté candidat
+              </h2>
+              <span
+                className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full"
+                style={{ background: "#FAEEDA", color: "#633806" }}
+              >
+                Vue candidat
+              </span>
+            </div>
+            <p className="text-[12px] text-grey mb-4">
+              Ce que verra le candidat sur la fiche : du super brut payé par l'employeur au net après impôt qu'il touche.
+            </p>
+            <SalaryBreakdown
+              grossAnnual={pkg.grossSalary}
+              pasRate={previewPas}
+              onPasRateChange={setPreviewPas}
+            />
           </Card>
         </div>
 

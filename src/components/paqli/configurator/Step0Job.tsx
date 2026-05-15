@@ -391,7 +391,58 @@ export function Step0Job() {
 }
 
 function InterviewNotesSection() {
-  return null; // Defined separately below — placeholder for split file
+  const { config, patch } = usePackageConfig();
+  const [loading, setLoading] = useState(false);
+
+  async function handleReformulate() {
+    if (!config.interviewNotes || config.interviewNotes.trim().length < 20) {
+      toast.error("Ajoutez au moins quelques phrases avant de reformuler.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await reformulateInterviewNotesFn({
+        data: { notes: config.interviewNotes },
+      });
+      patch({ interviewNotes: result.reformulated });
+      toast.success("Notes reformulées par l'IA");
+    } catch (e) {
+      console.error(e);
+      toast.error("Échec de la reformulation");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Section title="Discussions avec le candidat">
+      <p className="text-[11px] text-aubergine-light leading-relaxed -mt-1">
+        Notez ici les éléments importants ressortis pendant les entretiens — envies,
+        questions, points sensibles. Ces notes ne sont visibles que par vous, mais
+        nourrissent l'IA pour personnaliser le package.
+      </p>
+      <textarea
+        value={config.interviewNotes}
+        onChange={(e) => patch({ interviewNotes: e.target.value.slice(0, 2000) })}
+        placeholder="Le candidat a beaucoup insisté sur l'autonomie et la possibilité de télétravailler depuis Lisbonne…"
+        rows={5}
+        className="w-full text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] focus:outline-none focus:border-aubergine bg-white resize-y"
+      />
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[11px] text-grey">
+          {config.interviewNotes.length}/2000
+        </span>
+        <button
+          type="button"
+          onClick={handleReformulate}
+          disabled={loading}
+          className="text-[12px] px-3 py-1.5 rounded-md border border-aubergine text-aubergine hover:bg-aubergine hover:text-lin transition-colors disabled:opacity-50"
+        >
+          {loading ? "Reformulation…" : "✨ Reformuler avec l'IA"}
+        </button>
+      </div>
+    </Section>
+  );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

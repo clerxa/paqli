@@ -39,11 +39,12 @@ export function FollowUpAlertsCard({ alerts, onCounterOffer }: Props) {
       onCounterOffer?.(alert);
       return;
     }
-    if (alert.type === "sim_no_response") {
-      navigate({ to: "/packages/$id", params: { id: alert.packageId } });
-      return;
-    }
-    if (alert.type === "opened_not_sim") {
+    if (
+      alert.type === "sim_no_response" ||
+      alert.type === "opened_not_sim" ||
+      alert.type === "deadline_urgent" ||
+      alert.type === "deadline_expired"
+    ) {
       navigate({ to: "/packages/$id", params: { id: alert.packageId } });
       return;
     }

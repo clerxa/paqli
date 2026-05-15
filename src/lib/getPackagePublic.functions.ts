@@ -14,7 +14,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       .from("candidate_links")
       .select(
         `id, token, candidate_name, expires_at, opened_at,
-         status, status_updated_at,
+         status, status_updated_at, decision_deadline,
          packages (
            id, title, gross_salary, variable_target, variable_config, benefits,
            scenario_message, scenario_display,
@@ -120,6 +120,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       expiresAt: link.expires_at as string | null,
       offerStatus: (link.status ?? "pending") as string,
       statusUpdatedAt: link.status_updated_at as string | null,
+      decisionDeadline: (link as any).decision_deadline as string | null,
       counterOffer,
       messages: (messages ?? []) as Array<{
         id: string;

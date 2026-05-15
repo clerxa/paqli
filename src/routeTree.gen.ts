@@ -28,6 +28,7 @@ import { Route as AppJobsNewRouteImport } from './routes/_app/jobs/new'
 import { Route as AppJobsIdRouteImport } from './routes/_app/jobs/$id'
 import { Route as AppPackagesIdIndexRouteImport } from './routes/_app/packages/$id/index'
 import { Route as ApiPublicHooksRunRemindersRouteImport } from './routes/api/public/hooks/run-reminders'
+import { Route as ApiPublicHooksDeadlineNotifierRouteImport } from './routes/api/public/hooks/deadline-notifier'
 import { Route as AppPackagesIdEditRouteImport } from './routes/_app/packages/$id/edit'
 
 const WelcomeRoute = WelcomeRouteImport.update({
@@ -126,6 +127,12 @@ const ApiPublicHooksRunRemindersRoute =
     path: '/api/public/hooks/run-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksDeadlineNotifierRoute =
+  ApiPublicHooksDeadlineNotifierRouteImport.update({
+    id: '/api/public/hooks/deadline-notifier',
+    path: '/api/public/hooks/deadline-notifier',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppPackagesIdEditRoute = AppPackagesIdEditRouteImport.update({
   id: '/packages/$id/edit',
   path: '/packages/$id/edit',
@@ -150,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/jobs/': typeof AppJobsIndexRoute
   '/packages/': typeof AppPackagesIndexRoute
   '/packages/$id/edit': typeof AppPackagesIdEditRoute
+  '/api/public/hooks/deadline-notifier': typeof ApiPublicHooksDeadlineNotifierRoute
   '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
   '/packages/$id/': typeof AppPackagesIdIndexRoute
 }
@@ -171,6 +179,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof AppJobsIndexRoute
   '/packages': typeof AppPackagesIndexRoute
   '/packages/$id/edit': typeof AppPackagesIdEditRoute
+  '/api/public/hooks/deadline-notifier': typeof ApiPublicHooksDeadlineNotifierRoute
   '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
   '/packages/$id': typeof AppPackagesIdIndexRoute
 }
@@ -194,6 +203,7 @@ export interface FileRoutesById {
   '/_app/jobs/': typeof AppJobsIndexRoute
   '/_app/packages/': typeof AppPackagesIndexRoute
   '/_app/packages/$id/edit': typeof AppPackagesIdEditRoute
+  '/api/public/hooks/deadline-notifier': typeof ApiPublicHooksDeadlineNotifierRoute
   '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
   '/_app/packages/$id/': typeof AppPackagesIdIndexRoute
 }
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/jobs/'
     | '/packages/'
     | '/packages/$id/edit'
+    | '/api/public/hooks/deadline-notifier'
     | '/api/public/hooks/run-reminders'
     | '/packages/$id/'
   fileRoutesByTo: FileRoutesByTo
@@ -238,6 +249,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/packages'
     | '/packages/$id/edit'
+    | '/api/public/hooks/deadline-notifier'
     | '/api/public/hooks/run-reminders'
     | '/packages/$id'
   id:
@@ -260,6 +272,7 @@ export interface FileRouteTypes {
     | '/_app/jobs/'
     | '/_app/packages/'
     | '/_app/packages/$id/edit'
+    | '/api/public/hooks/deadline-notifier'
     | '/api/public/hooks/run-reminders'
     | '/_app/packages/$id/'
   fileRoutesById: FileRoutesById
@@ -274,6 +287,7 @@ export interface RootRouteChildren {
   ApiPublicComputeEngagementRoute: typeof ApiPublicComputeEngagementRoute
   ApiPublicNotifyRhRoute: typeof ApiPublicNotifyRhRoute
   ApiPublicTrackBehaviorRoute: typeof ApiPublicTrackBehaviorRoute
+  ApiPublicHooksDeadlineNotifierRoute: typeof ApiPublicHooksDeadlineNotifierRoute
   ApiPublicHooksRunRemindersRoute: typeof ApiPublicHooksRunRemindersRoute
 }
 
@@ -412,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksRunRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/deadline-notifier': {
+      id: '/api/public/hooks/deadline-notifier'
+      path: '/api/public/hooks/deadline-notifier'
+      fullPath: '/api/public/hooks/deadline-notifier'
+      preLoaderRoute: typeof ApiPublicHooksDeadlineNotifierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/packages/$id/edit': {
       id: '/_app/packages/$id/edit'
       path: '/packages/$id/edit'
@@ -460,6 +481,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicComputeEngagementRoute: ApiPublicComputeEngagementRoute,
   ApiPublicNotifyRhRoute: ApiPublicNotifyRhRoute,
   ApiPublicTrackBehaviorRoute: ApiPublicTrackBehaviorRoute,
+  ApiPublicHooksDeadlineNotifierRoute: ApiPublicHooksDeadlineNotifierRoute,
   ApiPublicHooksRunRemindersRoute: ApiPublicHooksRunRemindersRoute,
 }
 export const routeTree = rootRouteImport

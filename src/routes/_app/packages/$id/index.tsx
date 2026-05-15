@@ -48,6 +48,7 @@ interface CandidateLinkRow {
   engagement_score: number | null;
   engagement_label: string | null;
   intent_prediction: string | null;
+  decision_deadline: string | null;
 }
 
 function PackageDetail() {
@@ -69,7 +70,7 @@ function PackageDetail() {
       loadPackage(id),
       supabase
         .from("candidate_links")
-        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category, decline_reason, engagement_score, engagement_label, intent_prediction")
+        .select("id, token, candidate_email, candidate_name, created_at, opened_at, simulated_at, status, decline_category, decline_reason, engagement_score, engagement_label, intent_prediction, decision_deadline")
         .eq("package_id", id)
         .order("created_at", { ascending: false }),
     ]);
@@ -331,6 +332,16 @@ function PackageDetail() {
                       {l.status === "declined" && l.decline_category && (
                         <div className="text-[10px] text-[#A32D2D] mt-1">
                           {DECLINE_LABELS[l.decline_category]}
+                        </div>
+                      )}
+                      {l.decision_deadline && l.status === "pending" && (
+                        <div className="mt-1.5">
+                          <DeadlineBadge deadline={l.decision_deadline} />
+                          <DeadlineManager
+                            linkId={l.id}
+                            deadline={l.decision_deadline}
+                            onUpdate={reload}
+                          />
                         </div>
                       )}
                       <div className="flex items-center justify-between mt-1.5">

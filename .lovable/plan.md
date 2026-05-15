@@ -1,80 +1,58 @@
-# Refonte page candidat en onglets + profil entreprise
+## Prompt 16 — Compte à rebours & date limite de décision
 
-## 1. Profil entreprise (paramétré au niveau du compte)
+### 1. Base de données (migration)
+Ajouter à `candidate_links`:
+- `decision_deadline timestamptz`
+- `deadline_notified_48h boolean default false`
+- `deadline_notified_24h boolean default false`
+- `deadline_notified_expired boolean default false`
 
-### Base de données
-Nouvelles colonnes sur `organizations` :
-- `description` (text) — pitch / présentation / produit
-- `key_figures` (jsonb) — `[{label, value}]` (effectif, création, levée, croissance…)
-- `values` (text[]) — valeurs
-- `culture_note` (text) — manifeste / ambiance
-- `links` (jsonb) — `[{label, url, type}]` (site, LinkedIn, WTJ, Glassdoor, presse…)
-- `source_urls` (text[]) — liens web utilisés par l'IA pour générer le contenu
+### 2. Configurateur — Étape 5
+Modifier `src/components/paqli/configurator/Step5Preview.tsx` :
+- Toggle "Date limite de décision"
+- Chips de délai rapide (3j / 5j / 1 sem / 2 sem / Personnalisé)
+- Sélecteur datetime-local si personnalisé
+- Aperçu formaté en français + note pédagogique
+- État stocké dans `PackageConfigContext` ou local + sauvegardé via `generateCandidateLink`
 
-RLS : déjà en place (membres voient leur org, admins éditent).
+Modifier `src/lib/candidateLinks.ts` :
+- `generateCandidateLink` accepte `decisionDeadline?: Date | null`
+- Insère dans `candidate_links.decision_deadline`
 
-### Page Paramètres (`/settings`)
-Refonte de la page actuelle (qui n'a que des champs mock) en vraie page d'édition du profil entreprise :
-- Section "Liens sources" : champ multi-URL (ajout/suppression de liens) + bouton **« Générer avec l'IA »**
-- Section "Présentation & produit" (textarea)
-- Section "Chiffres clés" (liste éditable label/valeur)
-- Section "Valeurs & culture" (chips + textarea)
-- Section "Liens & médias" (liste éditable label/url)
-- Auto-save type configurateur de package
+### 3. Server function publique
+`src/lib/getPackagePublic.functions.ts` :
+- Ajouter `decision_deadline` au select et au retour (`decisionDeadline`)
 
-### Génération IA
-Nouveau server function `generateCompanyProfile.functions.ts` :
-- Input : `urls: string[]`
-- Pour chaque URL : scrape via `fetch` + extraction texte (HTML simple, pas besoin de Firecrawl pour démarrer — on peut basculer plus tard si besoin)
-- Concatène les contenus, passe à Lovable AI Gateway (`google/gemini-3-flash-preview`) avec tool calling pour extraire les 4 blocs en JSON structuré
-- Renvoie le profil ; le client fait l'upsert sur `organizations`
+`src/hooks/useCandidateLink.ts` :
+- Exposer `decisionDeadline` dans `CandidateLinkData`
 
-## 2. Page candidat en onglets
+### 4. Vue candidat (`src/routes/p/$token.tsx`)
+- Créer composant `DecisionDeadlineBanner` (et helpers `calcTimeLeft`, `CountdownDisplay`)
+- Afficher en haut, sous le hero
+- Bloc décision remplacé par message d'expiration si deadline passée + statut pending
+- Messagerie reste accessible
 
-### Refonte `src/routes/p/$token.tsx`
-Remplacer le scroll long actuel par un système d'onglets :
+### 5. Dashboard RH
+- Badge deadline dans la liste des liens (page détail package `_app/packages/$id/index.tsx`)
+- Composant `DeadlineManager` : +3j / +7j / supprimer
+- Hook `useDashboard` : ajouter alertes `deadline_urgent` (<24h) et `deadline_expired` (<48h)
+- Mapper ces nouveaux types dans `FollowUpAlertsCard`
 
-```text
-┌──────────────────────────────────────────────┐
-│ Header (logo entreprise, titre du poste)     │
-├──────────────────────────────────────────────┤
-│ [Offre] [Flexibilité] [Équipe & culture]     │
-│ [ ✦ PACKAGE ✦ ] [Questions] [Next steps]     │  ← Package mis en avant
-└──────────────────────────────────────────────┘
-```
+### 6. Notifications automatiques (TanStack server route)
+**Note** : la stack utilise TanStack server routes, pas Supabase Edge Functions. Créer :
+`src/routes/api/public/hooks/deadline-notifier.ts` :
+- Lit les liens éligibles via `supabaseAdmin`
+- Envoie emails via Lovable Emails / fallback console-log si non configuré
+- Met à jour les flags `deadline_notified_*`
 
-**Mise en avant de l'onglet Package** :
-- Couleur d'accent (lavande / aubergine), badge ou pastille
-- Police plus grande, bordure visible
-- Bouton plein vs ghost pour les autres
+Cron via `pg_cron` toutes les heures (insert-only SQL via outil supabase insert).
 
-**Contenu des onglets** (mapping depuis le contenu existant de la page) :
-- **Offre** : `job_summary`, `missions`, `stack`, `contract_type`, `start_date`
-- **Flexibilité** : `remote_policy`, `remote_days`, `remote_guaranteed`, `flexible_hours`, `location_*`
-- **Équipe & culture** : `team_*`, `manager_style`, `company_values`, `culture_note`, `growth_paths`, `training_budget`, `onboarding_note`, `glassdoor_url`, `wtj_url`
-- **Entreprise** (nouvel onglet, entre Offre et Flexibilité) : `organizations.description`, `key_figures`, `values`, `culture_note`, `links`
-- **Package** : `SalaryBreakdown` (fixe + variable simulé + benefits + equity scenarios + savings)
-- **Questions** : zone de chat existante (`messages`)
-- **Next steps** : `process_steps`, `process_duration`, `DecisionBlocks` (accept / counter-offer / decline)
+### 7. Tests build
+Vérifier qu'il n'y a pas d'erreurs TypeScript après les modifs.
 
-### Récupération des données entreprise
-Étendre `getPackagePublic.functions.ts` pour renvoyer aussi le profil étendu de `organizations` (description, key_figures, values, culture_note, links).
+---
 
-### URL deep-link
-Onglet actif synchronisé via search param (`?tab=package`) pour que l'employeur puisse pointer un candidat directement sur le package, et que les liens partagés conservent l'onglet.
-
-## 3. Aperçu côté employeur
-La preview existante (page `/packages/$id`) doit aussi afficher la page candidat avec les onglets pour que l'entreprise voie exactement ce que recevra le candidat.
-
-## Ordre d'implémentation
-1. Migration DB (colonnes `organizations`)
-2. Server fn `generateCompanyProfile` + lecture étendue dans `getPackagePublic`
-3. Refonte page `/settings` (édition + génération IA)
-4. Refonte `src/routes/p/$token.tsx` en onglets (composant `CandidateTabs`)
-5. Aligner la preview employeur sur la nouvelle structure
-
-## Détails techniques
-- **Tabs** : composant local custom (cohérent avec le design Paqli) ou `@/components/ui/tabs` (shadcn) si déjà présent
-- **Scrape** : `fetch` + regex pour stripper HTML ; `Response.text()` ; cap à 50KB par URL pour éviter de saturer le contexte LLM
-- **Tool calling Lovable AI** : schéma JSON strict pour `description`, `key_figures[]`, `values[]`, `culture_note`, `links[]`
-- **Pas de breaking change** sur les packages : on ajoute, on ne retire rien
+### Notes techniques
+- Email infrastructure : si non configurée, on log uniquement et on marque flags. Proposer setup_email_infra à l'utilisateur dans une étape ultérieure.
+- Réinitialiser `deadline_notified_*` à false lors d'une prolongation depuis le dashboard.
+- Alerte type ajoutée à l'union `FollowUpAlert["type"]`.

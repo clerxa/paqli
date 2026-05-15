@@ -59,6 +59,10 @@ export type Database = {
           candidate_name: string | null
           counter_offer_id: string | null
           created_at: string
+          deadline_notified_24h: boolean
+          deadline_notified_48h: boolean
+          deadline_notified_expired: boolean
+          decision_deadline: string | null
           decline_category: string | null
           decline_reason: string | null
           engagement_label: string | null
@@ -86,6 +90,10 @@ export type Database = {
           candidate_name?: string | null
           counter_offer_id?: string | null
           created_at?: string
+          deadline_notified_24h?: boolean
+          deadline_notified_48h?: boolean
+          deadline_notified_expired?: boolean
+          decision_deadline?: string | null
           decline_category?: string | null
           decline_reason?: string | null
           engagement_label?: string | null
@@ -113,6 +121,10 @@ export type Database = {
           candidate_name?: string | null
           counter_offer_id?: string | null
           created_at?: string
+          deadline_notified_24h?: boolean
+          deadline_notified_48h?: boolean
+          deadline_notified_expired?: boolean
+          decision_deadline?: string | null
           decline_category?: string | null
           decline_reason?: string | null
           engagement_label?: string | null

@@ -1,9 +1,8 @@
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { usePackageCoach } from "@/hooks/usePackageCoach";
 import { CoachTipInline } from "@/components/paqli/CoachTipInline";
-import { Chip, NumberField, TextArea, TextField } from "./fields";
+import { NumberField, TextField } from "./fields";
 import type {
-  BenefitsConfig,
   VariableComponent,
   VariableConfig,
   VariableIndicator,
@@ -17,35 +16,9 @@ import {
 } from "@/lib/packageConfig";
 import { Plus, X } from "lucide-react";
 
-const benefitChips: { key: keyof BenefitsConfig; label: string }[] = [
-  { key: "mutuelle", label: "Mutuelle premium" },
-  { key: "ticketsResto", label: "Tickets restaurant" },
-  { key: "rtt", label: "RTT" },
-  { key: "vehicule", label: "Véhicule de fonction" },
-  { key: "formation", label: "Budget formation" },
-  { key: "creche", label: "Crèche d'entreprise" },
-];
-
-const teletravailOptions = [
-  { value: 1, label: "1j" },
-  { value: 2, label: "2j" },
-  { value: 3, label: "3j" },
-  { value: 5, label: "Full remote" },
-];
-
 export function Step1Fixed() {
   const { config, patch } = usePackageConfig();
   const { tips, checkField } = usePackageCoach();
-  const b = config.benefits;
-
-  const setBenefit = (key: keyof BenefitsConfig, value: BenefitsConfig[keyof BenefitsConfig]) => {
-    patch({ benefits: { ...b, [key]: value } as BenefitsConfig });
-    if (key === "teletravail" && typeof value === "number") {
-      checkField("remote_days", value, {});
-    }
-  };
-  const toggle = (key: keyof BenefitsConfig) =>
-    setBenefit(key, !b[key] as never);
 
   return (
     <div className="space-y-6">
@@ -54,7 +27,8 @@ export function Step1Fixed() {
           Rémunération fixe
         </h2>
         <p className="text-[12px] text-grey mt-1">
-          La base du package : salaire, variable et avantages.
+          La base du package : salaire et variable. Les avantages sont configurés
+          à l'étape suivante.
         </p>
       </div>
 

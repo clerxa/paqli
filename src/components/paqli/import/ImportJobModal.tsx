@@ -41,7 +41,15 @@ export function ImportJobModal({ onImported, onClose }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorAlternatives, setErrorAlternatives] = useState<
+    ImportErrorAlternative[] | null
+  >(null);
   const [preview, setPreview] = useState<ImportedJobData | null>(null);
+
+  function clearError() {
+    setError(null);
+    setErrorAlternatives(null);
+  }
 
   function validateAndSetFile(f: File) {
     if (!ALLOWED_TYPES.includes(f.type) && !f.name.match(/\.(pdf|docx|doc|txt)$/i)) {
@@ -52,13 +60,13 @@ export function ImportJobModal({ onImported, onClose }: Props) {
       setError("Fichier trop volumineux. Maximum 5 Mo.");
       return;
     }
-    setError(null);
+    clearError();
     setFile(f);
   }
 
   async function run(payload: { url?: string; text?: string; file?: File }) {
     setLoading(true);
-    setError(null);
+    clearError();
     try {
       let body: { url?: string; text?: string; file?: { name: string; type: string; base64: string } };
       if (payload.file) {
@@ -70,7 +78,14 @@ export function ImportJobModal({ onImported, onClose }: Props) {
         body = { text: payload.text };
       }
       const res = await importFn({ data: body });
-      setPreview(res.data);
+      if (res.success) {
+        setPreview(res.data);
+      } else {
+        setError(res.error.message);
+        setErrorAlternatives(
+          res.error.alternatives?.length ? res.error.alternatives : null,
+        );
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg || "Erreur inattendue. Réessayez.");

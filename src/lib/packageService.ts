@@ -207,6 +207,10 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
 
     grossSalary: Number(pkg.gross_salary) || 0,
     variableTarget: Number(pkg.variable_target) || 0,
+    variableConfig: {
+      ...defaultVariableConfig,
+      ...((pkg.variable_config as Record<string, unknown>) ?? {}),
+    } as VariableConfig,
     benefits,
     equityDevices: (eq ?? []).map((d) => ({
       id: d.id,

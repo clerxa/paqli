@@ -246,11 +246,17 @@ export interface ImportErrorAlternative {
   description: string;
 }
 
+export interface ImportJobErrorDebug {
+  charCount?: number;
+  wordCount?: number;
+  fileName?: string;
+}
+
 export interface ImportJobError {
   code: ImportErrorCode;
   message: string;
   alternatives: ImportErrorAlternative[];
-  debug?: Record<string, unknown>;
+  debug?: ImportJobErrorDebug;
 }
 
 export type ImportJobResult =

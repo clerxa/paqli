@@ -73,6 +73,7 @@ function DashboardPage() {
     acceptedCount,
     declinedCount,
     followUpAlerts,
+    engagement,
     loading,
   } = useDashboard();
   const navigate = useNavigate();

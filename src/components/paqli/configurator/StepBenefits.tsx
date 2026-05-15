@@ -285,6 +285,35 @@ export function StepBenefits() {
         })}
       </div>
 
+      {/* Avantages personnalisés (catégorie active) */}
+      <CustomBenefitsSection
+        category={activeCategory}
+        benefits={selected.filter(
+          (b) => b.category === activeCategory && b.benefit_key.startsWith("custom:"),
+        )}
+        onAdd={() => {
+          const id =
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : Math.random().toString(36).slice(2);
+          setSelected([
+            ...selected,
+            {
+              benefit_key: `custom:${id}`,
+              category: activeCategory,
+              value_type: "fixed",
+              custom_label: "",
+              annual_value: 0,
+              monthly_value: null,
+            },
+          ]);
+        }}
+        onUpdate={(key, p) => updateBenefit(key, p)}
+        onRemove={(key) =>
+          setSelected(selected.filter((b) => b.benefit_key !== key))
+        }
+      />
+
       {/* Récap Total Compensation */}
       {selected.length > 0 && (
         <div className="rounded-xl p-5" style={{ background: "#2D2640" }}>

@@ -3,7 +3,28 @@ import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { useJobs } from "@/hooks/useJobs";
 import { applyJobToConfig } from "@/lib/jobsService";
 import { Chip, TextArea, TextField } from "./fields";
-import type { ContractType, RemotePolicy } from "@/lib/packageConfig";
+import type { ContractType, GrowthPath, ManagerStyle, RemotePolicy } from "@/lib/packageConfig";
+
+const TEAM_SIZE_OPTIONS = [
+  { v: 3, l: "1-3" },
+  { v: 8, l: "4-8" },
+  { v: 15, l: "9-15" },
+  { v: 99, l: "15+" },
+];
+
+const MANAGER_OPTIONS: {
+  value: ManagerStyle;
+  icon: string;
+  label: string;
+  desc: string;
+}[] = [
+  { value: "autonomy", icon: "🎯", label: "Autonomie forte", desc: "Vous gérez votre agenda" },
+  { value: "coaching", icon: "🤝", label: "Coaching", desc: "Manager disponible et impliqué" },
+  { value: "structured", icon: "📋", label: "Structuré", desc: "Processus clairs et cadrés" },
+  { value: "collaborative", icon: "💬", label: "Collaboratif", desc: "Décisions collectives" },
+];
+
+const GROWTH_HORIZONS = ["6 mois", "1 an", "2 ans", "3 ans+"];
 
 const CONTRACT_OPTIONS: { value: ContractType; label: string }[] = [
   { value: "cdi", label: "CDI" },

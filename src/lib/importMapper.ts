@@ -3,6 +3,17 @@ import type { JobInput } from "./jobsService";
 import { emptyJob } from "./jobsService";
 import type { PackageConfig } from "./packageConfig";
 
+function toIntOrNull(v: unknown): number | null {
+  if (v == null) return null;
+  if (typeof v === "number" && Number.isFinite(v)) return Math.round(v);
+  if (typeof v === "string") {
+    const m = v.replace(/[^\d.-]/g, "");
+    const n = parseFloat(m);
+    return Number.isFinite(n) ? Math.round(n) : null;
+  }
+  return null;
+}
+
 export function mapToJobInput(data: ImportedJobData): JobInput {
   return {
     ...emptyJob,

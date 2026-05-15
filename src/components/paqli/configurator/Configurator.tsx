@@ -100,7 +100,7 @@ export function Configurator() {
               Enregistrer
             </Button>
             <Button onClick={goNext}>
-              {config.currentStep === 6 ? "Terminer" : "Suivant →"}
+              {config.currentStep === 7 ? "Terminer" : "Suivant →"}
             </Button>
           </div>
         }

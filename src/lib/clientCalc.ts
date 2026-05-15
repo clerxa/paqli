@@ -132,10 +132,20 @@ export interface PackageData {
 
 export interface ScenarioEstimate {
   label: string;
+  /** Backwards-compat: high-seniority estimate (≥ 3 ans for BSPCE, sinon PFU). */
   estimate: number;
   targetValuationM: number;
   horizonYears: number;
+  /** Backwards-compat: tax rate displayed for legacy single-rate UI. */
   taxRate: number;
+
+  // New seniority-aware fields
+  estimateHighSeniority: number; // ≥ 3 ans (ou PFU pour AGA/RSU)
+  estimateLowSeniority: number; // < 3 ans (BSPCE uniquement)
+  taxRateHighSeniority: number;
+  taxRateLowSeniority: number;
+  /** true uniquement pour les BSPCE avec un gain > 0. */
+  isMultiRate: boolean;
 }
 
 export interface PackageEstimate {
@@ -146,7 +156,15 @@ export interface PackageEstimate {
   peeEst: number;
   interEst: number;
   participationEst: number;
-  totalRange: { low: number; mid: number; high: number };
+  /** Total range. lowSeniority/highSeniority pertinents si hasBspce=true. */
+  totalRange: {
+    low: number;
+    mid: number;
+    high: number;
+    lowSeniority: number; // total réaliste avec equity < 3 ans
+    highSeniority: number; // total réaliste avec equity ≥ 3 ans
+  };
+  hasBspce: boolean;
 }
 
 export function roundForDisplay(value: number): number {

@@ -212,7 +212,7 @@ export function useDashboard() {
         type: event.event_type as ActivityType,
         candidateName: link?.candidate_name ?? "Candidat",
         linkId: event.link_id,
-        packageId: link?.package_id,
+        packageId: link?.package_id ?? undefined,
         createdAt: event.created_at,
       };
     });

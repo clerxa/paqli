@@ -22,6 +22,7 @@ import { Button } from "@/components/paqli/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { generateCompanyProfile } from "@/lib/companyProfile.functions";
+import { getLinkQuotaFn } from "@/lib/linkQuota.functions";
 import {
   generatePackageBenchmarkFn,
   getPackageBenchmarkFn,

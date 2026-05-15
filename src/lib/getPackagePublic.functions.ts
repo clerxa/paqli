@@ -32,7 +32,8 @@ export const getPackagePublic = createServerFn({ method: "POST" })
              special_conditions
            ),
            savings_devices ( id, type, matching_rate, cap_amount, avg_3y ),
-           scenarios ( id, label, target_valuation_m, horizon_years, display_order )
+           scenarios ( id, label, target_valuation_m, horizon_years, display_order ),
+           package_benefits ( benefit_key, category, value_type, monthly_value, annual_value, employer_share, custom_label, custom_note, display_order )
          )`,
       )
       .eq("token", data.token)

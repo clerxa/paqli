@@ -512,7 +512,251 @@ function TabBar({ tab, onChange }: { tab: TabKey; onChange: (t: TabKey) => void 
   );
 }
 
+/* -------------------- Tab content -------------------- */
 
+type Pkg = CandidateLinkData["packages"];
+type Org = Pkg["organizations"];
+
+function InfoCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-4 space-y-3">
+      {children}
+    </div>
+  );
+}
+
+function KeyVal({ label, value }: { label: string; value: React.ReactNode }) {
+  if (value === null || value === undefined || value === "" || (Array.isArray(value) && value.length === 0)) return null;
+  return (
+    <div className="flex justify-between gap-4 text-[13px]">
+      <span className="text-aubergine-light">{label}</span>
+      <span className="text-aubergine font-medium text-right">{value}</span>
+    </div>
+  );
+}
+
+function OfferTab({ pkg }: { pkg: Pkg }) {
+  return (
+    <>
+      <SectionTitle>Le poste</SectionTitle>
+      <InfoCard>
+        {pkg.job_summary && (
+          <p className="text-[13px] text-aubergine leading-relaxed">{pkg.job_summary}</p>
+        )}
+        <KeyVal label="Type de contrat" value={pkg.contract_type} />
+        <KeyVal label="Date de prise de poste" value={pkg.start_date} />
+        <KeyVal label="Localisation" value={pkg.location_city} />
+        {pkg.location_details && (
+          <p className="text-[12px] text-aubergine-light"><MapPin size={12} className="inline mr-1" />{pkg.location_details}</p>
+        )}
+      </InfoCard>
+
+      {pkg.missions && pkg.missions.length > 0 && (
+        <>
+          <SectionTitle>Missions</SectionTitle>
+          <InfoCard>
+            <ul className="space-y-2 text-[13px] text-aubergine">
+              {pkg.missions.map((m, i) => (
+                <li key={i} className="flex gap-2"><ListChecks size={14} className="mt-0.5 text-aubergine-light shrink-0" /><span>{m}</span></li>
+              ))}
+            </ul>
+          </InfoCard>
+        </>
+      )}
+
+      {pkg.stack && pkg.stack.length > 0 && (
+        <>
+          <SectionTitle>Stack & outils</SectionTitle>
+          <InfoCard>
+            <div className="flex flex-wrap gap-2">
+              {pkg.stack.map((s) => (
+                <span key={s} className="text-[12px] px-2.5 py-1 rounded-full" style={{ background: "#F0EBE8", color: "#3D3554" }}>{s}</span>
+              ))}
+            </div>
+          </InfoCard>
+        </>
+      )}
+    </>
+  );
+}
+
+function CompanyTab({ org }: { org: Org }) {
+  if (!org) return <InfoCard><p className="text-[13px] text-grey">Aucune information entreprise renseignée.</p></InfoCard>;
+  return (
+    <>
+      {org.description && (
+        <>
+          <SectionTitle>Présentation & produit</SectionTitle>
+          <InfoCard>
+            <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line">{org.description}</p>
+          </InfoCard>
+        </>
+      )}
+
+      {org.key_figures && org.key_figures.length > 0 && (
+        <>
+          <SectionTitle>Chiffres clés</SectionTitle>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+            {org.key_figures.map((kf, i) => (
+              <div key={i} className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-4">
+                <div className="font-display text-aubergine" style={{ fontSize: 22 }}>{kf.value}</div>
+                <div className="text-[11px] text-aubergine-light mt-1">{kf.label}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {((org.values && org.values.length > 0) || org.culture_note) && (
+        <>
+          <SectionTitle>Valeurs & culture</SectionTitle>
+          <InfoCard>
+            {org.values && org.values.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {org.values.map((v) => (
+                  <span key={v} className="text-[12px] px-2.5 py-1 rounded-full" style={{ background: "#FAEEDA", color: "#7A5417" }}>{v}</span>
+                ))}
+              </div>
+            )}
+            {org.culture_note && (
+              <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line">{org.culture_note}</p>
+            )}
+          </InfoCard>
+        </>
+      )}
+
+      {org.links && org.links.length > 0 && (
+        <>
+          <SectionTitle>Liens & médias</SectionTitle>
+          <InfoCard>
+            <div className="flex flex-col gap-2">
+              {org.links.map((l, i) => (
+                <a key={i} href={l.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[13px] text-aubergine hover:underline">
+                  <ExternalLink size={13} /> {l.label}
+                </a>
+              ))}
+            </div>
+          </InfoCard>
+        </>
+      )}
+    </>
+  );
+}
+
+function FlexibilityTab({ pkg }: { pkg: Pkg }) {
+  return (
+    <>
+      <SectionTitle>Flexibilité & rythme</SectionTitle>
+      <InfoCard>
+        <KeyVal label="Politique remote" value={pkg.remote_policy} />
+        <KeyVal label="Jours de remote" value={pkg.remote_days != null ? `${pkg.remote_days} j/sem` : null} />
+        <KeyVal label="Remote garanti" value={pkg.remote_guaranteed ? "Oui" : null} />
+        <KeyVal label="Horaires flexibles" value={pkg.flexible_hours ? "Oui" : null} />
+        <KeyVal label="Localisation" value={pkg.location_city} />
+        {!pkg.remote_policy && !pkg.remote_days && !pkg.flexible_hours && (
+          <p className="text-[13px] text-grey">Aucune information renseignée.</p>
+        )}
+      </InfoCard>
+    </>
+  );
+}
+
+function TeamCultureTab({ pkg, onExternalLink }: { pkg: Pkg; onExternalLink: (url: string) => void }) {
+  return (
+    <>
+      <SectionTitle>L'équipe</SectionTitle>
+      <InfoCard>
+        <KeyVal label="Taille d'équipe" value={pkg.team_size ? `${pkg.team_size} personnes` : null} />
+        {pkg.team_description && (
+          <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line"><Users size={13} className="inline mr-1" />{pkg.team_description}</p>
+        )}
+        {pkg.manager_style && (
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-aubergine-light mb-1">Style de management</div>
+            <p className="text-[13px] text-aubergine leading-relaxed">{pkg.manager_style}</p>
+          </div>
+        )}
+      </InfoCard>
+
+      {((pkg.company_values && pkg.company_values.length > 0) || pkg.culture_note) && (
+        <>
+          <SectionTitle>Culture</SectionTitle>
+          <InfoCard>
+            {pkg.company_values && pkg.company_values.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {pkg.company_values.map((v) => (
+                  <span key={v} className="text-[12px] px-2.5 py-1 rounded-full" style={{ background: "#FAEEDA", color: "#7A5417" }}>{v}</span>
+                ))}
+              </div>
+            )}
+            {pkg.culture_note && (
+              <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line">{pkg.culture_note}</p>
+            )}
+          </InfoCard>
+        </>
+      )}
+
+      {(pkg.training_budget || pkg.onboarding_note) && (
+        <>
+          <SectionTitle>Développement & onboarding</SectionTitle>
+          <InfoCard>
+            <KeyVal label="Budget formation" value={pkg.training_budget ? formatEur(pkg.training_budget) : null} />
+            {pkg.onboarding_note && (
+              <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line"><TrendingUp size={13} className="inline mr-1" />{pkg.onboarding_note}</p>
+            )}
+          </InfoCard>
+        </>
+      )}
+
+      {(pkg.glassdoor_url || pkg.wtj_url) && (
+        <>
+          <SectionTitle>En savoir plus</SectionTitle>
+          <InfoCard>
+            <div className="flex flex-col gap-2">
+              {pkg.glassdoor_url && (
+                <a href={pkg.glassdoor_url} target="_blank" rel="noreferrer" onClick={() => onExternalLink(pkg.glassdoor_url!)} className="flex items-center gap-2 text-[13px] text-aubergine hover:underline">
+                  <ExternalLink size={13} /> Glassdoor
+                </a>
+              )}
+              {pkg.wtj_url && (
+                <a href={pkg.wtj_url} target="_blank" rel="noreferrer" onClick={() => onExternalLink(pkg.wtj_url!)} className="flex items-center gap-2 text-[13px] text-aubergine hover:underline">
+                  <ExternalLink size={13} /> Welcome to the Jungle
+                </a>
+              )}
+            </div>
+          </InfoCard>
+        </>
+      )}
+    </>
+  );
+}
+
+function ProcessSection({ pkg }: { pkg: Pkg }) {
+  const steps = pkg.process_steps ?? [];
+  if (steps.length === 0 && !pkg.process_duration) return null;
+  return (
+    <>
+      <SectionTitle>Process de recrutement</SectionTitle>
+      <InfoCard>
+        {pkg.process_duration && (
+          <div className="text-[12px] text-aubergine-light flex items-center gap-1.5">
+            <Clock size={13} /> Durée estimée : {pkg.process_duration}
+          </div>
+        )}
+        {steps.length > 0 && (
+          <ol className="space-y-2 mt-2">
+            {steps.map((s: any, i: number) => (
+              <li key={i} className="flex gap-3 text-[13px] text-aubergine">
+                <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-medium shrink-0" style={{ background: "#2D2640", color: "#FAF8F5" }}>{i + 1}</span>
+                <span>{typeof s === "string" ? s : s.label ?? s.name ?? JSON.stringify(s)}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </InfoCard>
+    </>
+  );
+}
 
 /* -------------------- Helpers -------------------- */
 

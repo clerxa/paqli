@@ -460,6 +460,10 @@ function PackageView({
         </>
       )}
 
+      {tab === "comparatif" && (
+        <BenchmarkTab pkg={pkg} />
+      )}
+
       {tab === "questions" && (
         <>
           <SectionTitle><Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?</SectionTitle>

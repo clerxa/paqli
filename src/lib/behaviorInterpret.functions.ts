@@ -83,6 +83,7 @@ export const interpretBehaviorFn = createServerFn({ method: "POST" })
       systemPrompt: SYSTEM_PROMPT,
       userPrompt: `Analyse ce comportement candidat et donne une interprétation utile pour le recruteur :\n\n${JSON.stringify(summary, null, 2)}\n\nQue peut-on déduire de son niveau d'intérêt et de ses préoccupations ? Quelle action le recruteur devrait-il envisager ?`,
       maxTokens: 400,
+      caller: "interpretBehavior",
     });
 
     return { interpretation: interpretation.trim() };

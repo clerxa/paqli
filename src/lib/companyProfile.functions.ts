@@ -125,6 +125,7 @@ Réponds en JSON strictement avec cette structure :
       userPrompt,
       maxTokens: 1200,
       jsonMode: true,
+      caller: "generateCompanyProfile",
     });
 
     const parsed = JSON.parse(raw) as GeneratedCompanyProfile;

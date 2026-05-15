@@ -119,6 +119,12 @@ function PackageView({
     seniority: 3,
     peeContribution: 0,
   });
+  // Taux de prélèvement à la source — pré-rempli depuis la TMI, ajustable
+  const [pasRate, setPasRate] = useState<number>(0.30);
+  const pasTouched = useRef(false);
+  useEffect(() => {
+    if (!pasTouched.current) setPasRate(params.tmi);
+  }, [params.tmi]);
 
   // Debounced tracking
   const trackTimer = useRef<number | null>(null);

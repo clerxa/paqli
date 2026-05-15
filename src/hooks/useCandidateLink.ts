@@ -49,38 +49,31 @@ export function useCandidateLink(token: string) {
       try {
         const res = await fetchPackage({ data: { token } });
         if (cancelled) return;
+        if ("ok" in res && res.ok === false) {
+          setError(res.reason === "expired" ? "expired" : "not_found");
+          setLoading(false);
+          return;
+        }
+        const ok = res as Exclude<typeof res, { ok: false }>;
         setData({
-          id: res.linkId,
-          token: res.token,
-          candidate_name: res.candidateName,
-          expires_at: res.expiresAt,
-          opened_at: res.openedAt,
-          offerStatus: res.offerStatus,
-          statusUpdatedAt: res.statusUpdatedAt,
-          counterOffer: (res as any).counterOffer ?? null,
-          messages: res.messages,
-          packages: res.package as unknown as PackageData,
+          id: ok.linkId,
+          token: ok.token,
+          candidate_name: ok.candidateName,
+          expires_at: ok.expiresAt,
+          opened_at: ok.openedAt,
+          offerStatus: ok.offerStatus,
+          statusUpdatedAt: ok.statusUpdatedAt,
+          counterOffer: (ok as any).counterOffer ?? null,
+          messages: ok.messages,
+          packages: ok.package as unknown as PackageData,
         });
         setLoading(false);
-        if (!res.openedAt) {
+        if (!ok.openedAt) {
           void track({ data: { token, eventType: "opened" } }).catch(() => {});
         }
       } catch (e: any) {
         if (cancelled) return;
-        let kind: LinkError = "not_found";
-        try {
-          if (e instanceof Response) {
-            if (e.status === 410) kind = "expired";
-            else kind = "not_found";
-          } else {
-            const msg = String(e?.message ?? "");
-            if (msg.includes("410") || msg.toLowerCase().includes("expired"))
-              kind = "expired";
-          }
-        } catch {
-          // ignore
-        }
-        setError(kind);
+        setError("not_found");
         setLoading(false);
       }
     }

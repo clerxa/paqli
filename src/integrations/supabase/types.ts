@@ -263,6 +263,48 @@ export type Database = {
           },
         ]
       }
+      competitors: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          organization_id: string
+          salary_max: number | null
+          salary_min: number | null
+          strengths: string[]
+          updated_at: string
+          weaknesses: string[]
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          organization_id: string
+          salary_max?: number | null
+          salary_min?: number | null
+          strengths?: string[]
+          updated_at?: string
+          weaknesses?: string[]
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          organization_id?: string
+          salary_max?: number | null
+          salary_min?: number | null
+          strengths?: string[]
+          updated_at?: string
+          weaknesses?: string[]
+          website?: string | null
+        }
+        Relationships: []
+      }
       counter_offers: {
         Row: {
           changes: Json
@@ -622,6 +664,7 @@ export type Database = {
           logo_url: string | null
           name: string
           plan: string
+          profile_generated_at: string | null
           siret: string | null
           slug: string
           source_urls: string[]
@@ -641,6 +684,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           plan?: string
+          profile_generated_at?: string | null
           siret?: string | null
           slug: string
           source_urls?: string[]
@@ -660,6 +704,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           plan?: string
+          profile_generated_at?: string | null
           siret?: string | null
           slug?: string
           source_urls?: string[]
@@ -1223,7 +1268,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "member"
+      app_role: "admin" | "member" | "manager" | "validator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1351,7 +1396,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "member"],
+      app_role: ["admin", "member", "manager", "validator"],
     },
   },
 } as const

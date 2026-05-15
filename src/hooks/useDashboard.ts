@@ -92,6 +92,7 @@ export function useDashboard() {
   const [acceptedCount, setAcceptedCount] = useState(0);
   const [declinedCount, setDeclinedCount] = useState(0);
   const [followUpAlerts, setFollowUpAlerts] = useState<FollowUpAlert[]>([]);
+  const [engagement, setEngagement] = useState<EngagementRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

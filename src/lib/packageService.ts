@@ -11,6 +11,7 @@ import type {
 } from "./packageConfig";
 import { defaultBenefits, defaultScenarios, defaultVariableConfig, emptyConfig } from "./packageConfig";
 import type { VariableConfig } from "./packageConfig";
+import type { PackageBenefit, BenefitCategory, ValueType } from "./benefitCatalog";
 
 export async function upsertPackage(
   config: PackageConfig,

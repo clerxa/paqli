@@ -106,6 +106,7 @@ Produis un JSON avec exactement cette structure :
       userPrompt,
       maxTokens: 600,
       jsonMode: true,
+      caller: "scoreAttractiveness",
     });
 
     const parsed = JSON.parse(raw) as AttractivenessResult;
@@ -218,6 +219,7 @@ Rédige uniquement le corps du message — pas d'objet, pas de signature formell
       systemPrompt,
       userPrompt,
       maxTokens: 300,
+      caller: "draftMessage",
     });
 
     return { draft: message.trim() };
@@ -242,6 +244,7 @@ Réponds en JSON : {"level": "info|warning|success", "message": "..."}`;
       userPrompt: `Ces valeurs sont-elles différenciantes et crédibles pour attirer des profils tech ? "${data.values.join(", ")}"`,
       maxTokens: 150,
       jsonMode: true,
+      caller: "analyzeValues",
     });
 
     const parsed = JSON.parse(raw) as {
@@ -343,6 +346,7 @@ Ne mentionne que les informations fournies — ne complète pas avec des supposi
       systemPrompt,
       userPrompt,
       maxTokens: 1200,
+      caller: "generateJobPosting",
     });
 
     return { posting };

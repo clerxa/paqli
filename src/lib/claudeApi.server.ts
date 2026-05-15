@@ -1,8 +1,22 @@
 // Server-only helper for Anthropic Claude API.
 // Never import this file from client code.
+//
+// Resilience:
+//  - 25s timeout per attempt via AbortController (Workers cap = 30s)
+//  - Up to 3 retries with exponential backoff (1s, 2s, 4s)
+//  - Retries on 429/500/503/529 + AbortError + low-level network errors
+//  - Honors Anthropic `Retry-After` header on 429
+//  - 401 (AUTH_ERROR) and INVALID_RESPONSE never retried
 
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 const DEFAULT_MODEL = "claude-sonnet-4-20250514";
+
+const CONFIG = {
+  timeoutMs: 25_000,
+  maxRetries: 3,
+  retryDelaysMs: [1_000, 2_000, 4_000],
+  retryableStatusCodes: [429, 500, 503, 529],
+} as const;
 
 interface CallOptions {
   systemPrompt: string;
@@ -10,46 +24,236 @@ interface CallOptions {
   maxTokens?: number;
   jsonMode?: boolean;
   model?: string;
+  /** Identifier used in logs, e.g. 'scoreAttractiveness'. */
+  caller?: string;
 }
 
-export async function callClaude({
-  systemPrompt,
-  userPrompt,
-  maxTokens = 1000,
-  jsonMode = false,
-  model = DEFAULT_MODEL,
-}: CallOptions): Promise<string> {
+export interface ClaudeCallResult {
+  text: string;
+  retries: number;
+  durationMs: number;
+}
+
+export type ClaudeErrorCode =
+  | "TIMEOUT"
+  | "RATE_LIMITED"
+  | "OVERLOADED"
+  | "AUTH_ERROR"
+  | "NETWORK_ERROR"
+  | "MAX_RETRIES_EXCEEDED"
+  | "INVALID_RESPONSE";
+
+export class ClaudeError extends Error {
+  constructor(
+    message: string,
+    public readonly code: ClaudeErrorCode,
+    public readonly statusCode?: number,
+    public readonly retries?: number,
+  ) {
+    super(message);
+    this.name = "ClaudeError";
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function callClaude(options: CallOptions): Promise<string> {
+  const result = await callClaudeWithMetadata(options);
+  return result.text;
+}
+
+export async function callClaudeWithMetadata(
+  options: CallOptions,
+): Promise<ClaudeCallResult> {
+  const {
+    systemPrompt,
+    userPrompt,
+    maxTokens = 1000,
+    jsonMode = false,
+    model = DEFAULT_MODEL,
+    caller = "unknown",
+  } = options;
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY missing");
+  if (!apiKey) {
+    throw new ClaudeError("ANTHROPIC_API_KEY missing", "AUTH_ERROR", 401, 0);
+  }
 
   const system = jsonMode
     ? `${systemPrompt}\n\nRéponds UNIQUEMENT en JSON valide, sans texte avant ni après, sans backticks.`
     : systemPrompt;
 
-  const res = await fetch(CLAUDE_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      system,
-      messages: [{ role: "user", content: userPrompt }],
-    }),
+  const body = JSON.stringify({
+    model,
+    max_tokens: maxTokens,
+    system,
+    messages: [{ role: "user", content: userPrompt }],
   });
 
-  const data = (await res.json()) as {
-    content?: { text?: string }[];
-    error?: { message?: string };
-  };
+  const startTime = Date.now();
+  let lastError: ClaudeError | null = null;
+  let retries = 0;
 
-  if (!res.ok) {
-    throw new Error(data.error?.message ?? `Claude API error ${res.status}`);
+  for (let attempt = 0; attempt <= CONFIG.maxRetries; attempt++) {
+    if (attempt > 0) {
+      const delayMs = CONFIG.retryDelaysMs[attempt - 1] ?? 4_000;
+      console.warn(
+        `[claudeApi] ${caller} — retry ${attempt}/${CONFIG.maxRetries} ` +
+          `après ${delayMs}ms (dernière erreur: ${lastError?.code})`,
+      );
+      await sleep(delayMs);
+      retries++;
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), CONFIG.timeoutMs);
+
+      let response: Response;
+      try {
+        response = await fetch(CLAUDE_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+          },
+          body,
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      // Auth error — never retry
+      if (response.status === 401) {
+        throw new ClaudeError(
+          "Clé API Anthropic invalide ou manquante.",
+          "AUTH_ERROR",
+          401,
+          retries,
+        );
+      }
+
+      // Transient — retry
+      if (
+        (CONFIG.retryableStatusCodes as readonly number[]).includes(
+          response.status,
+        )
+      ) {
+        const errorBody = await response.text().catch(() => "");
+        lastError = new ClaudeError(
+          `Anthropic a retourné ${response.status}. ${errorBody.slice(0, 200)}`,
+          response.status === 429
+            ? "RATE_LIMITED"
+            : response.status === 529
+              ? "OVERLOADED"
+              : "NETWORK_ERROR",
+          response.status,
+          retries,
+        );
+
+        const retryAfter = response.headers.get("retry-after");
+        if (retryAfter && attempt < CONFIG.maxRetries) {
+          const parsed = parseInt(retryAfter, 10);
+          if (!Number.isNaN(parsed)) {
+            const waitMs = Math.min(parsed * 1000, 10_000);
+            console.warn(
+              `[claudeApi] ${caller} — Retry-After: ${retryAfter}s, attente ${waitMs}ms`,
+            );
+            await sleep(waitMs);
+          }
+        }
+        continue;
+      }
+
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => "");
+        throw new ClaudeError(
+          `Anthropic erreur inattendue ${response.status}: ${errorBody.slice(0, 300)}`,
+          "NETWORK_ERROR",
+          response.status,
+          retries,
+        );
+      }
+
+      const data = (await response.json()) as {
+        content?: { text?: string }[];
+      };
+      const rawText = data.content?.[0]?.text;
+
+      if (!rawText || typeof rawText !== "string") {
+        throw new ClaudeError(
+          "Réponse Anthropic vide ou malformée.",
+          "INVALID_RESPONSE",
+          response.status,
+          retries,
+        );
+      }
+
+      const text = jsonMode
+        ? rawText.replace(/```json|```/g, "").trim()
+        : rawText.trim();
+
+      const durationMs = Date.now() - startTime;
+      if (retries > 0) {
+        console.log(
+          `[claudeApi] ${caller} — succès après ${retries} retries, ` +
+            `${durationMs}ms, ${text.length} chars`,
+        );
+      }
+
+      return { text, retries, durationMs };
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        lastError = new ClaudeError(
+          `Timeout Anthropic après ${CONFIG.timeoutMs}ms (${caller})`,
+          "TIMEOUT",
+          undefined,
+          retries,
+        );
+        console.error(
+          `[claudeApi] ${caller} — TIMEOUT après ${CONFIG.timeoutMs}ms`,
+        );
+        if (attempt < CONFIG.maxRetries) continue;
+        throw lastError;
+      }
+
+      if (error instanceof ClaudeError) {
+        if (error.code === "AUTH_ERROR" || error.code === "INVALID_RESPONSE") {
+          throw error;
+        }
+        lastError = error;
+        if (attempt < CONFIG.maxRetries) continue;
+        throw new ClaudeError(
+          `${error.message} (après ${retries} retries)`,
+          "MAX_RETRIES_EXCEEDED",
+          error.statusCode,
+          retries,
+        );
+      }
+
+      const networkError = new ClaudeError(
+        `Erreur réseau vers Anthropic: ${(error as Error).message}`,
+        "NETWORK_ERROR",
+        undefined,
+        retries,
+      );
+      lastError = networkError;
+      if (attempt < CONFIG.maxRetries) continue;
+      throw networkError;
+    }
   }
 
-  const text = data.content?.[0]?.text ?? "";
-  return jsonMode ? text.replace(/```json|```/g, "").trim() : text;
+  throw (
+    lastError ??
+    new ClaudeError(
+      "Nombre maximum de retries dépassé.",
+      "MAX_RETRIES_EXCEEDED",
+      undefined,
+      retries,
+    )
+  );
 }

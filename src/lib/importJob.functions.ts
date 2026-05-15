@@ -180,6 +180,7 @@ Retourne un JSON avec exactement cette structure (null si l'information est abse
     userPrompt,
     maxTokens: 2000,
     jsonMode: true,
+    caller: "importJobPosting",
   });
   try {
     return JSON.parse(raw) as ImportedJobData;

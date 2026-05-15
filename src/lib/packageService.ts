@@ -124,6 +124,25 @@ export async function upsertPackage(
     if (error) throw error;
   }
 
+  await supabase.from("package_benefits").delete().eq("package_id", packageId);
+  if (config.benefitsV2 && config.benefitsV2.length > 0) {
+    const { error } = await supabase.from("package_benefits").insert(
+      config.benefitsV2.map((b, i) => ({
+        package_id: packageId!,
+        benefit_key: b.benefit_key,
+        category: b.category,
+        value_type: b.value_type,
+        monthly_value: b.monthly_value ?? null,
+        annual_value: b.annual_value ?? null,
+        employer_share: b.employer_share ?? null,
+        custom_label: b.custom_label ?? null,
+        custom_note: b.custom_note ?? null,
+        display_order: b.display_order ?? i,
+      })),
+    );
+    if (error) throw error;
+  }
+
   return packageId!;
 }
 

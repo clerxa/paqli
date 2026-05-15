@@ -261,19 +261,6 @@ function PackageView({
               </ChipRow>
             </Field>
 
-            <Field
-              label="Ancienneté envisagée dans l'entreprise"
-              info={hasEquity ? "L'ancienneté impacte la fiscalité de l'equity. Après 3 ans, le taux global passe de 47,2% à 31,4% (règles 2026)." : undefined}
-            >
-              <ChipRow>
-                {SENIORITY_OPTIONS.map((y) => (
-                  <Chip key={y} selected={params.seniority === y} onClick={() => update("seniority", y)}>
-                    {y === 1 ? "1 an" : y >= 3 ? `${y} ans+` : `${y} ans`}
-                  </Chip>
-                ))}
-              </ChipRow>
-            </Field>
-
             {peeDevice && (peeDevice.cap_amount ?? 0) > 0 && (
               <Field
                 label="Votre mise PEE annuelle envisagée"

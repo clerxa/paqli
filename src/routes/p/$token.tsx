@@ -117,8 +117,8 @@ const TABS: { key: TabKey; label: string; highlight?: boolean }[] = [
   { key: "team", label: "Équipe & culture" },
   { key: "package", label: "Package", highlight: true },
   { key: "comparatif", label: "Comparatif" },
-  { key: "questions", label: "Questions" },
-  { key: "next", label: "Next steps" },
+  { key: "questions", label: "Échanger" },
+  { key: "next", label: "Ma décision" },
 ];
 
 function PackageView({
@@ -206,30 +206,106 @@ function PackageView({
     <PageShell>
       {data.counterOffer && <CounterOfferBanner info={data.counterOffer} />}
 
-      {/* Hero */}
+      {/* Hero — Bienvenue */}
       <section
         data-section="hero"
-        className="rounded-2xl p-7 mb-5"
-        style={{ background: "#2D2640" }}
+        className="relative overflow-hidden rounded-2xl p-8 mb-4"
+        style={{
+          background:
+            "radial-gradient(120% 100% at 0% 0%, #3D3458 0%, #2D2640 55%, #1F1A2E 100%)",
+        }}
       >
-        <div className="flex items-center gap-3 mb-3">
-          {org?.logo_url ? (
-            <img src={org.logo_url} alt={org.name} className="w-10 h-10 rounded-xl object-cover" />
-          ) : (
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-display text-lg text-white">
-              {org?.name?.[0] ?? "?"}
-            </div>
-          )}
-          <div>
-            <div className="font-display text-white" style={{ fontSize: 20 }}>
-              {org?.name ?? "—"}
-            </div>
-            <div className="text-[13px]" style={{ color: "#B8AECF" }}>
-              {pkg.title}
+        {/* glow */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full"
+          style={{ background: "radial-gradient(closest-side, rgba(196,168,130,0.35), transparent)" }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-20 -left-20 w-72 h-72 rounded-full"
+          style={{ background: "radial-gradient(closest-side, rgba(139,127,168,0.25), transparent)" }}
+        />
+
+        <div className="relative">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.18em]"
+            style={{ background: "rgba(196,168,130,0.18)", color: "#E8D6B5", border: "0.5px solid rgba(196,168,130,0.35)" }}
+          >
+            <Sparkles size={10} /> Félicitations
+          </div>
+
+          <h1 className="font-display text-white mt-4" style={{ fontSize: 30, lineHeight: 1.1 }}>
+            {data.candidate_name ? `${data.candidate_name}, ` : ""}
+            <span style={{ color: "#E8D6B5" }}>{org?.name ?? "L'équipe"}</span>{" "}
+            vous propose de rejoindre l'aventure.
+          </h1>
+
+          <p className="text-[14px] mt-3 leading-relaxed" style={{ color: "#D6CDE8", maxWidth: 540 }}>
+            Voici votre offre pour le poste de <strong className="text-white">{pkg.title}</strong>.
+            Prenez le temps d'explorer chaque élément — package, équipe,
+            flexibilité — et de simuler votre rémunération. Toutes vos
+            interactions ici restent privées.
+          </p>
+
+          <div className="flex items-center gap-3 mt-6">
+            {org?.logo_url ? (
+              <img src={org.logo_url} alt={org.name} className="w-12 h-12 rounded-xl object-cover ring-1 ring-white/20" />
+            ) : (
+              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center font-display text-xl text-white ring-1 ring-white/20">
+                {org?.name?.[0] ?? "?"}
+              </div>
+            )}
+            <div>
+              <div className="font-display text-white" style={{ fontSize: 16 }}>
+                {org?.name ?? "—"}
+              </div>
+              <div className="text-[12px]" style={{ color: "#B8AECF" }}>
+                {pkg.title}
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Mot personnel de l'équipe */}
+      {pkg.interview_notes && pkg.interview_notes.trim().length > 0 && (
+        <section
+          className="rounded-2xl p-5 mb-4"
+          style={{ background: "#FFFFFF", border: "0.5px solid rgba(196,168,130,0.45)", boxShadow: "0 4px 16px rgba(45,38,64,0.05)" }}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <span style={{ fontSize: 18 }}>💬</span>
+            <div className="text-[11px] uppercase tracking-[0.15em] font-medium" style={{ color: "#7A5417" }}>
+              Un mot de l'équipe {org?.name ? `de ${org.name}` : ""}
+            </div>
+          </div>
+          <p className="text-[14px] text-aubergine leading-relaxed whitespace-pre-line italic">
+            « {pkg.interview_notes} »
+          </p>
+        </section>
+      )}
+
+      {/* Pourquoi Paqli */}
+      <section
+        className="rounded-2xl p-4 mb-5 flex items-start gap-3"
+        style={{ background: "#F5F2FA", border: "0.5px solid rgba(139,127,168,0.25)" }}
+      >
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#2D2640" }}>
+          <Sparkles size={14} className="text-white" />
+        </div>
+        <div className="flex-1">
+          <div className="font-display text-aubergine" style={{ fontSize: 14 }}>
+            Pourquoi {org?.name ?? "l'entreprise"} a choisi Paqli pour vous ?
+          </div>
+          <p className="text-[12px] text-aubergine-light mt-1 leading-relaxed">
+            Une offre, ce n'est pas qu'un salaire. C'est un package complet —
+            equity, épargne, avantages, culture, projet. Paqli rend tout ça
+            transparent et personnalisable, pour que <strong>vous</strong>{" "}
+            puissiez prendre la meilleure décision, en toute clarté.
+          </p>
+        </div>
+      </section>
+
 
       {data.decisionDeadline && (
         <DecisionDeadlineBanner
@@ -479,7 +555,6 @@ function PackageView({
 
       {tab === "next" && (
         <>
-          <ProcessSection pkg={pkg} />
           <div data-section="decision">
             {data.decisionDeadline &&
             new Date(data.decisionDeadline) < new Date() &&

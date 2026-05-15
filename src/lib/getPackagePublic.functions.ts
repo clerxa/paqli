@@ -17,7 +17,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
          status, status_updated_at, decision_deadline,
          packages (
            id, title, gross_salary, variable_target, variable_config, benefits,
-           scenario_message, scenario_display,
+           scenario_message, scenario_display, interview_notes,
            job_summary, missions, stack, contract_type, job_type,
            remote_policy, remote_days, remote_guaranteed, flexible_hours,
            location_city, location_details,
@@ -145,6 +145,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
         benefits: pkg.benefits,
         scenario_message: pkg.scenario_message,
         scenario_display: pkg.scenario_display,
+        interview_notes: pkg.interview_notes ?? null,
         job_summary: pkg.job_summary ?? null,
         missions: Array.isArray(pkg.missions) ? pkg.missions : [],
         stack: pkg.stack ?? [],

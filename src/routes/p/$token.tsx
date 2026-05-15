@@ -1006,6 +1006,11 @@ function ScenarioCard({
     targetValuationM: number;
     horizonYears: number;
     taxRate: number;
+    estimateHighSeniority: number;
+    estimateLowSeniority: number;
+    taxRateHighSeniority: number;
+    taxRateLowSeniority: number;
+    isMultiRate: boolean;
   };
   onView?: () => void;
 }) {
@@ -1020,6 +1025,59 @@ function ScenarioCard({
     realiste: "Réaliste",
     optimiste: "Optimiste",
   };
+  const fmtRate = (r: number) =>
+    `${(r * 100).toFixed(1).replace(".", ",")}%`;
+
+  if (scenario.isMultiRate) {
+    return (
+      <div
+        onMouseEnter={onView}
+        onClick={onView}
+        className="rounded-[12px] p-4 cursor-pointer"
+        style={{ background: p.bg }}
+      >
+        <div
+          className="text-[10px] uppercase tracking-[0.15em] font-medium mb-3"
+          style={{ color: p.fg }}
+        >
+          {labelMap[scenario.label] ?? scenario.label}
+        </div>
+
+        <div className="mb-3">
+          <div className="text-[11px] text-aubergine-light font-light mb-1">
+            Si vous restez ≥ 3 ans
+          </div>
+          <div className="font-display" style={{ fontSize: 22, color: "#2D2640", lineHeight: 1.1 }}>
+            ~{formatEur(scenario.estimateHighSeniority)}
+          </div>
+          <div className="text-[10px] text-grey font-light mt-0.5">
+            après {fmtRate(scenario.taxRateHighSeniority)} de taxes
+          </div>
+        </div>
+
+        <div className="border-t my-3" style={{ borderColor: "rgba(45,38,64,0.08)" }} />
+
+        <div>
+          <div className="text-[11px] text-aubergine-light font-light mb-1">
+            Si vous partez avant 3 ans
+          </div>
+          <div className="font-display" style={{ fontSize: 18, color: "#524970", lineHeight: 1.1 }}>
+            ~{formatEur(scenario.estimateLowSeniority)}
+          </div>
+          <div className="text-[10px] text-grey font-light mt-0.5">
+            après {fmtRate(scenario.taxRateLowSeniority)} de taxes
+          </div>
+        </div>
+
+        <div className="mt-3 pt-3 border-t" style={{ borderColor: "rgba(45,38,64,0.06)" }}>
+          <div className="text-[10px] text-grey font-light">
+            Valor. {scenario.targetValuationM} M€ · Horizon {scenario.horizonYears} ans
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       onMouseEnter={onView}
@@ -1048,7 +1106,7 @@ function ScenarioCard({
       </div>
       <div className="text-[10px] mt-2 text-grey">
         Taux fiscal appliqué :{" "}
-        <strong>{(scenario.taxRate * 100).toFixed(1).replace(".", ",")}%</strong>
+        <strong>{fmtRate(scenario.taxRate)}</strong>
       </div>
     </div>
   );

@@ -1,58 +1,55 @@
-## Prompt 16 — Compte à rebours & date limite de décision
+## Objectif
 
-### 1. Base de données (migration)
-Ajouter à `candidate_links`:
-- `decision_deadline timestamptz`
-- `deadline_notified_48h boolean default false`
-- `deadline_notified_24h boolean default false`
-- `deadline_notified_expired boolean default false`
+Transformer l'étape "Avantages" en moteur de Total Compensation : chaque avantage est traduit en € (ce que le candidat ne sortira pas de sa poche), avec 3 types de valeur (fixe / estimé / qualitatif) et 9 catégories.
 
-### 2. Configurateur — Étape 5
-Modifier `src/components/paqli/configurator/Step5Preview.tsx` :
-- Toggle "Date limite de décision"
-- Chips de délai rapide (3j / 5j / 1 sem / 2 sem / Personnalisé)
-- Sélecteur datetime-local si personnalisé
-- Aperçu formaté en français + note pédagogique
-- État stocké dans `PackageConfigContext` ou local + sauvegardé via `generateCandidateLink`
+## 1. Base de données
 
-Modifier `src/lib/candidateLinks.ts` :
-- `generateCandidateLink` accepte `decisionDeadline?: Date | null`
-- Insère dans `candidate_links.decision_deadline`
+Migration `package_benefits` :
+- Colonnes : `package_id`, `benefit_key`, `category`, `value_type` (fixed/estimated/qualitative), `monthly_value`, `annual_value`, `employer_share`, `custom_label`, `custom_note`, `display_order`
+- RLS : RH gère les avantages de son org via `packages.organization_id`
+- Index sur `(package_id, display_order)`
+- **Conserver** la colonne `packages.benefits` JSONB pour rétrocompatibilité
 
-### 3. Server function publique
-`src/lib/getPackagePublic.functions.ts` :
-- Ajouter `decision_deadline` au select et au retour (`decisionDeadline`)
+## 2. Catalogue (`src/lib/benefitCatalog.ts`)
 
-`src/hooks/useCandidateLink.ts` :
-- Exposer `decisionDeadline` dans `CandidateLinkData`
+- Types `BenefitCategory`, `ValueType`, `BenefitDefinition`
+- `BENEFIT_CATALOG` : 30+ avantages dans 9 catégories (santé, sport, mental, mobilité, food, formation, famille, équipement, financier+)
+- `CATEGORY_LABELS`, `GYMLIB_LEVELS` (4 niveaux)
+- Helpers : `getBenefitDef`, `estimateBenefitValue`, `buildSavingsMessage`
 
-### 4. Vue candidat (`src/routes/p/$token.tsx`)
-- Créer composant `DecisionDeadlineBanner` (et helpers `calcTimeLeft`, `CountdownDisplay`)
-- Afficher en haut, sous le hero
-- Bloc décision remplacé par message d'expiration si deadline passée + statut pending
-- Messagerie reste accessible
+## 3. Configurateur — nouvelle étape `Avantages`
 
-### 5. Dashboard RH
-- Badge deadline dans la liste des liens (page détail package `_app/packages/$id/index.tsx`)
-- Composant `DeadlineManager` : +3j / +7j / supprimer
-- Hook `useDashboard` : ajouter alertes `deadline_urgent` (<24h) et `deadline_expired` (<48h)
-- Mapper ces nouveaux types dans `FollowUpAlertsCard`
+- Insérer entre étape 1 (Fixe) et étape 2 (Equity) → stepper passe à 7 étapes
+- Mettre à jour : `Stepper.tsx`, `Configurator.tsx` (switch case), `packageConfig.ts` (validation + type `benefits: PackageBenefit[]`), `PackageConfigContext.tsx` (load/save vers `package_benefits`)
+- Nouveau composant `StepBenefits.tsx` :
+  - Onglets de catégories
+  - Cards toggleables par avantage (icône, label, message d'économie, valeur annuelle, checkbox)
+  - Saisie de montant pour `inputType: 'amount'`, sélecteur niveaux pour GymLib
+  - Header running total + récap Total Compensation en bas
 
-### 6. Notifications automatiques (TanStack server route)
-**Note** : la stack utilise TanStack server routes, pas Supabase Edge Functions. Créer :
-`src/routes/api/public/hooks/deadline-notifier.ts` :
-- Lit les liens éligibles via `supabaseAdmin`
-- Envoie emails via Lovable Emails / fallback console-log si non configuré
-- Met à jour les flags `deadline_notified_*`
+## 4. Vue candidat — `TotalCompensationBlock`
 
-Cron via `pg_cron` toutes les heures (insert-only SQL via outil supabase insert).
+- Nouveau composant remplaçant l'ancien bloc estimation dans `src/routes/p/$token.tsx`
+- Hero : Total Compensation annuel + équivalent mensuel
+- 4 couches : rémunération directe / épargne salariale / avantages valorisés / qualitatifs (chips)
+- Badge "Ce que vous n'avancez pas", mention "estimé" sur les valeurs approximées
+- Phrase d'impact "+X% équivalent fixe brut"
 
-### 7. Tests build
-Vérifier qu'il n'y a pas d'erreurs TypeScript après les modifs.
+## 5. Moteur de calcul
 
----
+- `calcEngine.functions.ts` : remplacer `benefits_estimate` (ancien calc JSONB) par `calcBenefitsTotal(benefits[])` lisant `package_benefits`
+- Charger `package_benefits` dans la query du link
+- Ajouter `benefits_total` et `benefits_breakdown` au snapshot result
+- `clientCalc.ts` : exposer même logique côté client pour le configurateur preview
 
-### Notes techniques
-- Email infrastructure : si non configurée, on log uniquement et on marque flags. Proposer setup_email_infra à l'utilisateur dans une étape ultérieure.
-- Réinitialiser `deadline_notified_*` à false lors d'une prolongation depuis le dashboard.
-- Alerte type ajoutée à l'union `FollowUpAlert["type"]`.
+## Détails techniques
+
+- RLS via la fonction existante `current_user_org()` (et non sous-requête `profiles`)
+- Ne pas casser `PreviewPanel.tsx` ni `SalaryBreakdown.tsx` existants — ils continuent d'utiliser le total agrégé
+- Migration : ne PAS supprimer la colonne `benefits` JSONB ; la lecture lit en priorité `package_benefits` puis fallback sur l'ancien JSONB si vide
+- Côté `Step5Preview` / vue candidat, le total inclut maintenant `benefitsTotal` du nouveau catalogue
+
+## Hors scope (ce prompt)
+
+- Migration des données existantes du JSONB vers `package_benefits`
+- AI prompts mis à jour pour parler des avantages valorisés (sera un prompt suivant si besoin)

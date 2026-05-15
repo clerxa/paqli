@@ -668,6 +668,59 @@ export type Database = {
         }
         Relationships: []
       }
+      package_benefits: {
+        Row: {
+          annual_value: number | null
+          benefit_key: string
+          category: string
+          created_at: string
+          custom_label: string | null
+          custom_note: string | null
+          display_order: number
+          employer_share: number | null
+          id: string
+          monthly_value: number | null
+          package_id: string
+          value_type: string
+        }
+        Insert: {
+          annual_value?: number | null
+          benefit_key: string
+          category: string
+          created_at?: string
+          custom_label?: string | null
+          custom_note?: string | null
+          display_order?: number
+          employer_share?: number | null
+          id?: string
+          monthly_value?: number | null
+          package_id: string
+          value_type?: string
+        }
+        Update: {
+          annual_value?: number | null
+          benefit_key?: string
+          category?: string
+          created_at?: string
+          custom_label?: string | null
+          custom_note?: string | null
+          display_order?: number
+          employer_share?: number | null
+          id?: string
+          monthly_value?: number | null
+          package_id?: string
+          value_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_benefits_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       packages: {
         Row: {
           attractiveness_computed: string | null

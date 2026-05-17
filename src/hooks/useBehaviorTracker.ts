@@ -48,10 +48,22 @@ async function trackFetch(payload: TrackPayload) {
   }
 }
 
-export function useBehaviorTracker(token: string) {
+export interface BehaviorTrackerCallbacks {
+  onSectionView?: (sectionId: string) => void;
+  onSectionTime?: (sectionId: string, durationS: number) => void;
+}
+
+export function useBehaviorTracker(
+  token: string,
+  callbacks?: BehaviorTrackerCallbacks,
+) {
   const pageStartTime = useRef(Date.now());
   const sectionStartTimes = useRef<Record<string, number>>({});
   const tracked = useRef<Set<string>>(new Set());
+  const callbacksRef = useRef(callbacks);
+  useEffect(() => {
+    callbacksRef.current = callbacks;
+  }, [callbacks]);
 
   const track = useCallback(
     (eventType: EventType, extra: Omit<TrackPayload, "token" | "eventType"> = {}) => {
@@ -92,11 +104,13 @@ export function useBehaviorTracker(token: string) {
     (sectionId: string) => {
       if (tracked.current.has(`section_${sectionId}`)) {
         sectionStartTimes.current[sectionId] = Date.now();
+        callbacksRef.current?.onSectionView?.(sectionId);
         return;
       }
       tracked.current.add(`section_${sectionId}`);
       sectionStartTimes.current[sectionId] = Date.now();
       track("section_view", { section: sectionId });
+      callbacksRef.current?.onSectionView?.(sectionId);
     },
     [track],
   );
@@ -109,6 +123,7 @@ export function useBehaviorTracker(token: string) {
       delete sectionStartTimes.current[sectionId];
       if (durationS < 2) return;
       track("section_time", { section: sectionId, durationS });
+      callbacksRef.current?.onSectionTime?.(sectionId, durationS);
     },
     [track],
   );

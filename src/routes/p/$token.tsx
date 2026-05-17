@@ -21,6 +21,11 @@ import { askCandidateAssistant } from "@/lib/candidateAssistant.functions";
 import { trackLink } from "@/lib/trackLink.functions";
 import { useBehaviorTracker } from "@/hooks/useBehaviorTracker";
 import {
+  useProactiveAssistant,
+  type ProactiveSuggestion,
+} from "@/hooks/useProactiveAssistant";
+import { ProactiveSuggestionBubble } from "@/components/paqli/candidate/ProactiveSuggestionBubble";
+import {
   DecisionBlock,
   CandidateMessagingBlock,
 } from "@/components/paqli/candidate/DecisionBlocks";
@@ -139,7 +144,37 @@ function PackageView({
   const org = pkg.organizations;
 
   const track = useServerFn(trackLink);
-  const behavior = useBehaviorTracker(data.token);
+
+  const [proactiveSuggestion, setProactiveSuggestion] =
+    useState<ProactiveSuggestion | null>(null);
+  const [assistantHasMessages, setAssistantHasMessages] = useState(false);
+  const simulationChangeCount = useRef(0);
+
+  const proactive = useProactiveAssistant({
+    pkg: data.packages,
+    orgName: data.packages.organizations?.name ?? "l'entreprise",
+    firstName: data.candidate_name?.split(/\s+/)[0] ?? null,
+    decisionDeadline: data.decisionDeadline ?? null,
+    offerStatus: data.offerStatus,
+    hasMessages: assistantHasMessages,
+    onSuggest: setProactiveSuggestion,
+  });
+
+  const behavior = useBehaviorTracker(data.token, {
+    onSectionTime: (sectionId, durationS) => {
+      if (sectionId === "equity_scenarios" || sectionId === "simulation" || sectionId === "equity") {
+        proactive.onEquitySectionTime(durationS);
+      }
+      if (sectionId === "benefits" || sectionId === "epargne" || sectionId === "avantages") {
+        proactive.onBenefitsSectionTime(durationS);
+      }
+    },
+    onSectionView: (sectionId) => {
+      if (sectionId === "decision" || sectionId === "tab_next") {
+        proactive.onDecisionSectionView();
+      }
+    },
+  });
   const trackEvent = (
     eventType: "simulated" | "question" | "rdv_click",
     metadata?: Record<string, unknown>,
@@ -261,6 +296,8 @@ function PackageView({
     setParams((p) => ({ ...p, [key]: value }));
     scheduleTrack(key, value);
     behavior.trackSimulationChange(key, value as string | number | boolean);
+    simulationChangeCount.current += 1;
+    proactive.onSimulationChanges(simulationChangeCount.current);
   }
 
   const estimate = useMemo(() => calcPackageEstimate(pkg, params), [pkg, params]);
@@ -673,6 +710,9 @@ function PackageView({
               candidateName={data.candidate_name}
               hasSimulated={!!data.simulated_at}
               returnVisits={data.return_visits ?? 0}
+              proactiveSuggestion={proactiveSuggestion}
+              onClearProactiveSuggestion={() => setProactiveSuggestion(null)}
+              onAssistantUserMessage={() => setAssistantHasMessages(true)}
             />
           </div>
           <SectionTitle className="mt-6">Échangez avec l'équipe</SectionTitle>
@@ -1520,6 +1560,9 @@ function Assistant({
   candidateName,
   hasSimulated,
   returnVisits,
+  proactiveSuggestion,
+  onClearProactiveSuggestion,
+  onAssistantUserMessage,
 }: {
   token: string;
   pkg: PackageData;
@@ -1527,6 +1570,9 @@ function Assistant({
   candidateName: string | null;
   hasSimulated: boolean;
   returnVisits: number;
+  proactiveSuggestion?: ProactiveSuggestion | null;
+  onClearProactiveSuggestion?: () => void;
+  onAssistantUserMessage?: () => void;
 }) {
   const [messages, setMessages] = useState<
     Array<{ role: "user" | "assistant"; content: string }>
@@ -1545,6 +1591,21 @@ function Assistant({
   const welcomeMessage = buildAssistantWelcomeMessage(firstName, orgName, hasEquity);
   const placeholder = buildAssistantPlaceholder(firstName, hasSimulated, returnVisits);
 
+  // Hide suggestion as soon as user starts typing
+  useEffect(() => {
+    if (input.trim().length > 0 && proactiveSuggestion) {
+      onClearProactiveSuggestion?.();
+    }
+  }, [input, proactiveSuggestion, onClearProactiveSuggestion]);
+
+  function handleAcceptSuggestion(question: string) {
+    setInput(question);
+    onClearProactiveSuggestion?.();
+    setTimeout(() => {
+      document.getElementById("candidate-assistant-input")?.focus();
+    }, 0);
+  }
+
   async function send() {
     const q = input.trim();
     if (!q || loading) return;
@@ -1552,6 +1613,7 @@ function Assistant({
     const next = [...messages, { role: "user" as const, content: q }];
     setMessages(next);
     setLoading(true);
+    onAssistantUserMessage?.();
     void track({ data: { token, eventType: "question", metadata: { question: q.slice(0, 100) } } }).catch(() => {});
 
     try {
@@ -1710,10 +1772,17 @@ function Assistant({
           contacter directement l'équipe RH.
         </div>
       )}
+      <ProactiveSuggestionBubble
+        suggestion={proactiveSuggestion ?? null}
+        onAccept={handleAcceptSuggestion}
+        onDismiss={() => onClearProactiveSuggestion?.()}
+      />
       <div className="flex items-end gap-2">
         <textarea
+          id="candidate-assistant-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onFocus={() => onClearProactiveSuggestion?.()}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();

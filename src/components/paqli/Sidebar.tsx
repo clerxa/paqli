@@ -30,7 +30,7 @@ interface NavItem {
 const main: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/jobs", label: "Offres d'emploi", icon: Briefcase },
-  { to: "/packages", label: "Packages", icon: Package, badge: 4 },
+  { to: "/packages", label: "Packages", icon: Package },
   { to: "/candidates", label: "Candidats", icon: Users },
 ];
 

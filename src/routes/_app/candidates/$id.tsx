@@ -9,6 +9,7 @@ import { EngagementBadge } from "@/components/paqli/EngagementBadge";
 import { BehaviorView } from "@/components/paqli/BehaviorView";
 import { LinkActivityPanel } from "@/components/paqli/LinkActivityPanel";
 import { AiConversationPanel } from "@/components/paqli/AiConversationPanel";
+import { CandidateAlertsCard } from "@/components/paqli/CandidateAlertsCard";
 import { CounterOfferModal, type CounterOfferOriginal } from "@/components/paqli/CounterOfferModal";
 import { OfferLetterModal } from "@/components/paqli/OfferLetterModal";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
@@ -324,6 +325,9 @@ function CandidateDetail() {
             <CurrentPackageRecap data={link.candidate_current_package} />
           </Card>
         )}
+
+        {/* Suggestions IA de relance basées sur les signaux candidat */}
+        <CandidateAlertsCard linkId={link.id} />
 
         {/* Conversations IA candidat ↔ assistant */}
 

@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   X,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "./Logo";
@@ -18,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMobileNav } from "./MobileNav";
 import { useLinkQuota } from "@/hooks/useLinkQuota";
 import { useSidebarCounts } from "@/hooks/useSidebarCounts";
+import { useHrAlerts } from "@/hooks/useHrAlerts";
 
 interface NavItem {
   to?: string;
@@ -29,6 +31,7 @@ interface NavItem {
 
 const main: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/alerts", label: "Alertes", icon: Bell },
   { to: "/jobs", label: "Offres d'emploi", icon: Briefcase },
   { to: "/packages", label: "Packages", icon: Package },
   { to: "/candidates", label: "Candidats", icon: Users },
@@ -152,10 +155,12 @@ export function Sidebar() {
   const navigate = useNavigate();
   const { open, setOpen } = useMobileNav();
   const counts = useSidebarCounts();
+  const { unreadCount: alertsUnread } = useHrAlerts();
   const badgeByRoute: Record<string, number> = {
     "/jobs": counts.jobs,
     "/packages": counts.packages,
     "/candidates": counts.candidates,
+    "/alerts": alertsUnread,
   };
 
   // Auto-close drawer on route change (mobile)

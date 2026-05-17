@@ -65,6 +65,13 @@ const ALERT_CONFIG: Record<
     textColor: "#9B97A0",
     primaryBtnClass: "bg-[#F0EBE8] text-[#524970] hover:bg-[#E8E0DA]",
   },
+  thinking_stalled: {
+    icon: "💭",
+    containerClass: "bg-[#F5F2FA] border-[rgba(139,127,168,0.2)]",
+    barClass: "bg-[#8B7FA8]",
+    textColor: "#6B5F88",
+    primaryBtnClass: "bg-[#2D2640] text-white hover:bg-[#3D3554]",
+  },
 };
 
 export function ActionAlertsSection({ organizationId, onAction }: Props) {

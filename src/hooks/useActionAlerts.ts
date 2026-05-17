@@ -8,7 +8,8 @@ export type ActionAlertType =
   | "hot_candidate_silent"
   | "sim_no_response"
   | "not_opened_72h"
-  | "package_score_low";
+  | "package_score_low"
+  | "thinking_stalled";
 
 export interface ActionAlert {
   id: string;
@@ -38,7 +39,7 @@ export function useActionAlerts(organizationId: string | undefined) {
       .from("candidate_links")
       .select(
         `id, token, status, candidate_name, decision_deadline,
-         opened_at, simulated_at, created_at,
+         opened_at, simulated_at, created_at, thinking_at,
          engagement_score, engagement_label, intent_prediction,
          packages (id, title, attractiveness_score),
          link_events (event_type, created_at)`,
@@ -106,6 +107,29 @@ export function useActionAlerts(organizationId: string | undefined) {
             },
             ctaSecondary: { label: "Voir le motif", action: "view_candidate" },
             createdAt: at,
+          });
+        }
+        continue;
+      }
+
+      // P2 — thinking stalled > 48h
+      if (link.status === "thinking") {
+        const hThinking = link.thinking_at
+          ? (now.getTime() - new Date(link.thinking_at).getTime()) / 3600000
+          : 0;
+        if (hThinking >= 48) {
+          out.push({
+            id: link.id,
+            type: "thinking_stalled",
+            priority: 2,
+            candidateName: candName,
+            packageTitle: pkgTitle,
+            packageId: pkg?.id ?? "",
+            linkId: link.id,
+            message: `En réflexion depuis ${Math.max(1, Math.round(hThinking / 24))} jour(s) — relancer ?`,
+            ctaPrimary: { label: "✨ Message IA", action: "ai_message" },
+            ctaSecondary: { label: "Voir le profil", action: "view_candidate" },
+            createdAt: link.thinking_at ? new Date(link.thinking_at) : now,
           });
         }
         continue;

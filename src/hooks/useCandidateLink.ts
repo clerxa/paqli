@@ -31,6 +31,8 @@ export interface CandidateLinkData {
   offerStatus: string;
   statusUpdatedAt: string | null;
   decisionDeadline: string | null;
+  thinkingNote: string | null;
+  thinkingAt: string | null;
   counterOffer: CounterOfferInfo | null;
   messages: PublicMessage[];
   packages: PackageData;
@@ -71,6 +73,8 @@ export function useCandidateLink(token: string) {
           offerStatus: ok.offerStatus,
           statusUpdatedAt: ok.statusUpdatedAt,
           decisionDeadline: (ok as any).decisionDeadline ?? null,
+          thinkingNote: (ok as any).thinkingNote ?? null,
+          thinkingAt: (ok as any).thinkingAt ?? null,
           counterOffer: (ok as any).counterOffer ?? null,
           messages: ok.messages,
           packages: ok.package as unknown as PackageData,

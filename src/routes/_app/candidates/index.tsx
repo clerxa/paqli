@@ -29,11 +29,12 @@ interface Row {
   packages: { title: string } | null;
 }
 
-type Filter = "all" | "pending" | "accepted" | "declined";
+type Filter = "all" | "pending" | "thinking" | "accepted" | "declined";
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: "all", label: "Tous" },
   { value: "pending", label: "En attente" },
+  { value: "thinking", label: "En réflexion" },
   { value: "accepted", label: "Acceptés" },
   { value: "declined", label: "Déclinés" },
 ];
@@ -200,6 +201,7 @@ function DecisionBadge({ status }: { status: string }) {
   const styles: Record<string, { bg: string; fg: string; label: string }> = {
     accepted: { bg: "#EAF3DE", fg: "#27500A", label: "● Accepté" },
     declined: { bg: "#FCEBEB", fg: "#A32D2D", label: "● Décliné" },
+    thinking: { bg: "#F5F2FA", fg: "#6B5F88", label: "💭 En réflexion" },
     pending: { bg: "#F0EBE8", fg: "#9B97A0", label: "○ En attente" },
   };
   const s = styles[status] ?? styles.pending;

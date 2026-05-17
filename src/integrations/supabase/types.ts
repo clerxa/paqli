@@ -177,6 +177,8 @@ export type Database = {
           simulated_at: string | null
           status: string
           status_updated_at: string | null
+          thinking_at: string | null
+          thinking_note: string | null
           time_on_page_total: number
           token: string
         }
@@ -210,6 +212,8 @@ export type Database = {
           simulated_at?: string | null
           status?: string
           status_updated_at?: string | null
+          thinking_at?: string | null
+          thinking_note?: string | null
           time_on_page_total?: number
           token?: string
         }
@@ -243,6 +247,8 @@ export type Database = {
           simulated_at?: string | null
           status?: string
           status_updated_at?: string | null
+          thinking_at?: string | null
+          thinking_note?: string | null
           time_on_page_total?: number
           token?: string
         }

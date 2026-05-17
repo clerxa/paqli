@@ -36,6 +36,10 @@ const EVENT_CONFIG: Record<
     color: "#C4A882",
     label: () => "Décision modifiée",
   },
+  status_thinking: {
+    color: "#8B7FA8",
+    label: () => "💭 A signalé son intérêt — en réflexion",
+  },
 };
 
 export function LinkActivityPanel({

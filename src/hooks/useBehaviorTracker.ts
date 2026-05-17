@@ -48,10 +48,22 @@ async function trackFetch(payload: TrackPayload) {
   }
 }
 
-export function useBehaviorTracker(token: string) {
+export interface BehaviorTrackerCallbacks {
+  onSectionView?: (sectionId: string) => void;
+  onSectionTime?: (sectionId: string, durationS: number) => void;
+}
+
+export function useBehaviorTracker(
+  token: string,
+  callbacks?: BehaviorTrackerCallbacks,
+) {
   const pageStartTime = useRef(Date.now());
   const sectionStartTimes = useRef<Record<string, number>>({});
   const tracked = useRef<Set<string>>(new Set());
+  const callbacksRef = useRef(callbacks);
+  useEffect(() => {
+    callbacksRef.current = callbacks;
+  }, [callbacks]);
 
   const track = useCallback(
     (eventType: EventType, extra: Omit<TrackPayload, "token" | "eventType"> = {}) => {

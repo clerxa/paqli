@@ -18,11 +18,23 @@ import { Step4Scenarios } from "./Step4Scenarios";
 import { Step5Preview } from "./Step5Preview";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { validateScenarios, validateStep } from "@/lib/packageConfig";
+import { useAuth } from "@/hooks/useAuth";
+import { ConfiguratorPreviewPanel } from "./ConfiguratorPreviewPanel";
+import { Eye } from "lucide-react";
 
 export function Configurator() {
   const { config, setConfig, saveDraft, saveState } = usePackageConfig();
+  const { organization } = useAuth();
   const navigate = useNavigate();
   const [maxReached, setMaxReached] = useState(config.currentStep);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const previewLabel =
+    config.status === "active"
+      ? "Voir comme candidat"
+      : config.currentStep === 0 && !config.title
+        ? "Prévisualisation partielle"
+        : "Prévisualiser";
 
   const setStep = (n: number) =>
     setConfig((prev) => ({ ...prev, currentStep: n }));

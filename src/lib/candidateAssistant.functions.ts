@@ -217,5 +217,18 @@ export const askCandidateAssistant = createServerFn({ method: "POST" })
     const json = await res.json();
     const answer: string =
       json?.choices?.[0]?.message?.content ?? "Désolé, aucune réponse générée.";
+
+    // Persist Q&A so recruiters can review the candidate's AI conversation
+    const lastUserMessage = [...data.messages]
+      .reverse()
+      .find((m) => m.role === "user");
+    if (lastUserMessage) {
+      await supabaseAdmin.from("ai_conversations").insert({
+        link_id: link.id,
+        question: lastUserMessage.content.slice(0, 4000),
+        answer: answer.slice(0, 8000),
+      });
+    }
+
     return { answer, error: null };
   });

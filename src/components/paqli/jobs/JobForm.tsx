@@ -10,7 +10,6 @@ import type {
   ContractType,
   GrowthPath,
   ManagerStyle,
-  ProcessStep,
   RemotePolicy,
 } from "@/lib/packageConfig";
 

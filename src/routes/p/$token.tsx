@@ -2008,6 +2008,9 @@ function DecisionDeadlineBanner({
     );
   }
 
+  // Banner only appears when deadline is within 72h (per spec)
+  if (timeLeft.total >= 72 * 3_600_000) return null;
+
   const deadlineFr = new Date(deadline).toLocaleDateString("fr-FR", {
     weekday: "long",
     day: "numeric",

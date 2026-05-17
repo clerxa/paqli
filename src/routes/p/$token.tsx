@@ -781,6 +781,20 @@ function PackageView({
         candidateName={data.candidate_name}
       />
       </div>
+      <MobileFloatingCTA
+        offerStatus={data.offerStatus}
+        revealed={revealed}
+        onAccept={() => {
+          const el = document.querySelector('[data-section="decision"]') as HTMLElement | null;
+          el?.scrollIntoView({ behavior: "smooth", block: "start" });
+          setTimeout(() => window.dispatchEvent(new CustomEvent("paqli:open-accept")), 350);
+        }}
+        onThinking={() => {
+          const el = document.querySelector('[data-section="decision"]') as HTMLElement | null;
+          el?.scrollIntoView({ behavior: "smooth", block: "start" });
+          setTimeout(() => window.dispatchEvent(new CustomEvent("paqli:open-thinking")), 350);
+        }}
+      />
     </PageShell>
   );
 }

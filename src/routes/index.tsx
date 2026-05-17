@@ -64,17 +64,17 @@ function useTilt<T extends HTMLElement>(intensity = 5) {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Paqli — Le package qui se comprend du premier coup" },
+      { title: "Paqli — L'espace candidat qui valorise toute votre offre" },
       {
         name: "description",
         content:
-          "Paqli est la plateforme de Total Compensation pour les recruteurs tech. Simulateur fiscal, suivi IA, promesse d'embauche — augmentez votre taux de closing de 25%.",
+          "Paqli crée un espace dédié à chaque candidat : l'offre, l'entreprise, l'équipe, les avantages et le package — interactifs. Augmentez votre taux de closing de 25%.",
       },
-      { property: "og:title", content: "Paqli — Le package qui se comprend du premier coup" },
+      { property: "og:title", content: "Paqli — L'espace candidat qui valorise toute votre offre" },
       {
         property: "og:description",
         content:
-          "Transformez chaque offre en conversation transparente. Utilisé par 50+ équipes RH tech.",
+          "Bien plus qu'un package : un espace dédié avec l'offre, l'entreprise, l'équipe et les avantages. Utilisé par 50+ équipes RH tech.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://paqli.fr" },
@@ -267,14 +267,14 @@ function Hero({ onDemo }: { onDemo: () => void }) {
       <div className="relative max-w-6xl mx-auto grid md:grid-cols-[55%_45%] gap-12 items-center">
         <div className="scroll-reveal revealed">
           <span className="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium text-[#8B7FA8] bg-[rgba(139,127,168,0.12)] border border-[rgba(139,127,168,0.2)] backdrop-blur-sm animate-paqli-slide-up" style={{ animationDelay: "0ms" }}>
-            ✨ Nouveau — La Total Compensation enfin visible
+            ✨ Nouveau — L'espace candidat tout-en-un
           </span>
           <h1 className="mt-5 font-display text-[#2D2640] leading-[1.05] animate-paqli-slide-up" style={{ fontSize: "clamp(36px, 5vw, 62px)", animationDelay: "100ms" }}>
-            Le package qui se comprend <span className="text-aurora">du premier coup.</span>
+            Bien plus qu'un package. <span className="text-aurora">Un espace dédié.</span>
           </h1>
           <p className="mt-5 font-light text-[#524970] leading-relaxed animate-paqli-slide-up" style={{ fontSize: "clamp(16px, 1.5vw, 19px)", animationDelay: "200ms" }}>
-            Transformez chaque offre en conversation transparente.
-            Simulateur fiscal, Total Compensation, suivi IA — votre candidat décide.
+            Chaque candidat reçoit son espace personnalisé : l'offre, l'entreprise, l'équipe,
+            les avantages et le package — interactifs, transparents, à explorer à son rythme.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3 animate-paqli-slide-up" style={{ animationDelay: "300ms" }}>
@@ -364,9 +364,9 @@ function ProblemSection() {
         <h2 className="mt-4 font-display text-[#2D2640]" style={{ fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.15 }}>
           1 offre sur 3 est déclinée au closing.
           <br />
-          <span className="text-[#8B7FA8]">Pas parce que le package est mauvais.</span>
+          <span className="text-[#8B7FA8]">Pas parce que l'offre est mauvaise.</span>
           <br />
-          Parce qu'il est mal valorisé.
+          Parce qu'elle est mal valorisée.
         </h2>
         <div className="mt-6 inline-block px-5 py-3 rounded-2xl bg-white border border-[rgba(45,38,64,0.08)]">
           <span className="font-display text-[28px] text-[#C4A882]">15 000 – 50 000 €</span>
@@ -398,15 +398,15 @@ function SolutionSection() {
   const [view, setView] = useState<"entreprise" | "candidat">("entreprise");
 
   const parcoursEntreprise = [
-    { n: 1, icon: "⚙️", title: "Vous configurez", desc: "Un package complet en 5 minutes" },
-    { n: 2, icon: "🔗", title: "Vous partagez", desc: "Un lien unique et sécurisé" },
+    { n: 1, icon: "⚙️", title: "Vous configurez", desc: "L'offre, l'équipe, les avantages, le package" },
+    { n: 2, icon: "🔗", title: "Vous partagez", desc: "Un espace candidat unique et sécurisé" },
     { n: 3, icon: "📊", title: "Vous suivez", desc: "Les signaux IA en temps réel" },
     { n: 4, icon: "✅", title: "Vous closez", desc: "Avec une promesse d'embauche signée" },
   ];
   const parcoursCandidat = [
-    { n: 1, icon: "📩", title: "Il reçoit", desc: "Un lien personnalisé sur mobile" },
-    { n: 2, icon: "🧮", title: "Il explore", desc: "Sa Total Comp en interactif" },
-    { n: 3, icon: "💬", title: "Il échange", desc: "Ses questions, en direct" },
+    { n: 1, icon: "📩", title: "Il reçoit", desc: "Son espace dédié, sur mobile" },
+    { n: 2, icon: "🧭", title: "Il découvre", desc: "L'entreprise, l'équipe, le poste" },
+    { n: 3, icon: "🧮", title: "Il explore", desc: "Le package et ses avantages en interactif" },
     { n: 4, icon: "🤝", title: "Il accepte", desc: "En toute confiance" },
   ];
 
@@ -493,7 +493,7 @@ function ProductSection() {
     {
       id: "config",
       label: "RH — Configurateur",
-      desc: "Package complet en 5 minutes. Score d'attractivité IA instantané.",
+      desc: "Espace candidat complet en 5 minutes : offre, équipe, avantages, package. Score IA instantané.",
       mockup: (
         <div className="p-6 bg-white rounded-xl border border-[rgba(45,38,64,0.08)]">
           <div className="flex items-center justify-between">
@@ -782,7 +782,7 @@ function PricingSection({ onDemo }: { onDemo: () => void }) {
     { name: "Scale", price: "Sur devis", credits: "Volume négocié · SLA dédié · Onboarding", cta: "Nous contacter", featured: false },
   ];
   const faqs = [
-    { q: "Qu'est-ce qu'un lien candidat ?", a: "Un lien unique partagé avec un candidat qui contient son package, son simulateur et son espace d'échange. Chaque lien est valable jusqu'à décision." },
+    { q: "Qu'est-ce qu'un espace candidat ?", a: "Un espace dédié, accessible via un lien unique, qui regroupe tout ce dont votre candidat a besoin : l'offre, l'entreprise, l'équipe, les avantages, le package interactif et un espace d'échange. Valable jusqu'à décision." },
     { q: "Y a-t-il un engagement ?", a: "Non. Vous achetez des crédits que vous consommez à votre rythme. Aucune mensualité, aucune durée minimale." },
     { q: "Puis-je changer de plan ?", a: "Oui, à tout moment. Vos crédits restants sont conservés." },
     { q: "Comment fonctionne le setup fee ?", a: "Le setup fee couvre l'onboarding, la personnalisation de vos templates et l'import de vos avantages. C'est un paiement unique." },

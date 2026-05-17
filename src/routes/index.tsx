@@ -267,7 +267,7 @@ function Hero({ onDemo }: { onDemo: () => void }) {
       <div className="relative max-w-6xl mx-auto grid md:grid-cols-[55%_45%] gap-12 items-center">
         <div className="scroll-reveal revealed">
           <span className="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium text-[#8B7FA8] bg-[rgba(139,127,168,0.12)] border border-[rgba(139,127,168,0.2)] backdrop-blur-sm animate-paqli-slide-up" style={{ animationDelay: "0ms" }}>
-            ✨ Nouveau — Total Compensation à la française
+            ✨ Nouveau — La Total Compensation enfin visible
           </span>
           <h1 className="mt-5 font-display text-[#2D2640] leading-[1.05] animate-paqli-slide-up" style={{ fontSize: "clamp(36px, 5vw, 62px)", animationDelay: "100ms" }}>
             Le package qui se comprend <span className="text-aurora">du premier coup.</span>
@@ -395,50 +395,85 @@ function ProblemSection() {
 /* Solution                                           */
 /* -------------------------------------------------- */
 function SolutionSection() {
-  const steps = [
+  const parcoursEntreprise = [
     { n: 1, icon: "⚙️", title: "Configurer", desc: "Package en 5 min" },
-    { n: 2, icon: "🔗", title: "Partager", desc: "Lien unique" },
-    { n: 3, icon: "🧮", title: "Simuler", desc: "Total Comp interactive" },
-    { n: 4, icon: "📊", title: "Suivre", desc: "Signaux IA temps réel" },
-    { n: 5, icon: "✅", title: "Closer", desc: "Promesse d'embauche" },
+    { n: 2, icon: "🔗", title: "Partager", desc: "Lien unique sécurisé" },
+    { n: 3, icon: "📊", title: "Suivre", desc: "Signaux IA temps réel" },
+    { n: 4, icon: "✅", title: "Closer", desc: "Promesse d'embauche" },
   ];
+  const parcoursCandidat = [
+    { n: 1, icon: "📩", title: "Recevoir", desc: "Lien personnalisé" },
+    { n: 2, icon: "🧮", title: "Explorer", desc: "Total Comp interactive" },
+    { n: 3, icon: "💬", title: "Discuter", desc: "Questions en direct" },
+    { n: 4, icon: "🤝", title: "Accepter", desc: "En toute confiance" },
+  ];
+
+  const Track = ({
+    label,
+    steps,
+    accent,
+  }: {
+    label: string;
+    steps: { n: number; icon: string; title: string; desc: string }[];
+    accent: string;
+  }) => (
+    <div className="relative">
+      <div className="flex items-center gap-3 mb-6">
+        <span className="inline-block px-3 py-1 rounded-full text-[11px] font-medium tracking-wider uppercase" style={{ background: `${accent}1F`, color: accent, border: `1px solid ${accent}40` }}>
+          {label}
+        </span>
+        <div className="flex-1 h-px bg-[rgba(255,255,255,0.1)]" />
+      </div>
+
+      <div className="hidden md:flex items-start justify-between relative">
+        <div className="absolute top-7 left-[6%] right-[6%] h-px bg-[rgba(255,255,255,0.15)]" />
+        {steps.map((s) => (
+          <div key={s.n} className="relative flex-1 text-center">
+            <div className="mx-auto w-14 h-14 rounded-full bg-[#3D3554] border border-[rgba(255,255,255,0.15)] flex items-center justify-center text-2xl relative z-10">
+              {s.icon}
+            </div>
+            <div className="mt-3 text-[12px] font-medium" style={{ color: accent }}>ÉTAPE {s.n}</div>
+            <div className="mt-1 font-display text-[18px]">{s.title}</div>
+            <div className="text-[12px] text-[#B8AECF] font-light">{s.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="md:hidden space-y-3 text-left">
+        {steps.map((s) => (
+          <div key={s.n} className="flex items-center gap-4 p-4 bg-[#3D3554] rounded-xl">
+            <div className="w-10 h-10 rounded-full bg-[#2D2640] flex items-center justify-center text-xl">{s.icon}</div>
+            <div>
+              <div className="text-[11px] font-medium" style={{ color: accent }}>ÉTAPE {s.n}</div>
+              <div className="font-display text-[17px]">{s.title}</div>
+              <div className="text-[12px] text-[#B8AECF] font-light">{s.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <section className="relative py-20 md:py-28 bg-[#2D2640] px-5 text-white scroll-reveal overflow-hidden">
       <div className="orb orb-1 top-10 -left-32 w-[400px] h-[400px]" style={{ background: "radial-gradient(circle, rgba(139,127,168,0.35), transparent 70%)" }} />
       <div className="orb orb-2 -bottom-20 -right-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.25), transparent 70%)" }} />
-      <div className="relative max-w-5xl mx-auto text-center">
-        <Tag dark>La solution Paqli</Tag>
-        <h2 className="mt-4 font-display leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
-          Une conversation transparente,
-          <br />
-          <span className="text-[#C4A882]">pas un PDF.</span>
-        </h2>
-
-        <div className="mt-14 hidden md:flex items-start justify-between relative">
-          <div className="absolute top-7 left-[8%] right-[8%] h-px bg-[rgba(255,255,255,0.15)]" />
-          {steps.map((s) => (
-            <div key={s.n} className="relative flex-1 text-center">
-              <div className="mx-auto w-14 h-14 rounded-full bg-[#3D3554] border border-[rgba(255,255,255,0.15)] flex items-center justify-center text-2xl relative z-10">
-                {s.icon}
-              </div>
-              <div className="mt-3 text-[12px] text-[#C4A882] font-medium">ÉTAPE {s.n}</div>
-              <div className="mt-1 font-display text-[18px]">{s.title}</div>
-              <div className="text-[12px] text-[#B8AECF] font-light">{s.desc}</div>
-            </div>
-          ))}
+      <div className="relative max-w-5xl mx-auto">
+        <div className="text-center">
+          <Tag dark>La solution Paqli</Tag>
+          <h2 className="mt-4 font-display leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
+            Une conversation transparente,
+            <br />
+            <span className="text-[#C4A882]">pas un PDF.</span>
+          </h2>
+          <p className="mt-5 text-[15px] text-[#B8AECF] font-light max-w-2xl mx-auto">
+            Deux parcours synchronisés. Un seul lien. Zéro friction.
+          </p>
         </div>
 
-        <div className="md:hidden mt-10 space-y-3 text-left">
-          {steps.map((s) => (
-            <div key={s.n} className="flex items-center gap-4 p-4 bg-[#3D3554] rounded-xl">
-              <div className="w-10 h-10 rounded-full bg-[#2D2640] flex items-center justify-center text-xl">{s.icon}</div>
-              <div>
-                <div className="text-[11px] text-[#C4A882] font-medium">ÉTAPE {s.n}</div>
-                <div className="font-display text-[17px]">{s.title}</div>
-                <div className="text-[12px] text-[#B8AECF] font-light">{s.desc}</div>
-              </div>
-            </div>
-          ))}
+        <div className="mt-14 space-y-14">
+          <Track label="Parcours Entreprise" steps={parcoursEntreprise} accent="#C4A882" />
+          <Track label="Parcours Candidat" steps={parcoursCandidat} accent="#8B7FA8" />
         </div>
       </div>
     </section>
@@ -577,9 +612,9 @@ function TotalCompSection() {
         <div className="text-center">
           <Tag dark>Différenciateur</Tag>
           <h2 className="mt-4 font-display leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
-            La Total Compensation à la française.
+            La Total Compensation
             <br />
-            <span className="text-[#C4A882]">Enfin visible.</span>
+            <span className="text-[#C4A882]">enfin visible.</span>
           </h2>
         </div>
 
@@ -914,7 +949,7 @@ function Footer() {
           <div className="font-display text-[24px] text-[#2D2640]">paqli</div>
           <div className="text-[12px] text-[#9B97A0] mt-1">paqli.fr</div>
           <p className="mt-3 text-[13px] text-[#524970] font-light leading-relaxed">
-            La Total Compensation à la française.
+            La Total Compensation enfin visible.
           </p>
         </div>
         <FooterCol title="Produit" links={["Fonctionnalités", "Tarifs", "Démo"]} />

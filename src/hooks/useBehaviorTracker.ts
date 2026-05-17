@@ -12,7 +12,8 @@ type EventType =
   | "page_exit"
   | "page_return"
   | "opened"
-  | "simulated";
+  | "simulated"
+  | "reveal_clicked";
 
 interface TrackPayload {
   token: string;

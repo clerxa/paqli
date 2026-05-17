@@ -31,6 +31,7 @@ interface NavItem {
 
 const main: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/alerts", label: "Alertes", icon: Bell },
   { to: "/jobs", label: "Offres d'emploi", icon: Briefcase },
   { to: "/packages", label: "Packages", icon: Package },
   { to: "/candidates", label: "Candidats", icon: Users },

@@ -287,6 +287,9 @@ function PackageView({
           pkg={pkg}
           organization={org}
           candidateName={data.candidate_name}
+          openedAt={data.opened_at}
+          returnVisits={data.return_visits}
+          offerStatus={data.offerStatus}
           onReveal={handleReveal}
         />
       </PageShell>

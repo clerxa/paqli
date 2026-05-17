@@ -110,6 +110,40 @@ export function StepBenefits() {
         )}
       </div>
 
+      {orgBenefits.length > 0 &&
+        orgBenefits.some(
+          (o) => !selected.find((s) => s.benefit_key === o.benefit_key),
+        ) && (
+          <div className="flex items-center justify-between gap-3 rounded-lg px-4 py-3 bg-[#F5F2FA] border border-[rgba(139,127,168,0.2)]">
+            <div className="text-[12px] text-aubergine">
+              💡 Votre entreprise a {orgBenefits.length} avantage
+              {orgBenefits.length > 1 ? "s" : ""} configuré
+              {orgBenefits.length > 1 ? "s" : ""} dans son catalogue.
+            </div>
+            <button
+              type="button"
+              onClick={loadFromOrgCatalog}
+              className="text-[11px] font-medium px-3 py-1.5 rounded-md bg-aubergine text-lin whitespace-nowrap"
+            >
+              Tout pré-remplir
+            </button>
+          </div>
+        )}
+
+      {orgBenefits.length === 0 && (
+        <p className="text-[11px] text-grey italic">
+          💡 Configurez vos avantages dans{" "}
+          <Link
+            to="/settings"
+            search={{ tab: "company" }}
+            className="text-aubergine underline"
+          >
+            Paramètres → Mon entreprise
+          </Link>{" "}
+          pour les pré-remplir automatiquement à chaque package.
+        </p>
+      )}
+
       {/* Catégories */}
       <div className="flex gap-1.5 flex-wrap">
         {CATEGORIES.map((cat) => {

@@ -666,7 +666,14 @@ function PackageView({
         <>
           <SectionTitle><Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?</SectionTitle>
           <div data-section="assistant_ia">
-            <Assistant token={data.token} pkg={pkg} params={params} />
+            <Assistant
+              token={data.token}
+              pkg={pkg}
+              params={params}
+              candidateName={data.candidate_name}
+              hasSimulated={!!data.simulated_at}
+              returnVisits={data.return_visits ?? 0}
+            />
           </div>
           <SectionTitle className="mt-6">Échangez avec l'équipe</SectionTitle>
           <div data-section="messagerie">

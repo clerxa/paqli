@@ -366,7 +366,7 @@ function ProblemSection() {
           <br />
           <span className="text-[#8B7FA8]">Pas parce que le package est mauvais.</span>
           <br />
-          Parce qu'il est incompris.
+          Parce qu'il est mal valorisé.
         </h2>
         <div className="mt-6 inline-block px-5 py-3 rounded-2xl bg-white border border-[rgba(45,38,64,0.08)]">
           <span className="font-display text-[28px] text-[#C4A882]">15 000 – 50 000 €</span>

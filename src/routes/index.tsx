@@ -317,10 +317,10 @@ function LogoBar() {
         <span className="text-[12px] text-[#524970] whitespace-nowrap">
           Utilisé par les équipes talent de →
         </span>
-        <div className="flex-1 overflow-hidden">
-          <div className="flex gap-12 md:justify-around animate-marquee md:animate-none whitespace-nowrap">
-            {[...logos, ...logos].map((l, i) => (
-              <span key={i} className="font-display text-[22px] text-[#2D2640] opacity-40">
+        <div className="flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+          <div className="flex gap-16 animate-marquee whitespace-nowrap">
+            {[...logos, ...logos, ...logos].map((l, i) => (
+              <span key={i} className="font-display text-[22px] text-[#2D2640] opacity-40 hover:opacity-80 transition-opacity">
                 {l}
               </span>
             ))}

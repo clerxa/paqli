@@ -700,8 +700,12 @@ function TestimonialsSection() {
         </div>
 
         <div className="mt-12 grid md:grid-cols-3 gap-5">
-          {items.map((t) => (
-            <div key={t.name} className="p-6 bg-white rounded-2xl border border-[rgba(139,127,168,0.2)]">
+          {items.map((t, i) => (
+            <div
+              key={t.name}
+              className="feature-card scroll-reveal p-6 bg-white rounded-2xl border border-[rgba(139,127,168,0.2)]"
+              style={{ ["--reveal-delay" as never]: `${i * 120}ms` }}
+            >
               <div className="text-[#C4A882] text-[14px]">★★★★★</div>
               <p className="mt-3 font-display italic text-[16px] text-[#2D2640] leading-relaxed">
                 "{t.quote}"

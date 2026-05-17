@@ -5,6 +5,7 @@ import {
   type CandidateParams,
   type PackageData,
 } from "@/lib/clientCalc";
+import { buildGreeting } from "@/lib/candidatePersonalization";
 
 interface OrgLite {
   name?: string | null;

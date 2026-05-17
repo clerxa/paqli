@@ -144,7 +144,37 @@ function PackageView({
   const org = pkg.organizations;
 
   const track = useServerFn(trackLink);
-  const behavior = useBehaviorTracker(data.token);
+
+  const [proactiveSuggestion, setProactiveSuggestion] =
+    useState<ProactiveSuggestion | null>(null);
+  const [assistantHasMessages, setAssistantHasMessages] = useState(false);
+  const simulationChangeCount = useRef(0);
+
+  const proactive = useProactiveAssistant({
+    pkg: data.packages,
+    orgName: data.packages.organizations?.name ?? "l'entreprise",
+    firstName: data.candidate_name?.split(/\s+/)[0] ?? null,
+    decisionDeadline: data.decisionDeadline ?? null,
+    offerStatus: data.offerStatus,
+    hasMessages: assistantHasMessages,
+    onSuggest: setProactiveSuggestion,
+  });
+
+  const behavior = useBehaviorTracker(data.token, {
+    onSectionTime: (sectionId, durationS) => {
+      if (sectionId === "equity_scenarios" || sectionId === "simulation" || sectionId === "equity") {
+        proactive.onEquitySectionTime(durationS);
+      }
+      if (sectionId === "benefits" || sectionId === "epargne" || sectionId === "avantages") {
+        proactive.onBenefitsSectionTime(durationS);
+      }
+    },
+    onSectionView: (sectionId) => {
+      if (sectionId === "decision" || sectionId === "tab_next") {
+        proactive.onDecisionSectionView();
+      }
+    },
+  });
   const trackEvent = (
     eventType: "simulated" | "question" | "rdv_click",
     metadata?: Record<string, unknown>,

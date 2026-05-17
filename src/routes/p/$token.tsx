@@ -1756,12 +1756,30 @@ function Dot({ delay = 0 }: { delay?: number }) {
   );
 }
 
-function FooterDisclaimer() {
+function FooterDisclaimer({
+  orgName,
+  candidateName,
+}: {
+  orgName: string | null;
+  candidateName: string | null;
+}) {
+  const today = new Date().toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
   return (
     <footer
       className="rounded-[12px] mt-6 text-[11px] leading-relaxed"
       style={{ background: "#F0EBE8", color: "#9B97A0", padding: 20 }}
     >
+      {(orgName || candidateName) && (
+        <p className="mb-3 text-aubergine-light">
+          Cette simulation a été préparée
+          {orgName ? ` par ${orgName}` : ""}
+          {candidateName ? ` pour ${candidateName}` : ""}.
+        </p>
+      )}
       <p>
         Les estimations présentées sur cette page sont indicatives et arrondies.
         Elles sont calculées sur la base des règles fiscales françaises en
@@ -1780,7 +1798,7 @@ function FooterDisclaimer() {
         expert-comptable.
       </p>
       <p className="mt-3 text-aubergine-light">
-        Simulation générée par Paqli · paqli.fr
+        Générée le {today} · Paqli · paqli.fr
       </p>
     </footer>
   );

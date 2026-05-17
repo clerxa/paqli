@@ -13,7 +13,8 @@ export const getPackagePublic = createServerFn({ method: "POST" })
     const { data: link, error } = await supabaseAdmin
       .from("candidate_links")
       .select(
-        `id, token, candidate_name, expires_at, opened_at,
+        `id, token, candidate_name, candidate_email, expires_at, opened_at,
+         simulated_at, return_visits,
          status, status_updated_at, decision_deadline,
          packages (
            id, title, gross_salary, variable_target, variable_config, benefits,

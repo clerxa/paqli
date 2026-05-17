@@ -32,6 +32,7 @@ import {
 import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
 import { TotalCompensationBlock } from "@/components/paqli/candidate/TotalCompensationBlock";
 import { CandidateHeroReveal } from "@/components/paqli/candidate/CandidateHeroReveal";
+import { MobileFloatingCTA } from "@/components/paqli/candidate/MobileFloatingCTA";
 import {
   buildAssistantPlaceholder,
   buildAssistantWelcomeMessage,
@@ -61,16 +62,17 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#FAF8F5" }}>
       <header
-        className="flex items-center justify-between px-6 py-4"
+        className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4"
         style={{ borderBottom: "0.5px solid rgba(45,38,64,0.08)" }}
       >
         <Logo />
-        <div className="flex items-center gap-2 text-[12px] text-aubergine-light">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[12px] text-aubergine-light">
           <Lock size={12} />
-          Lien sécurisé · Données non partagées
+          <span className="hidden sm:inline">Lien sécurisé · Données non partagées</span>
+          <span className="sm:hidden">Sécurisé</span>
         </div>
       </header>
-      <main className="flex-1 flex items-start justify-center px-4 py-8">
+      <main className="flex-1 flex items-start justify-center px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8">
         <div className="w-full max-w-[680px]">{children}</div>
       </main>
     </div>
@@ -779,6 +781,26 @@ function PackageView({
         candidateName={data.candidate_name}
       />
       </div>
+      <MobileFloatingCTA
+        offerStatus={data.offerStatus}
+        revealed={revealed}
+        onAccept={() => {
+          if (tab !== "next" && canGoToTab("next")) tryChangeTab("next");
+          setTimeout(() => {
+            const el = document.querySelector('[data-section="decision"]') as HTMLElement | null;
+            el?.scrollIntoView({ behavior: "smooth", block: "start" });
+            window.dispatchEvent(new CustomEvent("paqli:open-accept"));
+          }, tab !== "next" ? 250 : 0);
+        }}
+        onThinking={() => {
+          if (tab !== "next" && canGoToTab("next")) tryChangeTab("next");
+          setTimeout(() => {
+            const el = document.querySelector('[data-section="decision"]') as HTMLElement | null;
+            el?.scrollIntoView({ behavior: "smooth", block: "start" });
+            window.dispatchEvent(new CustomEvent("paqli:open-thinking"));
+          }, tab !== "next" ? 250 : 0);
+        }}
+      />
     </PageShell>
   );
 }
@@ -800,7 +822,7 @@ function TabBar({
   const currentIdx = order.indexOf(tab);
   return (
     <div
-      className="flex flex-wrap gap-1.5 p-1.5 rounded-2xl mb-6 sticky top-2 z-10"
+      className="flex flex-nowrap sm:flex-wrap gap-1.5 p-1.5 rounded-2xl mb-4 sm:mb-6 sticky top-1 sm:top-2 z-10 overflow-x-auto sm:overflow-visible no-scrollbar snap-x snap-mandatory"
       style={{ background: "#FFFFFF", border: "0.5px solid rgba(45,38,64,0.08)", boxShadow: "0 4px 16px rgba(45,38,64,0.04)" }}
     >
       {TABS.map((t, idx) => {
@@ -816,7 +838,7 @@ function TabBar({
             onClick={() => onChange(t.key)}
             disabled={locked}
             title={locked ? "Terminez l'étape précédente pour débloquer" : undefined}
-            className="px-3 py-2 rounded-xl text-[12px] transition-all flex items-center gap-1"
+            className="px-3 py-2 rounded-xl text-[12px] transition-all flex items-center gap-1 whitespace-nowrap flex-shrink-0 snap-start min-h-[36px]"
             style={
               locked
                 ? {

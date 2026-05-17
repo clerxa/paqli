@@ -312,7 +312,21 @@ function CandidateDetail() {
           <BehaviorView linkId={link.id} />
         </Card>
 
+        {/* Package actuel saisi par le candidat */}
+        {link.candidate_current_package && (
+          <Card>
+            <h2 className="font-display text-aubergine mb-1" style={{ fontSize: 18 }}>
+              Package actuel du candidat
+            </h2>
+            <p className="text-[12px] text-aubergine-light mb-4">
+              Renseigné par le candidat{link.candidate_current_package_at ? ` le ${new Date(link.candidate_current_package_at).toLocaleDateString("fr-FR")}` : ""}.
+            </p>
+            <CurrentPackageRecap data={link.candidate_current_package} />
+          </Card>
+        )}
+
         {/* Conversations IA candidat ↔ assistant */}
+
         <Card>
           <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 18 }}>
             Conversations avec l'assistant IA

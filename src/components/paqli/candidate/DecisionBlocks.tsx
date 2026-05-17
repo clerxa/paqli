@@ -197,9 +197,11 @@ export function DecisionBlock({
             Accepter l'offre
           </h3>
           <p className="text-[13px] text-aubergine-light leading-relaxed text-center mb-5">
-            Vous êtes sur le point d'accepter l'offre de <strong>{orgName}</strong>{" "}
-            pour le poste de <strong>{pkgTitle}</strong>. L'équipe RH sera
-            notifiée immédiatement.
+            {firstName
+              ? `${firstName}, vous êtes sur le point d'accepter`
+              : "Vous êtes sur le point d'accepter"}{" "}
+            l'offre de <strong>{orgName}</strong> pour le poste de{" "}
+            <strong>{pkgTitle}</strong>. L'équipe RH sera notifiée immédiatement.
           </p>
           <div className="flex gap-3">
             <button

@@ -61,16 +61,17 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#FAF8F5" }}>
       <header
-        className="flex items-center justify-between px-6 py-4"
+        className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4"
         style={{ borderBottom: "0.5px solid rgba(45,38,64,0.08)" }}
       >
         <Logo />
-        <div className="flex items-center gap-2 text-[12px] text-aubergine-light">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[12px] text-aubergine-light">
           <Lock size={12} />
-          Lien sécurisé · Données non partagées
+          <span className="hidden sm:inline">Lien sécurisé · Données non partagées</span>
+          <span className="sm:hidden">Sécurisé</span>
         </div>
       </header>
-      <main className="flex-1 flex items-start justify-center px-4 py-8">
+      <main className="flex-1 flex items-start justify-center px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8">
         <div className="w-full max-w-[680px]">{children}</div>
       </main>
     </div>

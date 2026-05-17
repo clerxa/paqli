@@ -545,6 +545,14 @@ function DashboardPage() {
           }}
         />
       )}
+      {offerLetterTarget && (
+        <OfferLetterModal
+          linkId={offerLetterTarget.linkId}
+          candidateName={offerLetterTarget.candidateName}
+          onClose={() => setOfferLetterTarget(null)}
+          onSent={() => setOfferLetterTarget(null)}
+        />
+      )}
     </>
   );
 }

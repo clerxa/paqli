@@ -19,10 +19,10 @@ import {
 import { Topbar } from "@/components/paqli/Topbar";
 import { Card } from "@/components/paqli/Card";
 import { Button } from "@/components/paqli/Button";
+import { useLinkQuota } from "@/hooks/useLinkQuota";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { generateCompanyProfile } from "@/lib/companyProfile.functions";
-import { getLinkQuotaFn } from "@/lib/linkQuota.functions";
 import {
   generatePackageBenchmarkFn,
   getPackageBenchmarkFn,
@@ -1119,7 +1119,7 @@ function BenchmarkGenerator({ competitorCount }: { competitorCount: number }) {
     }
     setLoading(true);
     getFn({ data: { packageId: selectedId } })
-      .then((res) => {
+      .then((res: Awaited<ReturnType<typeof getPackageBenchmarkFn>>) => {
         if (res.exists) {
           setContent(res.content);
           setGeneratedAt(res.generated_at);
@@ -1471,15 +1471,7 @@ const PLANS: {
 ];
 
 function PlanTab() {
-  const fetchQuota = useServerFn(getLinkQuotaFn);
-  const [data, setData] = useState<{ used: number; quota: number | null; plan: string | null } | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchQuota()
-      .then(setData)
-      .finally(() => setLoading(false));
-  }, [fetchQuota]);
+  const { data, isLoading: loading } = useLinkQuota();
 
   const currentPlanKey = data?.plan ?? "starter";
   const current = PLANS.find((p) => p.key === currentPlanKey) ?? PLANS[0];

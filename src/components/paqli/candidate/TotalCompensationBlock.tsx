@@ -5,6 +5,8 @@ import { formatEur } from "@/lib/clientCalc";
 interface Props {
   breakdown: BenefitBreakdownItem[];
   totalAnnual: number;
+  isReturnVisit?: boolean;
+  hasSimulated?: boolean;
 }
 
 /**

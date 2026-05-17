@@ -1772,10 +1772,17 @@ function Assistant({
           contacter directement l'équipe RH.
         </div>
       )}
+      <ProactiveSuggestionBubble
+        suggestion={proactiveSuggestion ?? null}
+        onAccept={handleAcceptSuggestion}
+        onDismiss={() => onClearProactiveSuggestion?.()}
+      />
       <div className="flex items-end gap-2">
         <textarea
+          id="candidate-assistant-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onFocus={() => onClearProactiveSuggestion?.()}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();

@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/paqli/Skeleton";
 import { EngagementBadge } from "@/components/paqli/EngagementBadge";
 import { BehaviorView } from "@/components/paqli/BehaviorView";
 import { LinkActivityPanel } from "@/components/paqli/LinkActivityPanel";
+import { AiConversationPanel } from "@/components/paqli/AiConversationPanel";
 import { CounterOfferModal, type CounterOfferOriginal } from "@/components/paqli/CounterOfferModal";
 import { OfferLetterModal } from "@/components/paqli/OfferLetterModal";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";

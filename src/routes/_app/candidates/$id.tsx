@@ -466,3 +466,52 @@ function formatDuration(seconds: number): string {
   const h = Math.floor(m / 60);
   return `${h}h ${m % 60}m`;
 }
+
+function CurrentPackageRecap({
+  data,
+}: {
+  data: {
+    gross_salary?: number | null;
+    variable_target?: number | null;
+    benefits?: Array<{ label: string; annual_value: number }>;
+    note?: string | null;
+  };
+}) {
+  const fmt = (v: number) =>
+    new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
+  const gross = Number(data.gross_salary) || 0;
+  const variable = Number(data.variable_target) || 0;
+  const benefitsTotal = (data.benefits ?? []).reduce((s, b) => s + (Number(b.annual_value) || 0), 0);
+  const total = gross + variable + benefitsTotal;
+  return (
+    <div className="space-y-3 text-[13px]">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Stat label="Salaire brut" value={gross ? fmt(gross) : "—"} />
+        <Stat label="Variable cible" value={variable ? fmt(variable) : "—"} />
+        <Stat label="Avantages" value={benefitsTotal ? fmt(benefitsTotal) : "—"} />
+        <Stat label="Total annuel" value={total ? fmt(total) : "—"} highlight />
+      </div>
+      {data.benefits && data.benefits.length > 0 && (
+        <ul className="text-[12px] text-aubergine-light list-disc pl-5">
+          {data.benefits.map((b, i) => (
+            <li key={i}>{b.label} — {fmt(Number(b.annual_value) || 0)}/an</li>
+          ))}
+        </ul>
+      )}
+      {data.note && (
+        <div className="rounded-lg p-3 text-[12px] text-aubergine" style={{ background: "#FAF8F5" }}>
+          {data.note}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className="rounded-lg p-3" style={{ background: highlight ? "#FAEEDA" : "#F5F2FA" }}>
+      <div className="text-[11px] text-aubergine-light">{label}</div>
+      <div className="font-display text-aubergine mt-1" style={{ fontSize: 16 }}>{value}</div>
+    </div>
+  );
+}

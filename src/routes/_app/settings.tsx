@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -1118,7 +1119,7 @@ function BenchmarkGenerator({ competitorCount }: { competitorCount: number }) {
     }
     setLoading(true);
     getFn({ data: { packageId: selectedId } })
-      .then((res) => {
+      .then((res: Awaited<ReturnType<typeof getPackageBenchmarkFn>>) => {
         if (res.exists) {
           setContent(res.content);
           setGeneratedAt(res.generated_at);

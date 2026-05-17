@@ -109,6 +109,8 @@ export async function computeEngagement(linkId: string): Promise<EngagementResul
   const externalLinks = behaviors.filter((b) => b.event_type === "external_link").length;
   if (externalLinks >= 1) score += 3;
 
+  if (behaviors.some((b) => b.event_type === "reveal_clicked")) score += 12;
+
   if (link.status === "declined") score = Math.min(score, 20);
   score = Math.min(100, Math.max(0, score));
 

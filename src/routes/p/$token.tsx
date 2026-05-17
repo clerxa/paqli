@@ -296,6 +296,8 @@ function PackageView({
     setParams((p) => ({ ...p, [key]: value }));
     scheduleTrack(key, value);
     behavior.trackSimulationChange(key, value as string | number | boolean);
+    simulationChangeCount.current += 1;
+    proactive.onSimulationChanges(simulationChangeCount.current);
   }
 
   const estimate = useMemo(() => calcPackageEstimate(pkg, params), [pkg, params]);

@@ -1,4 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
+import { useOrgCatalogs } from "@/lib/orgCatalog";
 import { Chip, EduBanner, NumberField, WarnBanner } from "./fields";
 import type { SavingsDeviceForm, SavingsType } from "@/lib/packageConfig";
 
@@ -9,26 +11,41 @@ const types: { value: SavingsType; label: string; icon: string }[] = [
   { value: "participation", label: "Participation", icon: "💰" },
 ];
 
-function newDevice(type: SavingsType): SavingsDeviceForm {
+function newDevice(
+  type: SavingsType,
+  defaults?: {
+    default_matching_rate?: number | null;
+    default_cap_amount?: number | null;
+    default_avg_3y?: number | null;
+  },
+): SavingsDeviceForm {
   return {
     id: crypto.randomUUID(),
     type,
-    matchingRate: 0,
-    capAmount: 0,
-    avg3y: 0,
+    matchingRate: defaults?.default_matching_rate ?? 0,
+    capAmount: defaults?.default_cap_amount ?? 0,
+    avg3y: defaults?.default_avg_3y ?? 0,
   };
 }
 
 export function Step3Savings() {
   const { config, patch } = usePackageConfig();
+  const { savings: orgSavings } = useOrgCatalogs();
   const devices = config.savingsDevices;
+
+  const catalogTypes = orgSavings.map((c) => c.type);
+  const visibleTypes =
+    catalogTypes.length > 0
+      ? types.filter((t) => catalogTypes.includes(t.value))
+      : types;
 
   const toggle = (t: SavingsType) => {
     const exists = devices.find((d) => d.type === t);
     if (exists) {
       patch({ savingsDevices: devices.filter((d) => d.type !== t) });
     } else {
-      patch({ savingsDevices: [...devices, newDevice(t)] });
+      const cat = orgSavings.find((c) => c.type === t);
+      patch({ savingsDevices: [...devices, newDevice(t, cat ?? undefined)] });
     }
   };
   const update = (id: string, p: Partial<SavingsDeviceForm>) =>
@@ -45,13 +62,27 @@ export function Step3Savings() {
           Épargne salariale
         </h2>
         <p className="text-[12px] text-grey mt-1">
-          Étape optionnelle. Sélectionnez les dispositifs disponibles dans
-          votre entreprise.
+          {catalogTypes.length > 0
+            ? "Sélectionnez les dispositifs proposés au candidat. Les paramètres par défaut viennent de votre catalogue entreprise."
+            : "Étape optionnelle. Sélectionnez les dispositifs disponibles dans votre entreprise."}
         </p>
+        {catalogTypes.length === 0 && (
+          <p className="text-[11px] text-grey mt-1.5 italic">
+            💡 Pour gagner du temps, configurez vos dispositifs d'épargne dans{" "}
+            <Link
+              to="/settings"
+              search={{ tab: "company" }}
+              className="text-aubergine underline"
+            >
+              Paramètres → Mon entreprise
+            </Link>
+            .
+          </p>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {types.map((t) => (
+        {visibleTypes.map((t) => (
           <Chip
             key={t.value}
             selected={devices.some((d) => d.type === t.value)}

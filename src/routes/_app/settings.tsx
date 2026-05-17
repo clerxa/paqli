@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -19,10 +18,10 @@ import {
 import { Topbar } from "@/components/paqli/Topbar";
 import { Card } from "@/components/paqli/Card";
 import { Button } from "@/components/paqli/Button";
+import { useLinkQuota } from "@/hooks/useLinkQuota";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { generateCompanyProfile } from "@/lib/companyProfile.functions";
-import { getLinkQuotaFn } from "@/lib/linkQuota.functions";
 import {
   generatePackageBenchmarkFn,
   getPackageBenchmarkFn,
@@ -1471,15 +1470,7 @@ const PLANS: {
 ];
 
 function PlanTab() {
-  const fetchQuota = useServerFn(getLinkQuotaFn);
-  const [data, setData] = useState<{ used: number; quota: number | null; plan: string | null } | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchQuota()
-      .then(setData)
-      .finally(() => setLoading(false));
-  }, [fetchQuota]);
+  const { data, isLoading: loading } = useLinkQuota();
 
   const currentPlanKey = data?.plan ?? "starter";
   const current = PLANS.find((p) => p.key === currentPlanKey) ?? PLANS[0];

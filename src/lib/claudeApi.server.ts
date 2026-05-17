@@ -17,7 +17,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
-const DEFAULT_MODEL = "claude-sonnet-4-20250514";
+const DEFAULT_MODEL = "claude-haiku-4-5";
 
 const CONFIG = {
   timeoutMs: 25_000,

@@ -708,6 +708,26 @@ function PackageView({
         <BenchmarkTab pkg={pkg} />
       )}
 
+      {tab === "mon_offre" && (
+        <div data-section="mon_offre">
+          <CurrentPackageComparator
+            token={data.token}
+            paqliGrossSalary={pkg.gross_salary ?? 0}
+            paqliVariableTarget={pkg.variable_target ?? 0}
+            paqliBenefitsAnnualValue={(pkg.package_benefits ?? []).reduce(
+              (sum: number, b: any) => sum + (Number(b.annual_value) || (Number(b.monthly_value) || 0) * 12),
+              0,
+            )}
+            initial={data.currentPackage}
+            onSaved={(payload, savedAt) =>
+              setData((prev) =>
+                prev ? { ...prev, currentPackage: payload, currentPackageAt: savedAt } : prev,
+              )
+            }
+          />
+        </div>
+      )}
+
       {tab === "questions" && (
         <>
           <SectionTitle><Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?</SectionTitle>

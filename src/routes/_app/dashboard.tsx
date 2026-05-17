@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { getLinkQuotaFn } from "@/lib/linkQuota.functions";
 import { Package as PackageIcon, ArrowUpRight } from "lucide-react";
 import { Topbar } from "@/components/paqli/Topbar";
@@ -13,6 +14,10 @@ import { Skeleton } from "@/components/paqli/Skeleton";
 import { FollowUpAlertsCard } from "@/components/paqli/FollowUpAlertsCard";
 import { CounterOfferModal } from "@/components/paqli/CounterOfferModal";
 import { EngagementBadge } from "@/components/paqli/EngagementBadge";
+import { OfferLetterModal } from "@/components/paqli/OfferLetterModal";
+import { ActionAlertsSection } from "@/components/paqli/dashboard/ActionAlertsSection";
+import type { ActionAlert } from "@/hooks/useActionAlerts";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { seedDemoData } from "@/lib/seedDemo";
 import {
@@ -80,6 +85,80 @@ function DashboardPage() {
   const navigate = useNavigate();
   const [counterAlert, setCounterAlert] = useState<FollowUpAlert | null>(null);
   const [counterPkg, setCounterPkg] = useState<PackageConfig | null>(null);
+  const [offerLetterTarget, setOfferLetterTarget] = useState<{
+    linkId: string;
+    candidateName: string;
+  } | null>(null);
+
+  async function handleExtendDeadline(linkId: string, days: number) {
+    const { data: link } = await supabase
+      .from("candidate_links")
+      .select("decision_deadline")
+      .eq("id", linkId)
+      .single();
+    const current = link?.decision_deadline
+      ? new Date(link.decision_deadline)
+      : new Date();
+    const extended = new Date(Math.max(current.getTime(), Date.now()));
+    extended.setDate(extended.getDate() + days);
+    const { error } = await supabase
+      .from("candidate_links")
+      .update({
+        decision_deadline: extended.toISOString(),
+        deadline_notified_48h: false,
+        deadline_notified_24h: false,
+      })
+      .eq("id", linkId);
+    if (error) {
+      toast.error("Impossible de prolonger la deadline");
+    } else {
+      toast.success(`Deadline prolongée de ${days} jours`);
+    }
+  }
+
+  function handleAlertAction(action: string, alert: ActionAlert) {
+    switch (action) {
+      case "generate_offer_letter":
+        if (alert.linkId)
+          setOfferLetterTarget({
+            linkId: alert.linkId,
+            candidateName: alert.candidateName || "Candidat",
+          });
+        break;
+      case "counter_offer":
+      case "view_candidate":
+      case "send_message":
+      case "ai_message":
+      case "view_behavior":
+      case "resend_link":
+        if (alert.linkId)
+          navigate({
+            to: "/candidates/$id",
+            params: { id: alert.linkId },
+          });
+        break;
+      case "edit_package":
+        navigate({
+          to: "/packages/$id/edit",
+          params: { id: alert.packageId },
+        });
+        break;
+      case "extend_deadline":
+        if (alert.linkId) handleExtendDeadline(alert.linkId, 3);
+        break;
+      case "copy_link": {
+        const token = alert.metadata?.token as string | undefined;
+        if (token) {
+          const url = `${window.location.origin}/p/${token}`;
+          navigator.clipboard.writeText(url).then(
+            () => toast.success("Lien copié !"),
+            () => toast.error("Impossible de copier le lien"),
+          );
+        }
+        break;
+      }
+    }
+  }
 
   const fetchQuota = useServerFn(getLinkQuotaFn);
   const { data: quota } = useQuery({
@@ -123,6 +202,12 @@ function DashboardPage() {
         }
       />
       <div className="px-4 sm:px-7 py-4 sm:py-6 space-y-6">
+        {/* Actions prioritaires */}
+        <ActionAlertsSection
+          organizationId={organization?.id}
+          onAction={handleAlertAction}
+        />
+
         {/* Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {loading || !metrics ? (
@@ -458,6 +543,14 @@ function DashboardPage() {
             setCounterAlert(null);
             setCounterPkg(null);
           }}
+        />
+      )}
+      {offerLetterTarget && (
+        <OfferLetterModal
+          linkId={offerLetterTarget.linkId}
+          candidateName={offerLetterTarget.candidateName}
+          onClose={() => setOfferLetterTarget(null)}
+          onSent={() => setOfferLetterTarget(null)}
         />
       )}
     </>

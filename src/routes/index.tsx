@@ -868,8 +868,8 @@ function AISection() {
           />
 
           {/* Connecting node (desktop) */}
-          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-14 h-14 rounded-full bg-[#2D2640] text-white items-center justify-center font-display text-[18px] shadow-[0_8px_30px_rgba(45,38,64,0.25)]">
-            IA
+          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full bg-[#2D2640] text-white items-center justify-center font-display text-[20px] shadow-[0_8px_30px_rgba(45,38,64,0.25)] border-2 border-[#C4A882]">
+            Paq
           </div>
         </div>
 

@@ -366,7 +366,7 @@ function ProblemSection() {
           <br />
           <span className="text-[#8B7FA8]">Pas parce que le package est mauvais.</span>
           <br />
-          Parce qu'il est incompris.
+          Parce qu'il est mal valorisé.
         </h2>
         <div className="mt-6 inline-block px-5 py-3 rounded-2xl bg-white border border-[rgba(45,38,64,0.08)]">
           <span className="font-display text-[28px] text-[#C4A882]">15 000 – 50 000 €</span>
@@ -395,64 +395,24 @@ function ProblemSection() {
 /* Solution                                           */
 /* -------------------------------------------------- */
 function SolutionSection() {
+  const [view, setView] = useState<"entreprise" | "candidat">("entreprise");
+
   const parcoursEntreprise = [
-    { n: 1, icon: "⚙️", title: "Configurer", desc: "Package en 5 min" },
-    { n: 2, icon: "🔗", title: "Partager", desc: "Lien unique sécurisé" },
-    { n: 3, icon: "📊", title: "Suivre", desc: "Signaux IA temps réel" },
-    { n: 4, icon: "✅", title: "Closer", desc: "Promesse d'embauche" },
+    { n: 1, icon: "⚙️", title: "Vous configurez", desc: "Un package complet en 5 minutes" },
+    { n: 2, icon: "🔗", title: "Vous partagez", desc: "Un lien unique et sécurisé" },
+    { n: 3, icon: "📊", title: "Vous suivez", desc: "Les signaux IA en temps réel" },
+    { n: 4, icon: "✅", title: "Vous closez", desc: "Avec une promesse d'embauche signée" },
   ];
   const parcoursCandidat = [
-    { n: 1, icon: "📩", title: "Recevoir", desc: "Lien personnalisé" },
-    { n: 2, icon: "🧮", title: "Explorer", desc: "Total Comp interactive" },
-    { n: 3, icon: "💬", title: "Discuter", desc: "Questions en direct" },
-    { n: 4, icon: "🤝", title: "Accepter", desc: "En toute confiance" },
+    { n: 1, icon: "📩", title: "Il reçoit", desc: "Un lien personnalisé sur mobile" },
+    { n: 2, icon: "🧮", title: "Il explore", desc: "Sa Total Comp en interactif" },
+    { n: 3, icon: "💬", title: "Il échange", desc: "Ses questions, en direct" },
+    { n: 4, icon: "🤝", title: "Il accepte", desc: "En toute confiance" },
   ];
 
-  const Track = ({
-    label,
-    steps,
-    accent,
-  }: {
-    label: string;
-    steps: { n: number; icon: string; title: string; desc: string }[];
-    accent: string;
-  }) => (
-    <div className="relative">
-      <div className="flex items-center gap-3 mb-6">
-        <span className="inline-block px-3 py-1 rounded-full text-[11px] font-medium tracking-wider uppercase" style={{ background: `${accent}1F`, color: accent, border: `1px solid ${accent}40` }}>
-          {label}
-        </span>
-        <div className="flex-1 h-px bg-[rgba(255,255,255,0.1)]" />
-      </div>
-
-      <div className="hidden md:flex items-start justify-between relative">
-        <div className="absolute top-7 left-[6%] right-[6%] h-px bg-[rgba(255,255,255,0.15)]" />
-        {steps.map((s) => (
-          <div key={s.n} className="relative flex-1 text-center">
-            <div className="mx-auto w-14 h-14 rounded-full bg-[#3D3554] border border-[rgba(255,255,255,0.15)] flex items-center justify-center text-2xl relative z-10">
-              {s.icon}
-            </div>
-            <div className="mt-3 text-[12px] font-medium" style={{ color: accent }}>ÉTAPE {s.n}</div>
-            <div className="mt-1 font-display text-[18px]">{s.title}</div>
-            <div className="text-[12px] text-[#B8AECF] font-light">{s.desc}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="md:hidden space-y-3 text-left">
-        {steps.map((s) => (
-          <div key={s.n} className="flex items-center gap-4 p-4 bg-[#3D3554] rounded-xl">
-            <div className="w-10 h-10 rounded-full bg-[#2D2640] flex items-center justify-center text-xl">{s.icon}</div>
-            <div>
-              <div className="text-[11px] font-medium" style={{ color: accent }}>ÉTAPE {s.n}</div>
-              <div className="font-display text-[17px]">{s.title}</div>
-              <div className="text-[12px] text-[#B8AECF] font-light">{s.desc}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const isEnt = view === "entreprise";
+  const steps = isEnt ? parcoursEntreprise : parcoursCandidat;
+  const accent = isEnt ? "#C4A882" : "#8B7FA8";
 
   return (
     <section className="relative py-20 md:py-28 bg-[#2D2640] px-5 text-white scroll-reveal overflow-hidden">
@@ -469,11 +429,56 @@ function SolutionSection() {
           <p className="mt-5 text-[15px] text-[#B8AECF] font-light max-w-2xl mx-auto">
             Deux parcours synchronisés. Un seul lien. Zéro friction.
           </p>
+
+          {/* Toggle */}
+          <div className="mt-8 inline-flex items-center p-1 rounded-full bg-[#3D3554] border border-[rgba(255,255,255,0.08)]">
+            {(["entreprise", "candidat"] as const).map((v) => {
+              const active = view === v;
+              const a = v === "entreprise" ? "#C4A882" : "#8B7FA8";
+              return (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className="relative px-5 py-2 rounded-full text-[13px] font-medium tracking-wide transition-all"
+                  style={{
+                    color: active ? "#2D2640" : "#B8AECF",
+                    background: active ? a : "transparent",
+                  }}
+                >
+                  Vue {v}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="mt-14 space-y-14">
-          <Track label="Parcours Entreprise" steps={parcoursEntreprise} accent="#C4A882" />
-          <Track label="Parcours Candidat" steps={parcoursCandidat} accent="#8B7FA8" />
+        <div key={view} className="mt-12 animate-paqli-slide-up">
+          <div className="hidden md:flex items-start justify-between relative">
+            <div className="absolute top-7 left-[6%] right-[6%] h-px bg-[rgba(255,255,255,0.15)]" />
+            {steps.map((s) => (
+              <div key={s.n} className="relative flex-1 text-center px-2">
+                <div className="mx-auto w-14 h-14 rounded-full bg-[#3D3554] border border-[rgba(255,255,255,0.15)] flex items-center justify-center text-2xl relative z-10">
+                  {s.icon}
+                </div>
+                <div className="mt-3 text-[12px] font-medium" style={{ color: accent }}>ÉTAPE {s.n}</div>
+                <div className="mt-1 font-display text-[18px]">{s.title}</div>
+                <div className="text-[12px] text-[#B8AECF] font-light">{s.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="md:hidden space-y-3 text-left">
+            {steps.map((s) => (
+              <div key={s.n} className="flex items-center gap-4 p-4 bg-[#3D3554] rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-[#2D2640] flex items-center justify-center text-xl">{s.icon}</div>
+                <div>
+                  <div className="text-[11px] font-medium" style={{ color: accent }}>ÉTAPE {s.n}</div>
+                  <div className="font-display text-[17px]">{s.title}</div>
+                  <div className="text-[12px] text-[#B8AECF] font-light">{s.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

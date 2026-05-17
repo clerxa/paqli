@@ -33,24 +33,32 @@ export function DecisionBlock({
   data,
   orgName,
   pkgTitle,
+  pkg,
+  estimate,
   onStatusChange,
+  onThinkingUpdate,
 }: {
   data: CandidateLinkData;
   orgName: string;
   pkgTitle: string;
+  pkg: PackageData;
+  estimate: PackageEstimate;
   onStatusChange: (status: string, statusUpdatedAt: string) => void;
+  onThinkingUpdate?: (note: string | null, at: string | null) => void;
 }) {
   const [showAccept, setShowAccept] = useState(false);
   const [showDecline, setShowDecline] = useState(false);
+  const [showThinking, setShowThinking] = useState(false);
   const [declineCategory, setDeclineCategory] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState("");
+  const [thinkingNote, setThinkingNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const update = useServerFn(updateOfferStatus);
 
   const status = data.offerStatus;
   const statusUpdatedAt = data.statusUpdatedAt;
   const firstName = data.candidate_name
-    ? data.candidate_name.trim().split(/\s+/)[0] ?? null
+    ? (data.candidate_name.trim().split(/\s+/)[0] ?? null)
     : null;
 
   async function handleAccept() {
@@ -62,6 +70,28 @@ export function DecisionBlock({
       onStatusChange("accepted", res.statusUpdatedAt);
       setShowAccept(false);
       toast.success("Votre acceptation a été transmise.");
+    } catch {
+      toast.error("Une erreur est survenue.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleThinking() {
+    setSubmitting(true);
+    try {
+      const res = await update({
+        data: {
+          token: data.token,
+          status: "thinking",
+          thinkingNote: thinkingNote || null,
+        },
+      });
+      onStatusChange("thinking", res.statusUpdatedAt);
+      onThinkingUpdate?.(res.thinkingNote ?? null, res.thinkingAt ?? null);
+      setShowThinking(false);
+      setThinkingNote("");
+      toast.success("Votre intérêt a été signalé à " + orgName + ".");
     } catch {
       toast.error("Une erreur est survenue.");
     } finally {
@@ -101,27 +131,76 @@ export function DecisionBlock({
 
       {status === "pending" && (
         <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
-          <p className="text-[13px] text-aubergine-light leading-relaxed mb-4">
-            Vous pouvez indiquer à <strong>{orgName}</strong> si vous souhaitez
-            donner suite à cette offre. Cette information leur sera communiquée
-            immédiatement.
+          <p className="text-[12px] text-aubergine-light leading-relaxed mb-4 font-light">
+            Indiquez votre position à <strong>{orgName}</strong>. Vous pouvez
+            modifier votre décision à tout moment.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3">
+
+          <button
+            onClick={() => setShowAccept(true)}
+            className="w-full flex items-center justify-center gap-2 bg-[#EAF3DE] text-[#27500A] border border-[rgba(59,109,17,0.2)] rounded-xl py-3 mb-2 text-[13px] font-medium hover:bg-[#D5EBC0] transition-colors"
+          >
+            ✅ Accepter l'offre {orgName}
+          </button>
+
+          <button
+            onClick={() => setShowThinking(true)}
+            className="w-full flex items-center justify-center gap-2 bg-[#F5F2FA] text-[#6B5F88] border border-[rgba(139,127,168,0.2)] rounded-xl py-3 mb-2 text-[13px] font-medium hover:bg-[#EDE9F5] transition-colors"
+          >
+            💭 Je suis intéressé·e — j'ai besoin de réfléchir
+          </button>
+
+          <button
+            onClick={() => setShowDecline(true)}
+            className="w-full flex items-center justify-center gap-2 text-[#9B97A0] text-[12px] font-light hover:text-[#524970] transition-colors py-2"
+          >
+            Cette offre ne correspond pas à mes attentes
+          </button>
+        </div>
+      )}
+
+      {status === "thinking" && (
+        <div className="bg-[#F5F2FA] border border-[rgba(139,127,168,0.2)] rounded-xl p-5">
+          <div className="flex items-start gap-3 mb-3">
+            <span className="text-xl">💭</span>
+            <div>
+              <div className="text-[14px] font-medium text-aubergine">
+                {firstName
+                  ? `${firstName}, votre intérêt est signalé`
+                  : "Vous avez signalé votre intérêt"}
+              </div>
+              <div className="text-[11px] text-aubergine-light font-light mt-0.5">
+                {orgName} sait que vous réfléchissez à cette offre.
+                {statusUpdatedAt && ` Depuis le ${formatFrDate(statusUpdatedAt)}.`}
+              </div>
+            </div>
+          </div>
+
+          {data.thinkingNote && (
+            <div className="bg-white rounded-lg px-3 py-2.5 mb-3 border border-[rgba(139,127,168,0.15)]">
+              <p className="text-[11px] text-[#524970] font-light italic">
+                « {data.thinkingNote} »
+              </p>
+            </div>
+          )}
+
+          <div className="flex gap-2">
             <button
               onClick={() => setShowAccept(true)}
-              className="flex-1 flex items-center justify-center gap-2 bg-[#EAF3DE] text-[#27500A] border border-[rgba(59,109,17,0.2)] rounded-lg py-3 text-[13px] font-medium hover:bg-[#D5EBC0] transition-colors"
+              className="flex-1 py-2 bg-aubergine text-white rounded-lg text-[11px] font-medium hover:opacity-90 transition-opacity"
             >
-              ✅ Accepter l'offre {orgName}
+              ✅ Accepter l'offre
             </button>
             <button
               onClick={() => setShowDecline(true)}
-              className="flex-1 flex items-center justify-center gap-2 bg-[#FCEBEB] text-[#A32D2D] border border-[rgba(184,90,106,0.2)] rounded-lg py-3 text-[13px] font-medium hover:bg-[#F7D5D5] transition-colors"
+              className="px-3 py-2 border border-[rgba(45,38,64,0.12)] rounded-lg text-[11px] text-[#9B97A0] hover:text-[#524970] transition-colors"
             >
-              ❌ Décliner cette offre
+              Décliner
             </button>
           </div>
-          <p className="text-[11px] text-grey mt-3 text-center">
-            Vous pourrez modifier votre décision jusqu'à la signature du contrat.
+
+          <p className="text-[10px] text-grey text-center mt-2 font-light">
+            Vous pouvez changer de décision à tout moment
           </p>
         </div>
       )}
@@ -186,25 +265,72 @@ export function DecisionBlock({
         </div>
       )}
 
-      {/* Accept modal */}
+      {/* Accept modal with package recap */}
       {showAccept && (
         <Modal onClose={() => setShowAccept(false)}>
-          <div className="text-center mb-4" style={{ fontSize: 32 }}>
+          <div className="text-center mb-3" style={{ fontSize: 28 }}>
             ✅
           </div>
           <h3
-            className="font-display text-aubergine text-center mb-3"
+            className="font-display text-aubergine text-center mb-1"
             style={{ fontSize: 20 }}
           >
-            Accepter l'offre
+            Accepter l'offre {orgName}
           </h3>
-          <p className="text-[13px] text-aubergine-light leading-relaxed text-center mb-5">
-            {firstName
-              ? `${firstName}, vous êtes sur le point d'accepter`
-              : "Vous êtes sur le point d'accepter"}{" "}
-            l'offre de <strong>{orgName}</strong> pour le poste de{" "}
-            <strong>{pkgTitle}</strong>. L'équipe RH sera notifiée immédiatement.
+          <p className="text-[12px] text-grey font-light text-center mb-4">
+            {firstName ? `${firstName}, voici` : "Voici"} ce que vous acceptez
+            pour le poste de{" "}
+            <strong className="text-[#524970]">{pkgTitle}</strong>
           </p>
+
+          <div className="bg-[#F5F0EC] rounded-xl p-4 mb-4">
+            <div className="text-[10px] font-semibold text-grey uppercase tracking-wide mb-3">
+              Ce que vous acceptez
+            </div>
+            <div className="space-y-3">
+              {buildTopFigures(pkg, estimate).map((figure, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <div className="text-[12px] font-medium text-aubergine">
+                      {figure.label}
+                    </div>
+                    {figure.sublabel && (
+                      <div className="text-[10px] text-grey font-light">
+                        {figure.sublabel}
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    className="font-display whitespace-nowrap"
+                    style={{ fontSize: 18, color: figure.color }}
+                  >
+                    {figure.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between bg-aubergine rounded-xl px-4 py-3 mb-4">
+            <span className="text-[11px] text-[#B8AECF]">
+              Total Compensation hors equity
+            </span>
+            <span
+              className="font-display text-white whitespace-nowrap"
+              style={{ fontSize: 18 }}
+            >
+              ~{formatEur(totalCompHorsEquity(estimate))}
+            </span>
+          </div>
+
+          <p className="text-[11px] text-grey font-light text-center mb-4 leading-relaxed">
+            L'équipe RH de {orgName} sera notifiée immédiatement. Vous
+            recevrez la promesse d'embauche par email.
+          </p>
+
           <div className="flex gap-3">
             <button
               onClick={() => setShowAccept(false)}
@@ -217,7 +343,63 @@ export function DecisionBlock({
               disabled={submitting}
               className="flex-1 py-2.5 bg-[#27500A] text-white rounded-lg text-[13px] font-medium disabled:opacity-50"
             >
-              {submitting ? "Envoi…" : "Confirmer mon acceptation"}
+              {submitting ? "Confirmation…" : "Confirmer mon acceptation ✅"}
+            </button>
+          </div>
+
+          <p className="text-[10px] text-[#B8AECF] text-center mt-3 font-light">
+            Ces montants sont des estimations — règles fiscales 2026
+          </p>
+        </Modal>
+      )}
+
+      {/* Thinking modal */}
+      {showThinking && (
+        <Modal onClose={() => setShowThinking(false)}>
+          <div className="text-center mb-3" style={{ fontSize: 28 }}>
+            💭
+          </div>
+          <h3
+            className="font-display text-aubergine text-center mb-2"
+            style={{ fontSize: 20 }}
+          >
+            Vous êtes intéressé·e
+          </h3>
+          <p className="text-[13px] text-aubergine-light font-light leading-relaxed text-center mb-5">
+            En indiquant que vous réfléchissez, vous signalez votre intérêt à{" "}
+            <strong>{orgName}</strong> sans vous engager. Ils pourront vous
+            recontacter si nécessaire.
+          </p>
+
+          <div className="mb-4">
+            <label className="text-[11px] font-medium text-[#524970] block mb-1.5">
+              Message pour {orgName}
+              <span className="text-grey font-normal ml-1">(optionnel)</span>
+            </label>
+            <textarea
+              value={thinkingNote}
+              onChange={(e) => setThinkingNote(e.target.value.slice(0, 300))}
+              placeholder="Ex : Je suis très intéressé·e mais j'attends d'avoir toutes les informations avant de décider."
+              className="w-full border border-[rgba(45,38,64,0.12)] rounded-xl p-3 text-[12px] text-aubergine font-light resize-none h-20 outline-none focus:border-[#8B7FA8] placeholder:text-grey"
+            />
+            <div className="text-[10px] text-grey text-right mt-1">
+              {thinkingNote.length}/300
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowThinking(false)}
+              className="flex-1 py-2.5 border border-[rgba(45,38,64,0.15)] rounded-xl text-[13px] text-[#524970]"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleThinking}
+              disabled={submitting}
+              className="flex-1 py-2.5 bg-[#8B7FA8] text-white rounded-xl text-[13px] font-medium disabled:opacity-50"
+            >
+              {submitting ? "Envoi…" : "Signaler mon intérêt"}
             </button>
           </div>
         </Modal>
@@ -293,6 +475,88 @@ export function DecisionBlock({
       )}
     </section>
   );
+}
+
+/* -------- Helpers for the acceptance recap -------- */
+
+interface TopFigure {
+  label: string;
+  sublabel?: string;
+  value: string;
+  color: string;
+}
+
+function totalCompHorsEquity(estimate: PackageEstimate): number {
+  return (
+    (estimate.salaryEst ?? 0) +
+    (estimate.variableEst ?? 0) +
+    (estimate.benefitsEst ?? 0) +
+    (estimate.peeEst ?? 0) +
+    (estimate.interEst ?? 0) +
+    (estimate.participationEst ?? 0)
+  );
+}
+
+function buildTopFigures(
+  pkg: PackageData,
+  estimate: PackageEstimate,
+): TopFigure[] {
+  const figures: TopFigure[] = [];
+
+  if (estimate.salaryEst > 0) {
+    figures.push({
+      label: "Fixe net mensuel estimé",
+      sublabel: pkg.gross_salary
+        ? `${Number(pkg.gross_salary).toLocaleString("fr-FR")} € bruts annuels`
+        : undefined,
+      value: `~${formatEur(Math.round(estimate.salaryEst / 12))}`,
+      color: "#2D2640",
+    });
+  }
+
+  const realiste = estimate.equityByScenario?.find(
+    (s) => s.label?.toLowerCase() === "realiste" || s.label?.toLowerCase() === "réaliste",
+  );
+  const realisteEquity = realiste?.estimateHighSeniority ?? 0;
+  if (realisteEquity > 0) {
+    const deviceType =
+      (pkg.equity_devices?.[0] as any)?.type?.toUpperCase() ?? "Equity";
+    figures.push({
+      label: `${deviceType} — scénario réaliste`,
+      sublabel: "Si ≥ 3 ans d'ancienneté",
+      value: `~${formatEur(realisteEquity)}`,
+      color: "#8B7FA8",
+    });
+  }
+
+  const peeVal = estimate.peeEst ?? 0;
+  const varVal = estimate.variableEst ?? 0;
+  const benefitsVal = estimate.benefitsEst ?? 0;
+
+  if (peeVal > 0 && peeVal >= varVal) {
+    figures.push({
+      label: "Abondement PEE employeur",
+      sublabel: "Si vous versez au maximum",
+      value: `~${formatEur(peeVal)}`,
+      color: "#C4A882",
+    });
+  } else if (varVal > 0) {
+    figures.push({
+      label: "Variable cible annuel",
+      sublabel: "Si objectifs à 100%",
+      value: `~${formatEur(varVal)}`,
+      color: "#C4A882",
+    });
+  } else if (benefitsVal > 0) {
+    figures.push({
+      label: "Avantages valorisés",
+      sublabel: "Ce que vous n'avancez pas",
+      value: `~${formatEur(benefitsVal)}`,
+      color: "#3B6D11",
+    });
+  }
+
+  return figures.slice(0, 3);
 }
 
 export function CandidateMessagingBlock({

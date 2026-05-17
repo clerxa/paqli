@@ -3,6 +3,13 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { inferJobFamily, inferSeniority } from "./jobBenchmark";
 
+export type CurrentPackagePayload = {
+  gross_salary?: number | null;
+  variable_target?: number | null;
+  benefits?: Array<{ label: string; annual_value: number }>;
+  note?: string | null;
+};
+
 const InputSchema = z.object({
   token: z.string().min(4).max(128).regex(/^[a-zA-Z0-9_-]+$/),
 });
@@ -17,6 +24,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
          simulated_at, return_visits,
          status, status_updated_at, decision_deadline,
          thinking_note, thinking_at,
+         candidate_current_package, candidate_current_package_at,
          packages (
            id, title, gross_salary, variable_target, variable_config, benefits,
            scenario_message, scenario_display, interview_notes,
@@ -136,6 +144,8 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       decisionDeadline: (link as any).decision_deadline as string | null,
       thinkingNote: (link as any).thinking_note as string | null,
       thinkingAt: (link as any).thinking_at as string | null,
+      currentPackage: ((link as any).candidate_current_package ?? null) as CurrentPackagePayload | null,
+      currentPackageAt: ((link as any).candidate_current_package_at ?? null) as string | null,
       counterOffer,
       messages: (messages ?? []) as Array<{
         id: string;

@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PTokenRouteImport } from './routes/p/$token'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppAlertsRouteImport } from './routes/_app/alerts'
 import { Route as AppPackagesIndexRouteImport } from './routes/_app/packages/index'
 import { Route as AppJobsIndexRouteImport } from './routes/_app/jobs/index'
 import { Route as AppCandidatesIndexRouteImport } from './routes/_app/candidates/index'
@@ -69,6 +70,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAlertsRoute = AppAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPackagesIndexRoute = AppPackagesIndexRouteImport.update({
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/welcome': typeof WelcomeRoute
+  '/alerts': typeof AppAlertsRoute
   '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/welcome': typeof WelcomeRoute
+  '/alerts': typeof AppAlertsRoute
   '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/welcome': typeof WelcomeRoute
+  '/_app/alerts': typeof AppAlertsRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/welcome'
+    | '/alerts'
     | '/dashboard'
     | '/settings'
     | '/p/$token'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/welcome'
+    | '/alerts'
     | '/dashboard'
     | '/settings'
     | '/p/$token'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/welcome'
+    | '/_app/alerts'
     | '/_app/dashboard'
     | '/_app/settings'
     | '/p/$token'
@@ -359,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/alerts': {
+      id: '/_app/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AppAlertsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/packages/': {
@@ -463,6 +482,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAlertsRoute: typeof AppAlertsRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppCandidatesIdRoute: typeof AppCandidatesIdRoute
@@ -477,6 +497,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAlertsRoute: AppAlertsRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppCandidatesIdRoute: AppCandidatesIdRoute,

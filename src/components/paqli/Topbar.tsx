@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Menu } from "lucide-react";
 import { useMobileNav } from "./MobileNav";
+import { NotificationBell } from "./NotificationBell";
 
 interface TopbarProps {
   title: ReactNode;
@@ -32,9 +33,10 @@ export function Topbar({ title, actions }: TopbarProps) {
           {title}
         </div>
       </div>
-      {actions && (
-        <div className="flex items-center gap-2 shrink-0">{actions}</div>
-      )}
+      <div className="flex items-center gap-1 shrink-0">
+        <NotificationBell />
+        {actions}
+      </div>
     </div>
   );
 }

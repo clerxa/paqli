@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   X,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "./Logo";
@@ -18,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMobileNav } from "./MobileNav";
 import { useLinkQuota } from "@/hooks/useLinkQuota";
 import { useSidebarCounts } from "@/hooks/useSidebarCounts";
+import { useHrAlerts } from "@/hooks/useHrAlerts";
 
 interface NavItem {
   to?: string;

@@ -734,8 +734,13 @@ function PackageView({
                 data={data}
                 orgName={org?.name ?? "l'entreprise"}
                 pkgTitle={pkg.title}
+                pkg={pkg}
+                estimate={estimate}
                 onStatusChange={(status, statusUpdatedAt) =>
                   setData((prev) => (prev ? { ...prev, offerStatus: status, statusUpdatedAt } : prev))
+                }
+                onThinkingUpdate={(note, at) =>
+                  setData((prev) => (prev ? { ...prev, thinkingNote: note, thinkingAt: at } : prev))
                 }
               />
             )}

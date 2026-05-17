@@ -374,10 +374,11 @@ function ProblemSection() {
         </div>
 
         <div className="mt-14 grid md:grid-cols-3 gap-5">
-          {items.map((it) => (
+          {items.map((it, i) => (
             <div
               key={it.title}
-              className="feature-card p-6 bg-white border border-[rgba(45,38,64,0.08)] rounded-2xl text-left"
+              className="feature-card scroll-reveal p-6 bg-white border border-[rgba(45,38,64,0.08)] rounded-2xl text-left"
+              style={{ ["--reveal-delay" as never]: `${i * 120}ms` }}
             >
               <div className="text-3xl">{it.icon}</div>
               <h3 className="mt-3 font-display text-[20px] text-[#2D2640]">{it.title}</h3>

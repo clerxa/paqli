@@ -710,6 +710,9 @@ function PackageView({
               candidateName={data.candidate_name}
               hasSimulated={!!data.simulated_at}
               returnVisits={data.return_visits ?? 0}
+              proactiveSuggestion={proactiveSuggestion}
+              onClearProactiveSuggestion={() => setProactiveSuggestion(null)}
+              onAssistantUserMessage={() => setAssistantHasMessages(true)}
             />
           </div>
           <SectionTitle className="mt-6">Échangez avec l'équipe</SectionTitle>

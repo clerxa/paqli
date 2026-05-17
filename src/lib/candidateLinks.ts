@@ -20,9 +20,13 @@ export async function generateCandidateLink(
     const { data: usedRaw } = await supabase.rpc("links_sent_this_month", { _org_id: orgId });
     const used = typeof usedRaw === "number" ? usedRaw : 0;
     if (used >= quota) {
-      throw new Error(
-        `Quota mensuel atteint (${used}/${quota} liens). Passez à un plan supérieur pour en envoyer davantage.`,
-      );
+      const err = new Error(
+        `Quota mensuel atteint (${used}/${quota} liens).`,
+      ) as Error & { code?: string; used?: number; quota?: number };
+      err.code = "QUOTA_REACHED";
+      err.used = used;
+      err.quota = quota;
+      throw err;
     }
   }
 

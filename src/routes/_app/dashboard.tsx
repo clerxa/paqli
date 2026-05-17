@@ -202,6 +202,12 @@ function DashboardPage() {
         }
       />
       <div className="px-4 sm:px-7 py-4 sm:py-6 space-y-6">
+        {/* Actions prioritaires */}
+        <ActionAlertsSection
+          organizationId={organization?.id}
+          onAction={handleAlertAction}
+        />
+
         {/* Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {loading || !metrics ? (

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { computeEngagement } from "@/lib/engagement.server";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -96,14 +97,13 @@ export const Route = createFileRoute("/api/public/track-behavior")({
             .eq("id", link.id);
         }
 
-        // Fire-and-forget: recompute engagement score
-        const url = new URL(request.url);
-        const computeUrl = `${url.origin}/api/public/compute-engagement`;
-        void fetch(computeUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ linkId: link.id }),
-        }).catch(() => {});
+        // Recompute engagement synchronously (fire-and-forget fetch is killed
+        // by the Worker runtime without waitUntil).
+        try {
+          await computeEngagement(link.id);
+        } catch (e) {
+          console.error("[track-behavior] computeEngagement failed", e);
+        }
 
         return new Response(JSON.stringify({ success: true }), {
           status: 200,

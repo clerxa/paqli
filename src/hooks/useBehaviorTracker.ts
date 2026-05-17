@@ -104,11 +104,13 @@ export function useBehaviorTracker(
     (sectionId: string) => {
       if (tracked.current.has(`section_${sectionId}`)) {
         sectionStartTimes.current[sectionId] = Date.now();
+        callbacksRef.current?.onSectionView?.(sectionId);
         return;
       }
       tracked.current.add(`section_${sectionId}`);
       sectionStartTimes.current[sectionId] = Date.now();
       track("section_view", { section: sectionId });
+      callbacksRef.current?.onSectionView?.(sectionId);
     },
     [track],
   );
@@ -121,6 +123,7 @@ export function useBehaviorTracker(
       delete sectionStartTimes.current[sectionId];
       if (durationS < 2) return;
       track("section_time", { section: sectionId, durationS });
+      callbacksRef.current?.onSectionTime?.(sectionId, durationS);
     },
     [track],
   );

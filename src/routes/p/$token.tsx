@@ -21,6 +21,11 @@ import { askCandidateAssistant } from "@/lib/candidateAssistant.functions";
 import { trackLink } from "@/lib/trackLink.functions";
 import { useBehaviorTracker } from "@/hooks/useBehaviorTracker";
 import {
+  useProactiveAssistant,
+  type ProactiveSuggestion,
+} from "@/hooks/useProactiveAssistant";
+import { ProactiveSuggestionBubble } from "@/components/paqli/candidate/ProactiveSuggestionBubble";
+import {
   DecisionBlock,
   CandidateMessagingBlock,
 } from "@/components/paqli/candidate/DecisionBlocks";

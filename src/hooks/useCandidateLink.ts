@@ -31,6 +31,8 @@ export interface CandidateLinkData {
   offerStatus: string;
   statusUpdatedAt: string | null;
   decisionDeadline: string | null;
+  thinkingNote: string | null;
+  thinkingAt: string | null;
   counterOffer: CounterOfferInfo | null;
   messages: PublicMessage[];
   packages: PackageData;

@@ -562,6 +562,8 @@ function PackageView({
             <TotalCompensationBlock
               breakdown={estimate.benefitsBreakdown}
               totalAnnual={estimate.benefitsEst}
+              isReturnVisit={!!data.opened_at && (data.return_visits ?? 0) > 0}
+              hasSimulated={!!data.simulated_at}
             />
           )}
 

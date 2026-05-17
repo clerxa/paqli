@@ -1,6 +1,65 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DemoModal } from "@/components/landing/DemoModal";
+
+/* Animated number counter (eased) */
+function useCountUp(target: number, duration = 1400, start = false) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    let raf = 0;
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - t0) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(target * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration, start]);
+  return value;
+}
+
+/* In-view (one-shot) */
+function useInView<T extends HTMLElement>(threshold = 0.3) {
+  const ref = useRef<T | null>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const o = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setInView(true); o.disconnect(); } },
+      { threshold }
+    );
+    o.observe(el);
+    return () => o.disconnect();
+  }, [threshold]);
+  return { ref, inView };
+}
+
+/* Pointer-based 3D tilt */
+function useTilt<T extends HTMLElement>(intensity = 5) {
+  const ref = useRef<T | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onMove = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      el.style.transform = `perspective(1000px) rotateY(${x * intensity}deg) rotateX(${-y * intensity}deg) translateY(-4px)`;
+    };
+    const onLeave = () => { el.style.transform = ""; };
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
+    };
+  }, [intensity]);
+  return ref;
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -118,9 +177,19 @@ function Navbar({ onDemo }: { onDemo: () => void }) {
 /* Hero mockup (right side)                           */
 /* -------------------------------------------------- */
 function HeroMockup() {
+  const { ref: inViewRef, inView } = useInView<HTMLDivElement>(0.3);
+  const tcValue = useCountUp(102000, 1600, inView);
+  const scoreValue = useCountUp(82, 1400, inView);
+  const tiltRef = useTilt<HTMLDivElement>(4);
+
+  const formatted = tcValue.toLocaleString("fr-FR").replace(/,/g, " ");
+
   return (
-    <div className="relative w-full max-w-md mx-auto">
-      <div className="rounded-2xl bg-white border border-[rgba(45,38,64,0.08)] overflow-hidden shadow-[0_30px_60px_-30px_rgba(45,38,64,0.25)]">
+    <div ref={inViewRef} className="relative w-full max-w-md mx-auto animate-float">
+      <div
+        ref={tiltRef}
+        className="tilt rounded-2xl bg-white border border-[rgba(45,38,64,0.08)] overflow-hidden shadow-[0_30px_60px_-30px_rgba(45,38,64,0.35)] will-change-transform"
+      >
         {/* Browser bar */}
         <div className="flex items-center gap-2 px-3 py-2.5 bg-[#F0EBE8] border-b border-[rgba(45,38,64,0.06)]">
           <div className="flex gap-1.5">
@@ -141,8 +210,8 @@ function HeroMockup() {
           </div>
 
           <div className="mt-5 text-[11px] uppercase tracking-wider text-[#9B97A0]">Votre package vaut</div>
-          <div className="font-display text-[44px] text-[#2D2640] leading-none mt-1 animate-[fade-in_0.6s_ease-out]">
-            ~102 000 €
+          <div className="font-display text-[44px] leading-none mt-1 text-aurora tabular-nums">
+            ~{formatted} €
           </div>
           <div className="text-[11px] text-[#9B97A0] mt-1">par an · hors equity</div>
 
@@ -155,18 +224,21 @@ function HeroMockup() {
           <div className="mt-4 p-3 rounded-xl bg-[#FAF8F5]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-[#524970]">Score engagement</span>
-              <span className="text-[12px] font-medium text-[#2D2640]">82/100 🔥</span>
+              <span className="text-[12px] font-medium text-[#2D2640] tabular-nums">{scoreValue}/100 🔥</span>
             </div>
             <div className="mt-2 h-1.5 bg-[#F0EBE8] rounded-full overflow-hidden">
-              <div className="h-full w-[82%] bg-gradient-to-r from-[#8B7FA8] to-[#C4A882] rounded-full" />
+              <div
+                className="h-full bg-gradient-to-r from-[#8B7FA8] to-[#C4A882] rounded-full transition-[width] duration-[1400ms] ease-out"
+                style={{ width: `${scoreValue}%` }}
+              />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Badge EN DIRECT */}
+      {/* Badge EN DIRECT with ping ring */}
       <div className="absolute -top-3 -right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[rgba(45,38,64,0.08)] shadow-md">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#3B6D11] animate-pulse" />
+        <span className="relative w-1.5 h-1.5 rounded-full bg-[#3B6D11] text-[#3B6D11] ping-soft" />
         <span className="text-[10px] font-medium tracking-wider text-[#2D2640]">EN DIRECT</span>
       </div>
     </div>
@@ -188,20 +260,24 @@ function Row({ label, value }: { label: string; value: string }) {
 function Hero({ onDemo }: { onDemo: () => void }) {
   return (
     <section className="relative pt-32 md:pt-36 pb-16 md:pb-24 px-5 bg-[#FAF8F5] overflow-hidden">
-      <div className="max-w-6xl mx-auto grid md:grid-cols-[55%_45%] gap-12 items-center">
-        <div>
-          <span className="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium text-[#8B7FA8] bg-[rgba(139,127,168,0.12)]">
-            Nouveau — Total Compensation à la française
+      {/* Decorative orbs */}
+      <div className="orb orb-1 -top-20 -left-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(139,127,168,0.45), transparent 70%)" }} />
+      <div className="orb orb-2 top-40 -right-32 w-[480px] h-[480px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.35), transparent 70%)" }} />
+
+      <div className="relative max-w-6xl mx-auto grid md:grid-cols-[55%_45%] gap-12 items-center">
+        <div className="scroll-reveal revealed">
+          <span className="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium text-[#8B7FA8] bg-[rgba(139,127,168,0.12)] border border-[rgba(139,127,168,0.2)] backdrop-blur-sm animate-paqli-slide-up" style={{ animationDelay: "0ms" }}>
+            ✨ Nouveau — Total Compensation à la française
           </span>
-          <h1 className="mt-5 font-display text-[#2D2640] leading-[1.05]" style={{ fontSize: "clamp(36px, 5vw, 62px)" }}>
-            Le package qui se comprend du premier coup.
+          <h1 className="mt-5 font-display text-[#2D2640] leading-[1.05] animate-paqli-slide-up" style={{ fontSize: "clamp(36px, 5vw, 62px)", animationDelay: "100ms" }}>
+            Le package qui se comprend <span className="text-aurora">du premier coup.</span>
           </h1>
-          <p className="mt-5 font-light text-[#524970] leading-relaxed" style={{ fontSize: "clamp(16px, 1.5vw, 19px)" }}>
+          <p className="mt-5 font-light text-[#524970] leading-relaxed animate-paqli-slide-up" style={{ fontSize: "clamp(16px, 1.5vw, 19px)", animationDelay: "200ms" }}>
             Transformez chaque offre en conversation transparente.
             Simulateur fiscal, Total Compensation, suivi IA — votre candidat décide.
           </p>
 
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-7 flex flex-wrap gap-3 animate-paqli-slide-up" style={{ animationDelay: "300ms" }}>
             <button
               onClick={onDemo}
               className="cta-primary px-6 py-3.5 bg-[#2D2640] text-white rounded-xl text-[15px] font-medium hover:bg-[#3D3554] transition-colors"
@@ -216,13 +292,15 @@ function Hero({ onDemo }: { onDemo: () => void }) {
             </a>
           </div>
 
-          <div className="mt-5 flex items-center gap-2 text-[12px] text-[#9B97A0]">
+          <div className="mt-5 flex items-center gap-2 text-[12px] text-[#9B97A0] animate-paqli-slide-up" style={{ animationDelay: "400ms" }}>
             <span className="text-[#C4A882]">★★★★★</span>
             <span>Utilisé par 50+ équipes RH tech</span>
           </div>
         </div>
 
-        <HeroMockup />
+        <div className="animate-paqli-slide-up" style={{ animationDelay: "350ms" }}>
+          <HeroMockup />
+        </div>
       </div>
     </section>
   );
@@ -239,10 +317,10 @@ function LogoBar() {
         <span className="text-[12px] text-[#524970] whitespace-nowrap">
           Utilisé par les équipes talent de →
         </span>
-        <div className="flex-1 overflow-hidden">
-          <div className="flex gap-12 md:justify-around animate-marquee md:animate-none whitespace-nowrap">
-            {[...logos, ...logos].map((l, i) => (
-              <span key={i} className="font-display text-[22px] text-[#2D2640] opacity-40">
+        <div className="flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+          <div className="flex gap-16 animate-marquee whitespace-nowrap">
+            {[...logos, ...logos, ...logos].map((l, i) => (
+              <span key={i} className="font-display text-[22px] text-[#2D2640] opacity-40 hover:opacity-80 transition-opacity">
                 {l}
               </span>
             ))}
@@ -296,10 +374,11 @@ function ProblemSection() {
         </div>
 
         <div className="mt-14 grid md:grid-cols-3 gap-5">
-          {items.map((it) => (
+          {items.map((it, i) => (
             <div
               key={it.title}
-              className="feature-card p-6 bg-white border border-[rgba(45,38,64,0.08)] rounded-2xl text-left"
+              className="feature-card scroll-reveal p-6 bg-white border border-[rgba(45,38,64,0.08)] rounded-2xl text-left"
+              style={{ ["--reveal-delay" as never]: `${i * 120}ms` }}
             >
               <div className="text-3xl">{it.icon}</div>
               <h3 className="mt-3 font-display text-[20px] text-[#2D2640]">{it.title}</h3>
@@ -324,8 +403,10 @@ function SolutionSection() {
     { n: 5, icon: "✅", title: "Closer", desc: "Promesse d'embauche" },
   ];
   return (
-    <section className="py-20 md:py-28 bg-[#2D2640] px-5 text-white scroll-reveal">
-      <div className="max-w-5xl mx-auto text-center">
+    <section className="relative py-20 md:py-28 bg-[#2D2640] px-5 text-white scroll-reveal overflow-hidden">
+      <div className="orb orb-1 top-10 -left-32 w-[400px] h-[400px]" style={{ background: "radial-gradient(circle, rgba(139,127,168,0.35), transparent 70%)" }} />
+      <div className="orb orb-2 -bottom-20 -right-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.25), transparent 70%)" }} />
+      <div className="relative max-w-5xl mx-auto text-center">
         <Tag dark>La solution Paqli</Tag>
         <h2 className="mt-4 font-display leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
           Une conversation transparente,
@@ -489,8 +570,10 @@ function FieldRow({ label, value, green }: { label: string; value: string; green
 /* -------------------------------------------------- */
 function TotalCompSection() {
   return (
-    <section className="py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal">
-      <div className="max-w-5xl mx-auto">
+    <section className="relative py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal overflow-hidden">
+      <div className="orb orb-2 top-20 -right-40 w-[500px] h-[500px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.3), transparent 70%)" }} />
+      <div className="orb orb-1 -bottom-20 -left-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(139,127,168,0.3), transparent 70%)" }} />
+      <div className="relative max-w-5xl mx-auto">
         <div className="text-center">
           <Tag dark>Différenciateur</Tag>
           <h2 className="mt-4 font-display leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
@@ -575,8 +658,12 @@ function AISection() {
         </div>
 
         <div className="mt-12 grid md:grid-cols-2 gap-5">
-          {features.map((f) => (
-            <div key={f.title} className="feature-card p-6 bg-white border border-[rgba(45,38,64,0.08)] rounded-2xl">
+          {features.map((f, i) => (
+            <div
+              key={f.title}
+              className="feature-card scroll-reveal p-6 bg-white border border-[rgba(45,38,64,0.08)] rounded-2xl"
+              style={{ ["--reveal-delay" as never]: `${i * 100}ms` }}
+            >
               <div className="text-3xl">{f.icon}</div>
               <h3 className="mt-3 font-display text-[20px] text-[#2D2640]">{f.title}</h3>
               <p className="mt-2 text-[14px] text-[#524970] font-light leading-relaxed">{f.desc}</p>
@@ -617,8 +704,12 @@ function TestimonialsSection() {
         </div>
 
         <div className="mt-12 grid md:grid-cols-3 gap-5">
-          {items.map((t) => (
-            <div key={t.name} className="p-6 bg-white rounded-2xl border border-[rgba(139,127,168,0.2)]">
+          {items.map((t, i) => (
+            <div
+              key={t.name}
+              className="feature-card scroll-reveal p-6 bg-white rounded-2xl border border-[rgba(139,127,168,0.2)]"
+              style={{ ["--reveal-delay" as never]: `${i * 120}ms` }}
+            >
               <div className="text-[#C4A882] text-[14px]">★★★★★</div>
               <p className="mt-3 font-display italic text-[16px] text-[#2D2640] leading-relaxed">
                 "{t.quote}"
@@ -784,10 +875,11 @@ function PricingSection({ onDemo }: { onDemo: () => void }) {
 /* -------------------------------------------------- */
 function FinalCTA({ onDemo }: { onDemo: () => void }) {
   return (
-    <section className="py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal">
-      <div className="max-w-3xl mx-auto text-center">
+    <section className="relative py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal overflow-hidden">
+      <div className="orb orb-1 top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px]" style={{ background: "radial-gradient(ellipse, rgba(196,168,130,0.25), transparent 70%)" }} />
+      <div className="relative max-w-3xl mx-auto text-center">
         <h2 className="font-display leading-tight" style={{ fontSize: "clamp(32px, 4.5vw, 52px)" }}>
-          Prêt à closer mieux ?
+          Prêt à closer <span className="text-aurora">mieux ?</span>
         </h2>
         <p className="mt-4 text-[16px] text-[#B8AECF] font-light">
           Rejoignez les équipes talent qui utilisent Paqli pour transformer leurs offres en décisions éclairées.

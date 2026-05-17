@@ -229,7 +229,7 @@ La somme des "weight" doit faire 1. Les 3 axes de différenciation doivent peser
         package_id: data.packageId,
         organization_id: organizationId,
         content: content as any,
-        model: "claude-sonnet-4-20250514",
+        model: "claude-haiku-4-5",
         prompt_version: "v1",
         generated_at: new Date().toISOString(),
         generated_by: userId,

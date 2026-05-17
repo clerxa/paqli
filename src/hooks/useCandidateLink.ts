@@ -23,8 +23,11 @@ export interface CandidateLinkData {
   id: string;
   token: string;
   candidate_name: string | null;
+  candidate_email: string | null;
   expires_at: string | null;
   opened_at: string | null;
+  simulated_at: string | null;
+  return_visits: number;
   offerStatus: string;
   statusUpdatedAt: string | null;
   decisionDeadline: string | null;

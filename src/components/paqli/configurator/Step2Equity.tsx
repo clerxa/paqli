@@ -1,6 +1,8 @@
+import { Link } from "@tanstack/react-router";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { usePackageCoach } from "@/hooks/usePackageCoach";
 import { CoachTipInline } from "@/components/paqli/CoachTipInline";
+import { useOrgCatalogs } from "@/lib/orgCatalog";
 import {
   Chip,
   EduBanner,
@@ -17,29 +19,47 @@ const types: { value: EquityType; label: string; icon: string }[] = [
   { value: "espp", label: "ESPP", icon: "💼" },
 ];
 
-function newDevice(type: EquityType): EquityDeviceForm {
+function newDevice(
+  type: EquityType,
+  defaults?: {
+    vesting_years?: number;
+    cliff_months?: number;
+    default_strike_price?: number;
+    default_valuation_m?: number;
+    special_conditions?: string | null;
+  },
+): EquityDeviceForm {
   return {
     id: crypto.randomUUID(),
     type,
     quantity: 0,
-    strikePrice: 0,
-    currentValuationM: 0,
-    vestingYears: 4,
-    cliffMonths: 6,
-    specialConditions: "",
+    strikePrice: defaults?.default_strike_price ?? 0,
+    currentValuationM: defaults?.default_valuation_m ?? 0,
+    vestingYears: defaults?.vesting_years ?? 4,
+    cliffMonths: defaults?.cliff_months ?? 6,
+    specialConditions: defaults?.special_conditions ?? "",
   };
 }
 
 export function Step2Equity() {
   const { config, patch } = usePackageConfig();
+  const { equity: orgEquity } = useOrgCatalogs();
   const devices = config.equityDevices;
+
+  // Types disponibles dans le catalogue de l'entreprise (s'il est configuré)
+  const catalogTypes = orgEquity.map((c) => c.type);
+  const visibleTypes =
+    catalogTypes.length > 0
+      ? types.filter((t) => catalogTypes.includes(t.value))
+      : types;
 
   const toggleType = (t: EquityType) => {
     const exists = devices.find((d) => d.type === t);
     if (exists) {
       patch({ equityDevices: devices.filter((d) => d.type !== t) });
     } else {
-      patch({ equityDevices: [...devices, newDevice(t)] });
+      const cat = orgEquity.find((c) => c.type === t);
+      patch({ equityDevices: [...devices, newDevice(t, cat ?? undefined)] });
     }
   };
 

@@ -155,10 +155,12 @@ export function Sidebar() {
   const navigate = useNavigate();
   const { open, setOpen } = useMobileNav();
   const counts = useSidebarCounts();
+  const { unreadCount: alertsUnread } = useHrAlerts();
   const badgeByRoute: Record<string, number> = {
     "/jobs": counts.jobs,
     "/packages": counts.packages,
     "/candidates": counts.candidates,
+    "/alerts": alertsUnread,
   };
 
   // Auto-close drawer on route change (mobile)

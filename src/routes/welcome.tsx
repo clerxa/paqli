@@ -41,7 +41,7 @@ function WelcomePage() {
         const fullName =
           (user.user_metadata?.full_name as string | undefined) ?? null;
         const orgId = await ensureOrgAndProfile(fullName);
-        await seedDemoData(orgId, user.id).catch((e) =>
+        await seedDemoData().catch((e) =>
           console.error("seedDemoData failed", e),
         );
       } catch (e) {

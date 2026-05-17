@@ -173,7 +173,7 @@ function DashboardPage() {
 
   useEffect(() => {
     if (user && organization && !loading && packages.length === 0 && metrics?.totalLinks === 0) {
-      seedDemoData(organization.id, user.id).catch((e) =>
+      seedDemoData().catch((e) =>
         console.error("seedDemoData failed", e),
       );
     }

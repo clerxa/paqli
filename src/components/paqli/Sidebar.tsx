@@ -17,6 +17,7 @@ import { Logo } from "./Logo";
 import { useAuth } from "@/hooks/useAuth";
 import { useMobileNav } from "./MobileNav";
 import { useLinkQuota } from "@/hooks/useLinkQuota";
+import { useSidebarCounts } from "@/hooks/useSidebarCounts";
 
 interface NavItem {
   to?: string;
@@ -29,7 +30,7 @@ interface NavItem {
 const main: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/jobs", label: "Offres d'emploi", icon: Briefcase },
-  { to: "/packages", label: "Packages", icon: Package, badge: 4 },
+  { to: "/packages", label: "Packages", icon: Package },
   { to: "/candidates", label: "Candidats", icon: Users },
 ];
 
@@ -150,6 +151,12 @@ export function Sidebar() {
   const { profile, organization, signOut, user } = useAuth();
   const navigate = useNavigate();
   const { open, setOpen } = useMobileNav();
+  const counts = useSidebarCounts();
+  const badgeByRoute: Record<string, number> = {
+    "/jobs": counts.jobs,
+    "/packages": counts.packages,
+    "/candidates": counts.candidates,
+  };
 
   // Auto-close drawer on route change (mobile)
   useEffect(() => {
@@ -212,13 +219,16 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 px-3 pt-6 overflow-y-auto">
-          {main.map((item) => (
-            <NavLink
-              key={item.label}
-              item={item}
-              active={!!item.to && pathname.startsWith(item.to)}
-            />
-          ))}
+          {main.map((item) => {
+            const badge = item.to ? badgeByRoute[item.to] : undefined;
+            return (
+              <NavLink
+                key={item.label}
+                item={{ ...item, badge: badge && badge > 0 ? badge : undefined }}
+                active={!!item.to && pathname.startsWith(item.to)}
+              />
+            );
+          })}
 
           <SectionLabel>Formation</SectionLabel>
           {formation.map((item) => (

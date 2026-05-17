@@ -617,10 +617,8 @@ function TotalCompSection() {
         <div className="text-center">
           <Tag dark>Différenciateur</Tag>
           <h2 className="mt-4 font-display leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
-            La vraie valeur
+            La vraie valeur de votre offre,
             <br />
-            <span className="text-[#C4A882]">de votre offre.</span>
-            <span className="hidden">            <br />
             <span className="text-[#C4A882]">enfin visible.</span>
           </h2>
         </div>

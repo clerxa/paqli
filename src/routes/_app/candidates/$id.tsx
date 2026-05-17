@@ -305,6 +305,14 @@ function CandidateDetail() {
           <BehaviorView linkId={link.id} />
         </Card>
 
+        {/* Conversations IA candidat ↔ assistant */}
+        <Card>
+          <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 18 }}>
+            Conversations avec l'assistant IA
+          </h2>
+          <AiConversationPanel linkId={link.id} />
+        </Card>
+
         {/* Activité chronologique + messagerie */}
         <Card>
           <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 18 }}>
@@ -312,6 +320,7 @@ function CandidateDetail() {
           </h2>
           <LinkActivityPanel linkId={link.id} candidateName={name} />
         </Card>
+
 
         {/* Résumé package */}
         {pkg && (

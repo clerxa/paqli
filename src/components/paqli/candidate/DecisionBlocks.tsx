@@ -47,6 +47,9 @@ export function DecisionBlock({
 
   const status = data.offerStatus;
   const statusUpdatedAt = data.statusUpdatedAt;
+  const firstName = data.candidate_name
+    ? data.candidate_name.trim().split(/\s+/)[0] ?? null
+    : null;
 
   async function handleAccept() {
     setSubmitting(true);

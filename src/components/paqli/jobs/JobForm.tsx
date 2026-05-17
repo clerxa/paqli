@@ -126,23 +126,8 @@ export function JobForm({
     patch({ growthPaths: value.growthPaths.filter((_, j) => j !== i) });
   }
 
-  function setStep(i: number, p: Partial<ProcessStep>) {
-    const next = [...value.processSteps];
-    next[i] = { ...next[i], ...p };
-    patch({ processSteps: next });
-  }
-  function addStep() {
-    if (value.processSteps.length >= 6) return;
-    patch({
-      processSteps: [...value.processSteps, { step: "", duration: "" }],
-    });
-  }
-  function removeStep(i: number) {
-    patch({ processSteps: value.processSteps.filter((_, j) => j !== i) });
-  }
-  function loadTemplate(t: keyof typeof PROCESS_TEMPLATES) {
-    patch({ processSteps: PROCESS_TEMPLATES[t] });
-  }
+
+
 
   return (
     <div className="space-y-7">

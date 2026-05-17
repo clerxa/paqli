@@ -1720,7 +1720,7 @@ function Assistant({
           placeholder={
             quotaExceeded
               ? "Limite atteinte — utilisez la messagerie."
-              : "Ex : Que se passe-t-il avec mes BSPCE si l'entreprise est rachetée ?"
+              : placeholder
           }
           rows={2}
           disabled={quotaExceeded}

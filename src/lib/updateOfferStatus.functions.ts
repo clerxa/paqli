@@ -14,9 +14,10 @@ const VALID_CATEGORIES = [
 
 const InputSchema = z.object({
   token: z.string().min(4).max(128).regex(/^[a-zA-Z0-9_-]+$/),
-  status: z.enum(["accepted", "declined"]),
+  status: z.enum(["accepted", "declined", "thinking"]),
   declineCategory: z.enum(VALID_CATEGORIES).optional().nullable(),
   declineReason: z.string().max(300).optional().nullable(),
+  thinkingNote: z.string().max(300).optional().nullable(),
 });
 
 export const updateOfferStatus = createServerFn({ method: "POST" })
@@ -42,25 +43,37 @@ export const updateOfferStatus = createServerFn({ method: "POST" })
     const isChange =
       previousStatus !== "pending" && previousStatus !== data.status;
 
+    const nowIso = new Date().toISOString();
+    const updatePayload: Record<string, unknown> = {
+      status: data.status,
+      status_updated_at: nowIso,
+      decline_category:
+        data.status === "declined" ? (data.declineCategory ?? null) : null,
+      decline_reason:
+        data.status === "declined" && data.declineReason
+          ? data.declineReason.slice(0, 300)
+          : null,
+    };
+
+    if (data.status === "thinking") {
+      updatePayload.thinking_at = nowIso;
+      updatePayload.thinking_note = data.thinkingNote
+        ? data.thinkingNote.slice(0, 300)
+        : null;
+    }
+
     await supabaseAdmin
       .from("candidate_links")
-      .update({
-        status: data.status,
-        status_updated_at: new Date().toISOString(),
-        decline_category:
-          data.status === "declined" ? (data.declineCategory ?? null) : null,
-        decline_reason:
-          data.status === "declined" && data.declineReason
-            ? data.declineReason.slice(0, 300)
-            : null,
-      })
+      .update(updatePayload)
       .eq("id", link.id);
 
     const eventType = isChange
       ? "decision_changed"
       : data.status === "accepted"
         ? "offer_accepted"
-        : "offer_declined";
+        : data.status === "declined"
+          ? "offer_declined"
+          : "status_thinking";
 
     await supabaseAdmin.from("link_events").insert({
       link_id: link.id,
@@ -72,12 +85,20 @@ export const updateOfferStatus = createServerFn({ method: "POST" })
         decline_reason_preview: data.declineReason
           ? data.declineReason.slice(0, 50)
           : null,
+        thinking_note_preview: data.thinkingNote
+          ? data.thinkingNote.slice(0, 50)
+          : null,
       } as any,
     });
 
     return {
       success: true,
       status: data.status,
-      statusUpdatedAt: new Date().toISOString(),
+      statusUpdatedAt: nowIso,
+      thinkingAt: data.status === "thinking" ? nowIso : null,
+      thinkingNote:
+        data.status === "thinking"
+          ? (data.thinkingNote?.slice(0, 300) ?? null)
+          : null,
     };
   });

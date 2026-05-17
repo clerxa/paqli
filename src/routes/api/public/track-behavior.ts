@@ -19,6 +19,7 @@ const VALID_EVENTS = [
   "page_return",
   "opened",
   "simulated",
+  "reveal_clicked",
 ] as const;
 
 const InputSchema = z.object({

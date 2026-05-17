@@ -108,6 +108,14 @@ export function Configurator() {
         actions={
           <div className="flex items-center gap-3">
             <SaveIndicator state={saveState} />
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-[rgba(45,38,64,0.15)] rounded-lg text-[12px] font-medium text-[#524970] hover:bg-[#F5F2FA] hover:border-[rgba(139,127,168,0.3)] transition-all flex-shrink-0"
+            >
+              <Eye size={14} />
+              {previewLabel}
+            </button>
             <Button variant="ghost" onClick={saveDraft}>
               Enregistrer
             </Button>

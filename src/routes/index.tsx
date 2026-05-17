@@ -570,8 +570,10 @@ function FieldRow({ label, value, green }: { label: string; value: string; green
 /* -------------------------------------------------- */
 function TotalCompSection() {
   return (
-    <section className="py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal">
-      <div className="max-w-5xl mx-auto">
+    <section className="relative py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal overflow-hidden">
+      <div className="orb orb-2 top-20 -right-40 w-[500px] h-[500px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.3), transparent 70%)" }} />
+      <div className="orb orb-1 -bottom-20 -left-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(139,127,168,0.3), transparent 70%)" }} />
+      <div className="relative max-w-5xl mx-auto">
         <div className="text-center">
           <Tag dark>Différenciateur</Tag>
           <h2 className="mt-4 font-display leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>

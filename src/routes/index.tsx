@@ -260,20 +260,24 @@ function Row({ label, value }: { label: string; value: string }) {
 function Hero({ onDemo }: { onDemo: () => void }) {
   return (
     <section className="relative pt-32 md:pt-36 pb-16 md:pb-24 px-5 bg-[#FAF8F5] overflow-hidden">
-      <div className="max-w-6xl mx-auto grid md:grid-cols-[55%_45%] gap-12 items-center">
-        <div>
-          <span className="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium text-[#8B7FA8] bg-[rgba(139,127,168,0.12)]">
-            Nouveau — Total Compensation à la française
+      {/* Decorative orbs */}
+      <div className="orb orb-1 -top-20 -left-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(139,127,168,0.45), transparent 70%)" }} />
+      <div className="orb orb-2 top-40 -right-32 w-[480px] h-[480px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.35), transparent 70%)" }} />
+
+      <div className="relative max-w-6xl mx-auto grid md:grid-cols-[55%_45%] gap-12 items-center">
+        <div className="scroll-reveal revealed">
+          <span className="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium text-[#8B7FA8] bg-[rgba(139,127,168,0.12)] border border-[rgba(139,127,168,0.2)] backdrop-blur-sm animate-paqli-slide-up" style={{ animationDelay: "0ms" }}>
+            ✨ Nouveau — Total Compensation à la française
           </span>
-          <h1 className="mt-5 font-display text-[#2D2640] leading-[1.05]" style={{ fontSize: "clamp(36px, 5vw, 62px)" }}>
-            Le package qui se comprend du premier coup.
+          <h1 className="mt-5 font-display text-[#2D2640] leading-[1.05] animate-paqli-slide-up" style={{ fontSize: "clamp(36px, 5vw, 62px)", animationDelay: "100ms" }}>
+            Le package qui se comprend <span className="text-aurora">du premier coup.</span>
           </h1>
-          <p className="mt-5 font-light text-[#524970] leading-relaxed" style={{ fontSize: "clamp(16px, 1.5vw, 19px)" }}>
+          <p className="mt-5 font-light text-[#524970] leading-relaxed animate-paqli-slide-up" style={{ fontSize: "clamp(16px, 1.5vw, 19px)", animationDelay: "200ms" }}>
             Transformez chaque offre en conversation transparente.
             Simulateur fiscal, Total Compensation, suivi IA — votre candidat décide.
           </p>
 
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-7 flex flex-wrap gap-3 animate-paqli-slide-up" style={{ animationDelay: "300ms" }}>
             <button
               onClick={onDemo}
               className="cta-primary px-6 py-3.5 bg-[#2D2640] text-white rounded-xl text-[15px] font-medium hover:bg-[#3D3554] transition-colors"
@@ -288,13 +292,15 @@ function Hero({ onDemo }: { onDemo: () => void }) {
             </a>
           </div>
 
-          <div className="mt-5 flex items-center gap-2 text-[12px] text-[#9B97A0]">
+          <div className="mt-5 flex items-center gap-2 text-[12px] text-[#9B97A0] animate-paqli-slide-up" style={{ animationDelay: "400ms" }}>
             <span className="text-[#C4A882]">★★★★★</span>
             <span>Utilisé par 50+ équipes RH tech</span>
           </div>
         </div>
 
-        <HeroMockup />
+        <div className="animate-paqli-slide-up" style={{ animationDelay: "350ms" }}>
+          <HeroMockup />
+        </div>
       </div>
     </section>
   );

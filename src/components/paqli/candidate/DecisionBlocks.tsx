@@ -7,6 +7,8 @@ import type {
   CandidateLinkData,
   PublicMessage,
 } from "@/hooks/useCandidateLink";
+import type { PackageEstimate, PackageData } from "@/lib/clientCalc";
+import { formatEur } from "@/lib/clientCalc";
 
 const DECLINE_OPTIONS = [
   { key: "salary", label: "💰 Rémunération fixe" },

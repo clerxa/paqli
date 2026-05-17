@@ -151,6 +151,12 @@ export function Sidebar() {
   const { profile, organization, signOut, user } = useAuth();
   const navigate = useNavigate();
   const { open, setOpen } = useMobileNav();
+  const counts = useSidebarCounts();
+  const badgeByRoute: Record<string, number> = {
+    "/jobs": counts.jobs,
+    "/packages": counts.packages,
+    "/candidates": counts.candidates,
+  };
 
   // Auto-close drawer on route change (mobile)
   useEffect(() => {

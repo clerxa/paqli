@@ -175,6 +175,8 @@ export type Database = {
           ai_questions_cap: number
           ai_questions_count: number
           behavior_data: Json | null
+          candidate_current_package: Json | null
+          candidate_current_package_at: string | null
           candidate_email: string | null
           candidate_name: string | null
           counter_offer_id: string | null
@@ -210,6 +212,8 @@ export type Database = {
           ai_questions_cap?: number
           ai_questions_count?: number
           behavior_data?: Json | null
+          candidate_current_package?: Json | null
+          candidate_current_package_at?: string | null
           candidate_email?: string | null
           candidate_name?: string | null
           counter_offer_id?: string | null
@@ -245,6 +249,8 @@ export type Database = {
           ai_questions_cap?: number
           ai_questions_count?: number
           behavior_data?: Json | null
+          candidate_current_package?: Json | null
+          candidate_current_package_at?: string | null
           candidate_email?: string | null
           candidate_name?: string | null
           counter_offer_id?: string | null

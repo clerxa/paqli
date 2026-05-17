@@ -19,6 +19,13 @@ export interface CounterOfferInfo {
   originalToken: string | null;
 }
 
+export interface CurrentPackagePayload {
+  gross_salary?: number | null;
+  variable_target?: number | null;
+  benefits?: Array<{ label: string; annual_value: number }>;
+  note?: string | null;
+}
+
 export interface CandidateLinkData {
   id: string;
   token: string;
@@ -33,6 +40,8 @@ export interface CandidateLinkData {
   decisionDeadline: string | null;
   thinkingNote: string | null;
   thinkingAt: string | null;
+  currentPackage: CurrentPackagePayload | null;
+  currentPackageAt: string | null;
   counterOffer: CounterOfferInfo | null;
   messages: PublicMessage[];
   packages: PackageData;
@@ -75,6 +84,8 @@ export function useCandidateLink(token: string) {
           decisionDeadline: (ok as any).decisionDeadline ?? null,
           thinkingNote: (ok as any).thinkingNote ?? null,
           thinkingAt: (ok as any).thinkingAt ?? null,
+          currentPackage: (ok as any).currentPackage ?? null,
+          currentPackageAt: (ok as any).currentPackageAt ?? null,
           counterOffer: (ok as any).counterOffer ?? null,
           messages: ok.messages,
           packages: ok.package as unknown as PackageData,

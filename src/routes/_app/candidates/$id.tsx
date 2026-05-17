@@ -42,6 +42,13 @@ interface LinkRow {
   time_on_page_total: number | null;
   return_visits: number | null;
   expires_at: string | null;
+  candidate_current_package: {
+    gross_salary?: number | null;
+    variable_target?: number | null;
+    benefits?: Array<{ label: string; annual_value: number }>;
+    note?: string | null;
+  } | null;
+  candidate_current_package_at: string | null;
 }
 
 function CandidateDetail() {
@@ -58,7 +65,7 @@ function CandidateDetail() {
     const { data, error } = await supabase
       .from("candidate_links")
       .select(
-        "id, token, package_id, candidate_name, candidate_email, created_at, opened_at, simulated_at, status, decline_category, decline_reason, engagement_score, engagement_label, intent_prediction, decision_deadline, time_on_page_total, return_visits, expires_at",
+        "id, token, package_id, candidate_name, candidate_email, created_at, opened_at, simulated_at, status, decline_category, decline_reason, engagement_score, engagement_label, intent_prediction, decision_deadline, time_on_page_total, return_visits, expires_at, candidate_current_package, candidate_current_package_at",
       )
       .eq("id", id)
       .maybeSingle();
@@ -305,7 +312,21 @@ function CandidateDetail() {
           <BehaviorView linkId={link.id} />
         </Card>
 
+        {/* Package actuel saisi par le candidat */}
+        {link.candidate_current_package && (
+          <Card>
+            <h2 className="font-display text-aubergine mb-1" style={{ fontSize: 18 }}>
+              Package actuel du candidat
+            </h2>
+            <p className="text-[12px] text-aubergine-light mb-4">
+              Renseigné par le candidat{link.candidate_current_package_at ? ` le ${new Date(link.candidate_current_package_at).toLocaleDateString("fr-FR")}` : ""}.
+            </p>
+            <CurrentPackageRecap data={link.candidate_current_package} />
+          </Card>
+        )}
+
         {/* Conversations IA candidat ↔ assistant */}
+
         <Card>
           <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 18 }}>
             Conversations avec l'assistant IA
@@ -444,4 +465,53 @@ function formatDuration(seconds: number): string {
   if (m < 60) return s ? `${m}m ${s}s` : `${m}m`;
   const h = Math.floor(m / 60);
   return `${h}h ${m % 60}m`;
+}
+
+function CurrentPackageRecap({
+  data,
+}: {
+  data: {
+    gross_salary?: number | null;
+    variable_target?: number | null;
+    benefits?: Array<{ label: string; annual_value: number }>;
+    note?: string | null;
+  };
+}) {
+  const fmt = (v: number) =>
+    new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
+  const gross = Number(data.gross_salary) || 0;
+  const variable = Number(data.variable_target) || 0;
+  const benefitsTotal = (data.benefits ?? []).reduce((s, b) => s + (Number(b.annual_value) || 0), 0);
+  const total = gross + variable + benefitsTotal;
+  return (
+    <div className="space-y-3 text-[13px]">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Stat label="Salaire brut" value={gross ? fmt(gross) : "—"} />
+        <Stat label="Variable cible" value={variable ? fmt(variable) : "—"} />
+        <Stat label="Avantages" value={benefitsTotal ? fmt(benefitsTotal) : "—"} />
+        <Stat label="Total annuel" value={total ? fmt(total) : "—"} highlight />
+      </div>
+      {data.benefits && data.benefits.length > 0 && (
+        <ul className="text-[12px] text-aubergine-light list-disc pl-5">
+          {data.benefits.map((b, i) => (
+            <li key={i}>{b.label} — {fmt(Number(b.annual_value) || 0)}/an</li>
+          ))}
+        </ul>
+      )}
+      {data.note && (
+        <div className="rounded-lg p-3 text-[12px] text-aubergine" style={{ background: "#FAF8F5" }}>
+          {data.note}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className="rounded-lg p-3" style={{ background: highlight ? "#FAEEDA" : "#F5F2FA" }}>
+      <div className="text-[11px] text-aubergine-light">{label}</div>
+      <div className="font-display text-aubergine mt-1" style={{ fontSize: 16 }}>{value}</div>
+    </div>
+  );
 }

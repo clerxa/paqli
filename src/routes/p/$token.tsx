@@ -33,6 +33,7 @@ import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
 import { TotalCompensationBlock } from "@/components/paqli/candidate/TotalCompensationBlock";
 import { CandidateHeroReveal } from "@/components/paqli/candidate/CandidateHeroReveal";
 import { MobileFloatingCTA } from "@/components/paqli/candidate/MobileFloatingCTA";
+import { CurrentPackageComparator } from "@/components/paqli/candidate/CurrentPackageComparator";
 import {
   buildAssistantPlaceholder,
   buildAssistantWelcomeMessage,
@@ -120,20 +121,24 @@ type TabKey =
   | "team"
   | "package"
   | "comparatif"
+  | "mon_offre"
   | "questions"
   | "next";
 
-const TABS: { key: TabKey; label: string; highlight?: boolean }[] = [
+const TABS: { key: TabKey; label: string; highlight?: boolean; optional?: boolean }[] = [
   { key: "welcome", label: "Bienvenue" },
   { key: "offre", label: "Offre" },
   { key: "entreprise", label: "Entreprise" },
   { key: "flex", label: "Flexibilité" },
   { key: "team", label: "Équipe & culture" },
   { key: "package", label: "Package", highlight: true },
-  { key: "comparatif", label: "Comparatif" },
+  { key: "comparatif", label: "Comparatif marché" },
+  { key: "mon_offre", label: "Mon offre actuelle", optional: true },
   { key: "questions", label: "Échanger" },
   { key: "next", label: "Ma décision" },
 ];
+
+const REQUIRED_TABS = TABS.filter((t) => !t.optional).map((t) => t.key);
 
 function PackageView({
   data,
@@ -205,7 +210,8 @@ function PackageView({
   });
 
   const tabOrder = TABS.map((t) => t.key);
-  const allTabsVisited = tabOrder.every((k) => visitedTabs.has(k));
+  const optionalTabs = new Set(TABS.filter((t) => t.optional).map((t) => t.key));
+  const allTabsVisited = REQUIRED_TABS.every((k) => visitedTabs.has(k));
   const allTabsVisitedRef = useRef(allTabsVisited);
 
   // When current tab changes, mark visited + track
@@ -221,7 +227,7 @@ function PackageView({
       }
       behavior.track("section_view", { section: `tab_${tab}` });
       const wasComplete = allTabsVisitedRef.current;
-      const nowComplete = tabOrder.every((k) => next.has(k));
+      const nowComplete = REQUIRED_TABS.every((k) => next.has(k));
       if (!wasComplete && nowComplete) {
         allTabsVisitedRef.current = true;
         behavior.track("section_view", { section: "all_tabs_completed" });
@@ -231,16 +237,18 @@ function PackageView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  // Guarded tab change — only allow visited or the immediate next tab (until all done)
+  // Guarded tab change — optional tabs are always reachable; required tabs follow
+  // sequential gating (visited or immediate next) until all required are visited.
   const canGoToTab = useCallback(
     (target: TabKey) => {
+      if (optionalTabs.has(target)) return true;
       if (allTabsVisited) return true;
       if (visitedTabs.has(target)) return true;
       const currentIdx = tabOrder.indexOf(tab);
       const targetIdx = tabOrder.indexOf(target);
       return targetIdx === currentIdx + 1;
     },
-    [allTabsVisited, visitedTabs, tab, tabOrder],
+    [allTabsVisited, visitedTabs, tab, tabOrder, optionalTabs],
   );
 
   const tryChangeTab = useCallback(
@@ -699,6 +707,26 @@ function PackageView({
 
       {tab === "comparatif" && (
         <BenchmarkTab pkg={pkg} />
+      )}
+
+      {tab === "mon_offre" && (
+        <div data-section="mon_offre">
+          <CurrentPackageComparator
+            token={data.token}
+            paqliGrossSalary={pkg.gross_salary ?? 0}
+            paqliVariableTarget={pkg.variable_target ?? 0}
+            paqliBenefitsAnnualValue={(pkg.package_benefits ?? []).reduce(
+              (sum: number, b: any) => sum + (Number(b.annual_value) || (Number(b.monthly_value) || 0) * 12),
+              0,
+            )}
+            initial={data.currentPackage}
+            onSaved={(payload, savedAt) =>
+              setData((prev) =>
+                prev ? { ...prev, currentPackage: payload, currentPackageAt: savedAt } : prev,
+              )
+            }
+          />
+        </div>
       )}
 
       {tab === "questions" && (

@@ -656,7 +656,7 @@ function SendLinkModal({
           description: "Passez à un plan supérieur pour envoyer plus de liens.",
           action: {
             label: "Voir les plans",
-            onClick: () => navigate({ to: "/settings", hash: "plan" }),
+            onClick: () => navigate({ to: "/settings", search: { tab: "plan" as const } }),
           },
           duration: 10000,
         });

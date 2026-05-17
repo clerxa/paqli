@@ -955,6 +955,93 @@ function AISection() {
 }
 
 /* -------------------------------------------------- */
+/* Control — RH reassurance                          */
+/* -------------------------------------------------- */
+function ControlSection() {
+  const guarantees = [
+    {
+      icon: "🎛️",
+      title: "Vous contrôlez ce qui s'affiche",
+      desc: "Chaque élément du package, chaque avantage, chaque chiffre : vous décidez ce qui est visible. Paqli n'expose rien sans votre validation.",
+    },
+    {
+      icon: "🔒",
+      title: "Aucune info confidentielle révélée",
+      desc: "Paq ne compare jamais à des offres concurrentes nominatives. Pas de fuite salariale, pas de grille interne exposée. Vous gardez la main.",
+    },
+    {
+      icon: "🤝",
+      title: "Paq ne négocie pas à votre place",
+      desc: "L'agent informe, simule, clarifie. Mais il oriente toujours vers votre RH pour la négociation. Aucune contre-proposition générée.",
+    },
+    {
+      icon: "📊",
+      title: "Vos données, vos règles",
+      desc: "Hébergement EU, conformité RGPD, suppression à la demande. Vos packages et vos candidats restent vôtres.",
+    },
+  ];
+
+  return (
+    <section className="relative py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal overflow-hidden">
+      <div className="orb orb-1 -top-20 -right-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.22), transparent 70%)" }} />
+      <div className="orb orb-2 -bottom-20 -left-20 w-[360px] h-[360px]" style={{ background: "radial-gradient(circle, rgba(139,127,168,0.25), transparent 70%)" }} />
+      <div className="relative max-w-6xl mx-auto">
+        <div className="text-center">
+          <Tag dark>Pour les RH exigeants</Tag>
+          <h2 className="mt-4 font-display leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
+            Transparent pour le candidat.
+            <br />
+            <span className="text-[#C4A882]">Sous contrôle pour vous.</span>
+          </h2>
+          <p className="mt-5 text-[15px] md:text-[16px] text-[#B8AECF] font-light max-w-2xl mx-auto">
+            La transparence ne se fait jamais contre vous. Paqli est un outil d'entreprise :
+            vous gardez la main sur le contenu, la négociation et la donnée.
+          </p>
+        </div>
+
+        {/* Guarantees grid */}
+        <div className="mt-12 grid md:grid-cols-2 gap-4">
+          {guarantees.map((g, i) => (
+            <div
+              key={g.title}
+              className="scroll-reveal flex items-start gap-4 p-5 md:p-6 rounded-2xl bg-[#3D3554] border border-[rgba(255,255,255,0.08)]"
+              style={{ ["--reveal-delay" as never]: `${i * 100}ms` }}
+            >
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-[rgba(196,168,130,0.15)] border border-[rgba(196,168,130,0.3)] flex items-center justify-center text-[20px]">
+                {g.icon}
+              </div>
+              <div>
+                <h3 className="font-display text-[17px]">{g.title}</h3>
+                <p className="mt-1.5 text-[13px] text-[#B8AECF] font-light leading-relaxed">{g.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Outcome bar */}
+        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 p-6 md:p-8 rounded-2xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-sm">
+          {[
+            { kpi: "+25%", label: "taux d'acceptation moyen" },
+            { kpi: "-40%", label: "temps de décision candidat" },
+            { kpi: "0", label: "négociation menée par l'IA" },
+            { kpi: "100%", label: "contrôle RH sur l'affichage" },
+          ].map((s) => (
+            <div key={s.label} className="text-center md:text-left">
+              <div className="font-display text-[24px] md:text-[30px] text-[#C4A882]">{s.kpi}</div>
+              <div className="text-[11px] md:text-[12px] text-[#B8AECF] font-light mt-1 leading-tight">{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-8 text-center text-[13px] text-[#B8AECF] italic font-light">
+          La transparence augmente le closing. Pas l'inverse.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------- */
 /* Testimonials                                       */
 /* -------------------------------------------------- */
 function TestimonialsSection() {
@@ -1259,6 +1346,7 @@ function LandingPage() {
       <ProductSection />
       <TotalCompSection />
       <AISection />
+      <ControlSection />
       <TestimonialsSection />
       <PricingSection onDemo={openDemo} />
       <FinalCTA onDemo={openDemo} />

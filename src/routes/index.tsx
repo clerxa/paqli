@@ -515,10 +515,10 @@ function ProductSection() {
     {
       id: "candidat",
       label: "Candidat — Simulation",
-      desc: "Total Compensation interactive. Le candidat comprend sa valeur en temps réel.",
+      desc: "Rémunération globale interactive. Le candidat comprend sa valeur en temps réel.",
       mockup: (
         <div className="p-6 bg-white rounded-xl border border-[rgba(45,38,64,0.08)]">
-          <div className="text-[11px] uppercase tracking-wider text-[#9B97A0]">Total Compensation</div>
+          <div className="text-[11px] uppercase tracking-wider text-[#9B97A0]">Rémunération globale</div>
           <div className="font-display text-[44px] text-[#2D2640] leading-none mt-1">~102 000 €</div>
           <div className="mt-4 space-y-2">
             <FieldRow label="Fixe net" value="43 300 €" green />
@@ -617,7 +617,7 @@ function TotalCompSection() {
         <div className="text-center">
           <Tag dark>Différenciateur</Tag>
           <h2 className="mt-4 font-display leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
-            La Total Compensation
+            La vraie valeur de votre offre,
             <br />
             <span className="text-[#C4A882]">enfin visible.</span>
           </h2>
@@ -649,7 +649,7 @@ function TotalCompSection() {
               <CompRow label="📚 Formation" value="~2 000 €/an" />
             </div>
             <div className="mt-4 pt-4 border-t border-[rgba(45,38,64,0.1)] flex justify-between items-center">
-              <span className="font-display text-[16px]">Total Compensation</span>
+              <span className="font-display text-[16px]">Rémunération globale</span>
               <span className="font-display text-[22px] text-[#3B6D11]">~102 000 €</span>
             </div>
             <div className="mt-3 inline-block px-3 py-1.5 rounded-full bg-[rgba(59,109,17,0.12)] text-[12px] text-[#3B6D11] font-medium">
@@ -803,7 +803,7 @@ function TestimonialsSection() {
       name: "Marc D.", role: "Talent Acquisition Lead · Staveo", color: "#C4A882",
     },
     {
-      quote: "La Total Compensation, c'est ce qui nous manquait. On avait des avantages formidables — GymLib, Moka.care, 3 000€ de formation — mais personne ne les calculait. Maintenant tout est visible.",
+      quote: "La rémunération globale, c'est ce qui nous manquait. On avait des avantages formidables — GymLib, Moka.care, 3 000€ de formation — mais personne ne les calculait. Maintenant tout est visible.",
       name: "Camille L.", role: "DRH · Archon (Série A)", color: "#3D3554",
     },
   ];
@@ -1028,7 +1028,7 @@ function Footer() {
           <div className="font-display text-[24px] text-[#2D2640]">paqli</div>
           <div className="text-[12px] text-[#9B97A0] mt-1">paqli.fr</div>
           <p className="mt-3 text-[13px] text-[#524970] font-light leading-relaxed">
-            La Total Compensation enfin visible.
+            La vraie valeur de votre offre, enfin visible.
           </p>
         </div>
         <FooterCol title="Produit" links={["Fonctionnalités", "Tarifs", "Démo"]} />

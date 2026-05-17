@@ -326,6 +326,9 @@ function CandidateDetail() {
           </Card>
         )}
 
+        {/* Suggestions IA de relance basées sur les signaux candidat */}
+        <CandidateAlertsCard linkId={link.id} />
+
         {/* Conversations IA candidat ↔ assistant */}
 
         <Card>

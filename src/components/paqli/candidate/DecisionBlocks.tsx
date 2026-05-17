@@ -55,6 +55,18 @@ export function DecisionBlock({
   const [submitting, setSubmitting] = useState(false);
   const update = useServerFn(updateOfferStatus);
 
+  // Allow external triggers (e.g. MobileFloatingCTA) to open modals
+  useEffect(() => {
+    const onOpenAccept = () => setShowAccept(true);
+    const onOpenThinking = () => setShowThinking(true);
+    window.addEventListener("paqli:open-accept", onOpenAccept);
+    window.addEventListener("paqli:open-thinking", onOpenThinking);
+    return () => {
+      window.removeEventListener("paqli:open-accept", onOpenAccept);
+      window.removeEventListener("paqli:open-thinking", onOpenThinking);
+    };
+  }, []);
+
   const status = data.offerStatus;
   const statusUpdatedAt = data.statusUpdatedAt;
   const firstName = data.candidate_name

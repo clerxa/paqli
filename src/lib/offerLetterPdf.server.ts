@@ -1,5 +1,5 @@
-// Server-only HTML builder for the hiring promise document.
-// V1: returns HTML stored in Storage; rendered in iframe; printable via browser.
+// Real PDF generation for hiring promise documents — runs in Workers via pdf-lib.
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 
 export interface OfferLetterSnapshot {
   candidateName: string;
@@ -22,6 +22,8 @@ export interface OfferLetterSnapshot {
   rhName: string;
   rhEmail: string;
   generatedAt: string;
+  /** Free-form additional clauses written by the RH */
+  additionalClauses?: string | null;
 }
 
 const CONTRACT_LABELS: Record<string, string> = {
@@ -39,213 +41,456 @@ const REMOTE_LABELS: Record<string, string> = {
   on_site: "Présentiel complet",
 };
 
-function escapeHtml(s: string): string {
+// ── Sanitize text for WinAnsi-encoded standard fonts ─────────────────────────
+function sanitize(s: string): string {
   return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replace(/[\u2018\u2019\u201B]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2013\u2014]/g, "-")
+    .replace(/\u2026/g, "...")
+    .replace(/\u00A0/g, " ")
+    .replace(/\u20AC/g, "€")
+    // Strip any remaining non-WinAnsi chars (emoji etc.)
+    .replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF€]/g, "");
 }
 
-export function buildOfferLetterHtml(s: OfferLetterSnapshot): string {
-  const generatedDate = new Date(s.generatedAt).toLocaleDateString("fr-FR", {
+function fmtEUR(n: number): string {
+  return `${Math.round(n).toLocaleString("fr-FR")} €`;
+}
+
+function fmtDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("fr-FR", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
+}
 
-  const salaryLine = s.variableTarget
-    ? `${s.grossSalary.toLocaleString("fr-FR")} € bruts annuels, auxquels s'ajoute une rémunération variable cible de ${s.variableTarget.toLocaleString("fr-FR")} € bruts annuels selon les objectifs définis`
-    : `${s.grossSalary.toLocaleString("fr-FR")} € bruts annuels`;
+interface Cursor {
+  page: PDFPage;
+  y: number;
+}
 
-  const trialLine = s.trialPeriodMonths
-    ? `${s.trialPeriodMonths} mois${s.trialPeriodRenewable ? ", renouvelable une fois dans les conditions légales" : ""}`
-    : null;
+const A4 = { width: 595.28, height: 841.89 };
+const MARGIN = { left: 56, right: 56, top: 56, bottom: 64 };
+const CONTENT_WIDTH = A4.width - MARGIN.left - MARGIN.right;
 
+const INK = rgb(0.176, 0.149, 0.251); // #2D2640
+const MUTED = rgb(0.322, 0.286, 0.439); // #524970
+const FAINT = rgb(0.608, 0.592, 0.627); // #9B97A0
+const RULE = rgb(0.85, 0.83, 0.88);
+
+function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
+  const lines: string[] = [];
+  for (const rawLine of text.split("\n")) {
+    if (!rawLine.trim()) {
+      lines.push("");
+      continue;
+    }
+    const words = rawLine.split(/\s+/);
+    let current = "";
+    for (const word of words) {
+      const test = current ? `${current} ${word}` : word;
+      if (font.widthOfTextAtSize(test, size) <= maxWidth) {
+        current = test;
+      } else {
+        if (current) lines.push(current);
+        current = word;
+      }
+    }
+    if (current) lines.push(current);
+  }
+  return lines;
+}
+
+function ensureSpace(
+  doc: PDFDocument,
+  cur: Cursor,
+  needed: number,
+): Cursor {
+  if (cur.y - needed < MARGIN.bottom) {
+    const page = doc.addPage([A4.width, A4.height]);
+    return { page, y: A4.height - MARGIN.top };
+  }
+  return cur;
+}
+
+function drawParagraph(
+  doc: PDFDocument,
+  cur: Cursor,
+  text: string,
+  opts: { font: PDFFont; size: number; color?: ReturnType<typeof rgb>; lineHeight?: number; gapAfter?: number },
+): Cursor {
+  const lh = opts.lineHeight ?? opts.size * 1.45;
+  const lines = wrapText(sanitize(text), opts.font, opts.size, CONTENT_WIDTH);
+  let c = cur;
+  for (const line of lines) {
+    c = ensureSpace(doc, c, lh);
+    c.page.drawText(line, {
+      x: MARGIN.left,
+      y: c.y - opts.size,
+      size: opts.size,
+      font: opts.font,
+      color: opts.color ?? INK,
+    });
+    c = { page: c.page, y: c.y - lh };
+  }
+  if (opts.gapAfter) c = { page: c.page, y: c.y - opts.gapAfter };
+  return c;
+}
+
+function drawSectionTitle(
+  doc: PDFDocument,
+  cur: Cursor,
+  text: string,
+  font: PDFFont,
+): Cursor {
+  let c = ensureSpace(doc, cur, 32);
+  c = { page: c.page, y: c.y - 14 };
+  c.page.drawText(sanitize(text), {
+    x: MARGIN.left,
+    y: c.y - 11,
+    size: 11,
+    font,
+    color: INK,
+  });
+  c = { page: c.page, y: c.y - 14 };
+  c.page.drawLine({
+    start: { x: MARGIN.left, y: c.y },
+    end: { x: MARGIN.left + CONTENT_WIDTH, y: c.y },
+    thickness: 0.6,
+    color: RULE,
+  });
+  return { page: c.page, y: c.y - 10 };
+}
+
+function drawFact(
+  doc: PDFDocument,
+  cur: Cursor,
+  label: string,
+  value: string,
+  fontReg: PDFFont,
+  fontBold: PDFFont,
+): Cursor {
+  const labelSize = 9.5;
+  const valueSize = 10;
+  const labelW = 170;
+  const valueMaxW = CONTENT_WIDTH - labelW - 8;
+  const valueLines = wrapText(sanitize(value), fontBold, valueSize, valueMaxW);
+  const blockH = Math.max(14, valueLines.length * valueSize * 1.35) + 4;
+  let c = ensureSpace(doc, cur, blockH);
+  c.page.drawText(sanitize(label), {
+    x: MARGIN.left,
+    y: c.y - labelSize,
+    size: labelSize,
+    font: fontReg,
+    color: MUTED,
+  });
+  let ly = c.y;
+  for (const line of valueLines) {
+    c.page.drawText(line, {
+      x: MARGIN.left + labelW,
+      y: ly - valueSize,
+      size: valueSize,
+      font: fontBold,
+      color: INK,
+    });
+    ly -= valueSize * 1.35;
+  }
+  return { page: c.page, y: c.y - blockH };
+}
+
+export async function buildOfferLetterPdf(s: OfferLetterSnapshot): Promise<Uint8Array> {
+  const doc = await PDFDocument.create();
+  doc.setTitle(`Promesse d'embauche — ${s.candidateName}`);
+  doc.setAuthor(s.orgName);
+  doc.setProducer("Paqli");
+  doc.setCreator("Paqli");
+
+  const fontReg = await doc.embedFont(StandardFonts.TimesRoman);
+  const fontBold = await doc.embedFont(StandardFonts.TimesRomanBold);
+  const fontItalic = await doc.embedFont(StandardFonts.TimesRomanItalic);
+  const fontSans = await doc.embedFont(StandardFonts.Helvetica);
+  const fontSansBold = await doc.embedFont(StandardFonts.HelveticaBold);
+
+  const page = doc.addPage([A4.width, A4.height]);
+  let cur: Cursor = { page, y: A4.height - MARGIN.top };
+
+  // Header
+  cur.page.drawText(sanitize(s.orgName), {
+    x: MARGIN.left,
+    y: cur.y - 12,
+    size: 12,
+    font: fontSansBold,
+    color: INK,
+  });
+  cur = { page: cur.page, y: cur.y - 16 };
+  const headerLines = [s.orgAddress, `SIRET : ${s.orgSiret}`];
+  for (const l of headerLines) {
+    cur.page.drawText(sanitize(l), {
+      x: MARGIN.left,
+      y: cur.y - 9,
+      size: 9,
+      font: fontSans,
+      color: MUTED,
+    });
+    cur = { page: cur.page, y: cur.y - 12 };
+  }
+  // Date right-aligned
+  const dateText = `Le ${fmtDate(s.generatedAt)}`;
+  const dateW = fontSans.widthOfTextAtSize(sanitize(dateText), 9);
+  cur.page.drawText(sanitize(dateText), {
+    x: A4.width - MARGIN.right - dateW,
+    y: A4.height - MARGIN.top - 12,
+    size: 9,
+    font: fontSans,
+    color: MUTED,
+  });
+
+  cur = { page: cur.page, y: cur.y - 24 };
+
+  // Title
+  const title = "Promesse d'embauche";
+  const titleSize = 22;
+  const titleW = fontReg.widthOfTextAtSize(title, titleSize);
+  cur.page.drawText(title, {
+    x: (A4.width - titleW) / 2,
+    y: cur.y - titleSize,
+    size: titleSize,
+    font: fontReg,
+    color: INK,
+  });
+  cur = { page: cur.page, y: cur.y - titleSize - 20 };
+
+  // Recipient
+  cur.page.drawText("À L'ATTENTION DE", {
+    x: MARGIN.left,
+    y: cur.y - 8,
+    size: 8,
+    font: fontSansBold,
+    color: FAINT,
+  });
+  cur = { page: cur.page, y: cur.y - 14 };
+  cur.page.drawText(sanitize(s.candidateName), {
+    x: MARGIN.left,
+    y: cur.y - 12,
+    size: 12,
+    font: fontBold,
+    color: INK,
+  });
+  cur = { page: cur.page, y: cur.y - 14 };
+  if (s.candidateEmail) {
+    cur.page.drawText(sanitize(s.candidateEmail), {
+      x: MARGIN.left,
+      y: cur.y - 10,
+      size: 10,
+      font: fontReg,
+      color: MUTED,
+    });
+    cur = { page: cur.page, y: cur.y - 14 };
+  }
+
+  cur = { page: cur.page, y: cur.y - 8 };
+  cur = drawParagraph(
+    doc,
+    cur,
+    `${s.orgName} a le plaisir de vous confirmer sa décision de vous recruter aux conditions suivantes :`,
+    { font: fontReg, size: 10.5, gapAfter: 6 },
+  );
+
+  // Section 1 — Poste
+  cur = drawSectionTitle(doc, cur, "1. Poste proposé", fontSansBold);
+  cur = drawFact(doc, cur, "Intitulé du poste", s.jobTitle, fontItalic, fontBold);
+  cur = drawFact(
+    doc,
+    cur,
+    "Type de contrat",
+    CONTRACT_LABELS[s.contractType] ?? s.contractType,
+    fontItalic,
+    fontBold,
+  );
+  cur = drawFact(
+    doc,
+    cur,
+    "Lieu de travail",
+    `${s.locationCity}${s.locationDetails ? ` — ${s.locationDetails}` : ""}`,
+    fontItalic,
+    fontBold,
+  );
   const remoteLine =
     s.remotePolicy && s.remotePolicy !== "on_site"
       ? s.remotePolicy === "hybrid" && s.remoteDays
         ? `Télétravail : ${s.remoteDays} jour${s.remoteDays > 1 ? "s" : ""} par semaine${s.remoteGuaranteed ? " (mentionné au contrat)" : ""}`
         : REMOTE_LABELS[s.remotePolicy] ?? null
       : null;
-
-  return `<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8" />
-<title>Promesse d'embauche — ${escapeHtml(s.candidateName)}</title>
-<style>
-  @page { size: A4; margin: 20mm; }
-  * { box-sizing: border-box; }
-  body {
-    font-family: Georgia, "Times New Roman", serif;
-    color: #2D2640;
-    font-size: 11pt;
-    line-height: 1.55;
-    margin: 0;
-    padding: 32px;
-    background: #FAF8F5;
+  if (remoteLine) {
+    cur = drawFact(doc, cur, "Modalités de télétravail", remoteLine, fontItalic, fontBold);
   }
-  .doc {
-    max-width: 760px;
-    margin: 0 auto;
-    background: white;
-    padding: 48px 56px;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+
+  // Section 2 — Rémunération
+  cur = drawSectionTitle(doc, cur, "2. Rémunération", fontSansBold);
+  cur = drawFact(
+    doc,
+    cur,
+    "Salaire fixe brut annuel",
+    fmtEUR(s.grossSalary),
+    fontItalic,
+    fontBold,
+  );
+  if (s.variableTarget && s.variableTarget > 0) {
+    cur = drawFact(
+      doc,
+      cur,
+      "Variable cible annuel",
+      `${fmtEUR(s.variableTarget)} bruts (selon objectifs définis)`,
+      fontItalic,
+      fontBold,
+    );
+    cur = drawFact(
+      doc,
+      cur,
+      "Rémunération totale cible",
+      `${fmtEUR(s.grossSalary + s.variableTarget)} bruts annuels`,
+      fontItalic,
+      fontBold,
+    );
   }
-  h1 {
-    font-size: 22pt;
-    text-align: center;
-    margin: 32px 0 24px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
+
+  // Section 3 — Conditions d'embauche
+  cur = drawSectionTitle(doc, cur, "3. Conditions d'embauche", fontSansBold);
+  cur = drawFact(
+    doc,
+    cur,
+    "Date de prise de poste",
+    s.startDate ? s.startDate : "À définir conjointement avec le candidat",
+    fontItalic,
+    fontBold,
+  );
+  if (s.trialPeriodMonths) {
+    cur = drawFact(
+      doc,
+      cur,
+      "Période d'essai",
+      `${s.trialPeriodMonths} mois${s.trialPeriodRenewable ? ", renouvelable une fois dans les conditions légales" : ""}`,
+      fontItalic,
+      fontBold,
+    );
   }
-  h2 {
-    font-size: 13pt;
-    border-bottom: 1px solid rgba(45,38,64,0.15);
-    padding-bottom: 6px;
-    margin: 24px 0 12px;
-    font-weight: 600;
+
+  // Section 4 — Clauses additionnelles (si présentes)
+  if (s.additionalClauses && s.additionalClauses.trim()) {
+    cur = drawSectionTitle(doc, cur, "4. Clauses additionnelles", fontSansBold);
+    cur = drawParagraph(doc, cur, s.additionalClauses.trim(), {
+      font: fontReg,
+      size: 10.5,
+      gapAfter: 4,
+    });
   }
-  .header { display: flex; justify-content: space-between; gap: 24px; font-size: 10pt; }
-  .header .org strong { display: block; font-size: 12pt; margin-bottom: 4px; }
-  .header .meta { text-align: right; color: #524970; }
-  .recipient { margin: 24px 0; }
-  .recipient .label { text-transform: uppercase; font-size: 9pt; letter-spacing: 1px; color: #9B97A0; margin-bottom: 4px; }
-  .recipient strong { font-size: 12pt; }
-  dl.facts { margin: 0; }
-  dl.facts > div { display: flex; gap: 16px; margin-bottom: 6px; }
-  dl.facts dt { width: 200px; flex-shrink: 0; color: #524970; font-style: italic; }
-  dl.facts dd { margin: 0; flex: 1; font-weight: 500; }
-  p { margin: 0 0 10px; }
-  .disclaimer {
-    margin: 24px 0;
-    padding: 12px 16px;
-    background: #FAEEDA;
-    border-left: 3px solid #B85A6A;
-    font-size: 10pt;
-    color: #633806;
-    border-radius: 4px;
-  }
-  .signatures {
-    display: flex;
-    gap: 32px;
-    margin-top: 40px;
-  }
-  .sig {
-    flex: 1;
-    border-top: 1px solid rgba(45,38,64,0.2);
-    padding-top: 8px;
-    font-size: 10pt;
-  }
-  .sig .role { text-transform: uppercase; font-size: 9pt; letter-spacing: 1px; color: #9B97A0; margin-bottom: 4px; }
-  .sig .name { font-weight: 600; margin-top: 48px; }
-  .sig .hint { font-style: italic; color: #524970; font-size: 9pt; margin-top: 4px; }
-  footer { margin-top: 32px; text-align: center; font-size: 9pt; color: #9B97A0; }
-  @media print {
-    body { background: white; padding: 0; }
-    .doc { box-shadow: none; padding: 0; }
-  }
-</style>
-</head>
-<body>
-<div class="doc">
-  <header class="header">
-    <div class="org">
-      <strong>${escapeHtml(s.orgName)}</strong>
-      ${escapeHtml(s.orgAddress)}<br/>
-      SIRET : ${escapeHtml(s.orgSiret)}
-    </div>
-    <div class="meta">Le ${generatedDate}</div>
-  </header>
 
-  <h1>Promesse d'embauche</h1>
+  // Section validité
+  const validitySection = s.additionalClauses?.trim()
+    ? "5. Validité de la présente promesse"
+    : "4. Validité de la présente promesse";
+  cur = drawSectionTitle(doc, cur, validitySection, fontSansBold);
+  cur = drawParagraph(
+    doc,
+    cur,
+    "La présente promesse d'embauche est établie sous réserve de la réalisation des conditions habituelles d'embauche (obtention des justificatifs d'identité, visite médicale d'embauche, etc.).",
+    { font: fontReg, size: 10.5, gapAfter: 4 },
+  );
+  cur = drawParagraph(
+    doc,
+    cur,
+    "Nous vous remercions de nous retourner ce document daté et signé, avec la mention manuscrite « Bon pour accord », dans un délai raisonnable à compter de sa réception.",
+    { font: fontReg, size: 10.5, gapAfter: 12 },
+  );
 
-  <div class="recipient">
-    <div class="label">À l'attention de</div>
-    <strong>${escapeHtml(s.candidateName)}</strong>
-    ${s.candidateEmail ? `<div>${escapeHtml(s.candidateEmail)}</div>` : ""}
-  </div>
+  // Signatures (forcer une nouvelle page si besoin)
+  cur = ensureSpace(doc, cur, 120);
+  cur = { page: cur.page, y: cur.y - 20 };
+  const sigBlockW = (CONTENT_WIDTH - 32) / 2;
+  // Rules
+  cur.page.drawLine({
+    start: { x: MARGIN.left, y: cur.y },
+    end: { x: MARGIN.left + sigBlockW, y: cur.y },
+    thickness: 0.6,
+    color: RULE,
+  });
+  cur.page.drawLine({
+    start: { x: MARGIN.left + sigBlockW + 32, y: cur.y },
+    end: { x: MARGIN.left + CONTENT_WIDTH, y: cur.y },
+    thickness: 0.6,
+    color: RULE,
+  });
+  cur.page.drawText(sanitize(`POUR ${s.orgName.toUpperCase()}`), {
+    x: MARGIN.left,
+    y: cur.y - 10,
+    size: 8,
+    font: fontSansBold,
+    color: FAINT,
+  });
+  cur.page.drawText("LE CANDIDAT", {
+    x: MARGIN.left + sigBlockW + 32,
+    y: cur.y - 10,
+    size: 8,
+    font: fontSansBold,
+    color: FAINT,
+  });
+  cur.page.drawText(sanitize(s.rhName || ""), {
+    x: MARGIN.left,
+    y: cur.y - 60,
+    size: 10,
+    font: fontBold,
+    color: INK,
+  });
+  cur.page.drawText(sanitize(s.candidateName), {
+    x: MARGIN.left + sigBlockW + 32,
+    y: cur.y - 60,
+    size: 10,
+    font: fontBold,
+    color: INK,
+  });
+  cur.page.drawText("Date et signature", {
+    x: MARGIN.left,
+    y: cur.y - 74,
+    size: 9,
+    font: fontItalic,
+    color: MUTED,
+  });
+  cur.page.drawText("Date, signature et mention « Bon pour accord »", {
+    x: MARGIN.left + sigBlockW + 32,
+    y: cur.y - 74,
+    size: 9,
+    font: fontItalic,
+    color: MUTED,
+  });
 
-  <p>
-    <strong>${escapeHtml(s.orgName)}</strong> a le plaisir de vous confirmer
-    sa décision de vous recruter aux conditions suivantes :
-  </p>
+  // Footer on each page
+  const total = doc.getPageCount();
+  doc.getPages().forEach((p, idx) => {
+    const footer = sanitize(`Paqli · paqli.fr · ${fmtDate(s.generatedAt)} · Page ${idx + 1}/${total}`);
+    const w = fontSans.widthOfTextAtSize(footer, 8);
+    p.drawText(footer, {
+      x: (A4.width - w) / 2,
+      y: 32,
+      size: 8,
+      font: fontSans,
+      color: FAINT,
+    });
+  });
 
-  <h2>1. Poste proposé</h2>
-  <dl class="facts">
-    <div><dt>Intitulé du poste</dt><dd>${escapeHtml(s.jobTitle)}</dd></div>
-    <div><dt>Type de contrat</dt><dd>${escapeHtml(CONTRACT_LABELS[s.contractType] ?? s.contractType)}</dd></div>
-    <div><dt>Lieu de travail</dt><dd>${escapeHtml(s.locationCity)}${s.locationDetails ? ` — ${escapeHtml(s.locationDetails)}` : ""}</dd></div>
-    ${remoteLine ? `<div><dt>Modalités de télétravail</dt><dd>${escapeHtml(remoteLine)}</dd></div>` : ""}
-  </dl>
-
-  <h2>2. Rémunération</h2>
-  <dl class="facts">
-    <div><dt>Rémunération fixe</dt><dd>${escapeHtml(salaryLine)}.</dd></div>
-  </dl>
-
-  <h2>3. Conditions d'embauche</h2>
-  <dl class="facts">
-    <div>
-      <dt>Date de prise de poste</dt>
-      <dd>${s.startDate ? escapeHtml(s.startDate) : "À définir conjointement avec le candidat"}</dd>
-    </div>
-    ${trialLine ? `<div><dt>Période d'essai</dt><dd>${escapeHtml(trialLine)}</dd></div>` : ""}
-  </dl>
-
-  <h2>4. Validité de la présente promesse</h2>
-  <p>
-    La présente promesse d'embauche est établie sous réserve de la réalisation
-    des conditions habituelles d'embauche (obtention des justificatifs
-    d'identité, visite médicale d'embauche, etc.).
-  </p>
-  <p>
-    Nous vous remercions de nous retourner ce document daté et signé,
-    avec la mention manuscrite « Bon pour accord », dans un délai
-    raisonnable à compter de sa réception.
-  </p>
-
-  <div class="disclaimer">
-    ⚠️ Ce document a été généré automatiquement par Paqli à partir des
-    informations du package de rémunération. Il constitue une base de
-    travail et doit être relu et validé par votre service juridique ou
-    un avocat spécialisé en droit social avant envoi. Paqli ne fournit
-    pas de conseil juridique.
-  </div>
-
-  <div class="signatures">
-    <div class="sig">
-      <div class="role">Pour ${escapeHtml(s.orgName)}</div>
-      <div class="name">${escapeHtml(s.rhName)}</div>
-      <div class="hint">Date et signature</div>
-    </div>
-    <div class="sig">
-      <div class="role">Le candidat</div>
-      <div class="name">${escapeHtml(s.candidateName)}</div>
-      <div class="hint">Date, signature et mention « Bon pour accord »</div>
-    </div>
-  </div>
-
-  <footer>Document généré par Paqli · paqli.fr · ${generatedDate}</footer>
-</div>
-</body>
-</html>`;
+  return await doc.save();
 }
 
-// V1 MVP: store as HTML (Workers don't ship Puppeteer). RH prints from browser.
-// V2: brancher Browserless / Playwright Cloud pour un vrai PDF.
-export function buildOfferLetterDocument(snapshot: OfferLetterSnapshot): {
+export async function buildOfferLetterDocument(snapshot: OfferLetterSnapshot): Promise<{
   bytes: Uint8Array;
   contentType: string;
   extension: string;
-} {
-  const html = buildOfferLetterHtml(snapshot);
+}> {
+  const bytes = await buildOfferLetterPdf(snapshot);
   return {
-    bytes: new TextEncoder().encode(html),
-    contentType: "text/html; charset=utf-8",
-    extension: "html",
+    bytes,
+    contentType: "application/pdf",
+    extension: "pdf",
   };
 }

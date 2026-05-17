@@ -1255,6 +1255,7 @@ function LandingPage() {
       <ProblemSection />
       <LastMileSection />
       <SolutionSection />
+      <ExperienceSection />
       <ProductSection />
       <TotalCompSection />
       <AISection />

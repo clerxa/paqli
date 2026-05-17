@@ -1,28 +1,22 @@
-import logoSrc from "@/assets/paqli-logo.png";
-
 interface LogoProps {
   variant?: "dark" | "light";
-  /** Optional fixed height (px). If omitted, responsive sizing is used. */
+  /** Optional fixed height (px). Drives the font size. */
   size?: number;
   className?: string;
 }
 
-export function Logo({ size, className }: LogoProps) {
-  if (size) {
-    return (
-      <img
-        src={logoSrc}
-        alt="Paqli"
-        style={{ height: size, width: "auto", display: "block" }}
-        className={className}
-      />
-    );
-  }
+export function Logo({ size, variant = "dark", className }: LogoProps) {
+  const color = variant === "light" ? "#FFFFFF" : "#2D2640";
+  const style = size
+    ? { fontSize: size, lineHeight: 1, color }
+    : { color };
+  const sizeClass = size ? "" : "text-[26px] md:text-[32px]";
   return (
-    <img
-      src={logoSrc}
-      alt="Paqli"
-      className={`block w-auto h-12 md:h-16 ${className ?? ""}`}
-    />
+    <span
+      style={style}
+      className={`font-display leading-none select-none ${sizeClass} ${className ?? ""}`}
+    >
+      paqli
+    </span>
   );
 }

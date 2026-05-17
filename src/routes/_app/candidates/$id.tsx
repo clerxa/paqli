@@ -506,12 +506,3 @@ function CurrentPackageRecap({
     </div>
   );
 }
-
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className="rounded-lg p-3" style={{ background: highlight ? "#FAEEDA" : "#F5F2FA" }}>
-      <div className="text-[11px] text-aubergine-light">{label}</div>
-      <div className="font-display text-aubergine mt-1" style={{ fontSize: 16 }}>{value}</div>
-    </div>
-  );
-}

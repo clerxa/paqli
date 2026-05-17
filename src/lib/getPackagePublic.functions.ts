@@ -134,6 +134,8 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       offerStatus: (link.status ?? "pending") as string,
       statusUpdatedAt: link.status_updated_at as string | null,
       decisionDeadline: (link as any).decision_deadline as string | null,
+      thinkingNote: (link as any).thinking_note as string | null,
+      thinkingAt: (link as any).thinking_at as string | null,
       counterOffer,
       messages: (messages ?? []) as Array<{
         id: string;

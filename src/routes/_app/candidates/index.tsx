@@ -29,11 +29,12 @@ interface Row {
   packages: { title: string } | null;
 }
 
-type Filter = "all" | "pending" | "accepted" | "declined";
+type Filter = "all" | "pending" | "thinking" | "accepted" | "declined";
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: "all", label: "Tous" },
   { value: "pending", label: "En attente" },
+  { value: "thinking", label: "En réflexion" },
   { value: "accepted", label: "Acceptés" },
   { value: "declined", label: "Déclinés" },
 ];

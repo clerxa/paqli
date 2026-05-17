@@ -16,9 +16,7 @@ import {
 import { Logo } from "./Logo";
 import { useAuth } from "@/hooks/useAuth";
 import { useMobileNav } from "./MobileNav";
-import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { getLinkQuotaFn } from "@/lib/linkQuota.functions";
+import { useLinkQuota } from "@/hooks/useLinkQuota";
 
 interface NavItem {
   to?: string;
@@ -109,14 +107,7 @@ const PLAN_LABELS: Record<string, string> = {
 };
 
 function PlanWidget() {
-  const fetchQuota = useServerFn(getLinkQuotaFn);
-  const { organization } = useAuth();
-  const { data } = useQuery({
-    queryKey: ["link-quota"],
-    queryFn: () => fetchQuota(),
-    enabled: !!organization,
-    staleTime: 60_000,
-  });
+  const { data } = useLinkQuota();
   if (!data) return null;
   const { used, quota, plan } = data;
   const pct = quota == null || quota === 0 ? 0 : Math.min(100, Math.round((used / quota) * 100));

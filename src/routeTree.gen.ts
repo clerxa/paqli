@@ -26,6 +26,7 @@ import { Route as ApiPublicComputeEngagementRouteImport } from './routes/api/pub
 import { Route as AppPackagesNewRouteImport } from './routes/_app/packages/new'
 import { Route as AppJobsNewRouteImport } from './routes/_app/jobs/new'
 import { Route as AppJobsIdRouteImport } from './routes/_app/jobs/$id'
+import { Route as AppCandidatesIdRouteImport } from './routes/_app/candidates/$id'
 import { Route as AppPackagesIdIndexRouteImport } from './routes/_app/packages/$id/index'
 import { Route as ApiPublicHooksRunRemindersRouteImport } from './routes/api/public/hooks/run-reminders'
 import { Route as ApiPublicHooksDeadlineNotifierRouteImport } from './routes/api/public/hooks/deadline-notifier'
@@ -116,6 +117,11 @@ const AppJobsIdRoute = AppJobsIdRouteImport.update({
   path: '/jobs/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCandidatesIdRoute = AppCandidatesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppCandidatesRoute,
+} as any)
 const AppPackagesIdIndexRoute = AppPackagesIdIndexRouteImport.update({
   id: '/packages/$id/',
   path: '/packages/$id/',
@@ -144,10 +150,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/welcome': typeof WelcomeRoute
-  '/candidates': typeof AppCandidatesRoute
+  '/candidates': typeof AppCandidatesRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
+  '/candidates/$id': typeof AppCandidatesIdRoute
   '/jobs/$id': typeof AppJobsIdRoute
   '/jobs/new': typeof AppJobsNewRoute
   '/packages/new': typeof AppPackagesNewRoute
@@ -166,10 +173,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/welcome': typeof WelcomeRoute
-  '/candidates': typeof AppCandidatesRoute
+  '/candidates': typeof AppCandidatesRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
+  '/candidates/$id': typeof AppCandidatesIdRoute
   '/jobs/$id': typeof AppJobsIdRoute
   '/jobs/new': typeof AppJobsNewRoute
   '/packages/new': typeof AppPackagesNewRoute
@@ -190,10 +198,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/welcome': typeof WelcomeRoute
-  '/_app/candidates': typeof AppCandidatesRoute
+  '/_app/candidates': typeof AppCandidatesRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
+  '/_app/candidates/$id': typeof AppCandidatesIdRoute
   '/_app/jobs/$id': typeof AppJobsIdRoute
   '/_app/jobs/new': typeof AppJobsNewRoute
   '/_app/packages/new': typeof AppPackagesNewRoute
@@ -218,6 +227,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/p/$token'
+    | '/candidates/$id'
     | '/jobs/$id'
     | '/jobs/new'
     | '/packages/new'
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/p/$token'
+    | '/candidates/$id'
     | '/jobs/$id'
     | '/jobs/new'
     | '/packages/new'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/settings'
     | '/p/$token'
+    | '/_app/candidates/$id'
     | '/_app/jobs/$id'
     | '/_app/jobs/new'
     | '/_app/packages/new'
@@ -412,6 +424,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppJobsIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/candidates/$id': {
+      id: '/_app/candidates/$id'
+      path: '/$id'
+      fullPath: '/candidates/$id'
+      preLoaderRoute: typeof AppCandidatesIdRouteImport
+      parentRoute: typeof AppCandidatesRoute
+    }
     '/_app/packages/$id/': {
       id: '/_app/packages/$id/'
       path: '/packages/$id'
@@ -443,8 +462,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppCandidatesRouteChildren {
+  AppCandidatesIdRoute: typeof AppCandidatesIdRoute
+}
+
+const AppCandidatesRouteChildren: AppCandidatesRouteChildren = {
+  AppCandidatesIdRoute: AppCandidatesIdRoute,
+}
+
+const AppCandidatesRouteWithChildren = AppCandidatesRoute._addFileChildren(
+  AppCandidatesRouteChildren,
+)
+
 interface AppRouteChildren {
-  AppCandidatesRoute: typeof AppCandidatesRoute
+  AppCandidatesRoute: typeof AppCandidatesRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppJobsIdRoute: typeof AppJobsIdRoute
@@ -457,7 +488,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppCandidatesRoute: AppCandidatesRoute,
+  AppCandidatesRoute: AppCandidatesRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppJobsIdRoute: AppJobsIdRoute,

@@ -141,8 +141,8 @@ function CandidatesPage() {
                       key={r.id}
                       onClick={() =>
                         navigate({
-                          to: "/packages/$id",
-                          params: { id: r.package_id },
+                          to: "/candidates/$id",
+                          params: { id: r.id },
                         })
                       }
                       className="border-t border-[rgba(45,38,64,0.06)] cursor-pointer hover:bg-[#FAF8F5]"

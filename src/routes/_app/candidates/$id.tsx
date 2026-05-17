@@ -42,6 +42,13 @@ interface LinkRow {
   time_on_page_total: number | null;
   return_visits: number | null;
   expires_at: string | null;
+  candidate_current_package: {
+    gross_salary?: number | null;
+    variable_target?: number | null;
+    benefits?: Array<{ label: string; annual_value: number }>;
+    note?: string | null;
+  } | null;
+  candidate_current_package_at: string | null;
 }
 
 function CandidateDetail() {
@@ -58,7 +65,7 @@ function CandidateDetail() {
     const { data, error } = await supabase
       .from("candidate_links")
       .select(
-        "id, token, package_id, candidate_name, candidate_email, created_at, opened_at, simulated_at, status, decline_category, decline_reason, engagement_score, engagement_label, intent_prediction, decision_deadline, time_on_page_total, return_visits, expires_at",
+        "id, token, package_id, candidate_name, candidate_email, created_at, opened_at, simulated_at, status, decline_category, decline_reason, engagement_score, engagement_label, intent_prediction, decision_deadline, time_on_page_total, return_visits, expires_at, candidate_current_package, candidate_current_package_at",
       )
       .eq("id", id)
       .maybeSingle();

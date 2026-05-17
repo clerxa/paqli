@@ -66,18 +66,8 @@ const VALUE_SUGGESTIONS = [
 
 const GROWTH_HORIZONS = ["6 mois", "1 an", "2 ans", "3 ans+"];
 
-const PROCESS_TEMPLATES: Record<string, ProcessStep[]> = {
-  Tech: [
-    { step: "Screening RH", duration: "30 min" },
-    { step: "Entretien technique", duration: "1h" },
-    { step: "Code review", duration: "45 min" },
-    { step: "Rencontre équipe", duration: "30 min" },
-  ],
-  Rapide: [
-    { step: "Screening RH", duration: "30 min" },
-    { step: "Entretien manager", duration: "1h" },
-  ],
-};
+
+
 
 export function JobForm({
   value,

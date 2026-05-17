@@ -584,6 +584,8 @@ function CompanyTab() {
           )}
         </div>
       </Card>
+
+      <OrgCatalogSections />
     </div>
   );
 }

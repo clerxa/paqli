@@ -17,6 +17,7 @@ import { Logo } from "./Logo";
 import { useAuth } from "@/hooks/useAuth";
 import { useMobileNav } from "./MobileNav";
 import { useLinkQuota } from "@/hooks/useLinkQuota";
+import { useSidebarCounts } from "@/hooks/useSidebarCounts";
 
 interface NavItem {
   to?: string;

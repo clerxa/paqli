@@ -679,37 +679,111 @@ function CompRow({ label, value }: { label: string; value: string }) {
 /* AI features                                        */
 /* -------------------------------------------------- */
 function AISection() {
-  const features = [
-    { icon: "✨", title: "Score d'attractivité", desc: "Diagnostic instantané du package vs marché. Points forts, alertes, conseil." },
-    { icon: "🧠", title: "Analyse comportementale", desc: "Détecte les hésitations, prédit l'intention. \"Thomas a passé 4min sur l'equity.\"" },
-    { icon: "💬", title: "Messages de relance IA", desc: "Personnalisés selon le comportement candidat. Un clic, pas 20 minutes." },
-    { icon: "📄", title: "Fiche de poste générée", desc: "Prête à publier sur WTJ, LinkedIn ou votre site. En cohérence avec le package." },
+  const rhFeatures = [
+    { icon: "✨", title: "Score d'attractivité", desc: "Diagnostic instantané de votre offre vs marché. Points forts, alertes, axes d'amélioration." },
+    { icon: "🎯", title: "Conseil de valorisation", desc: "L'IA suggère quoi mettre en avant pour ce candidat — equity, formation, flexibilité." },
+    { icon: "🧠", title: "Signaux comportementaux", desc: "« Thomas a passé 4 min sur l'equity. » Détecte les hésitations, prédit l'intention." },
+    { icon: "💬", title: "Messages de relance IA", desc: "Personnalisés selon le comportement du candidat. Un clic, pas 20 minutes." },
   ];
+  const candidatFeatures = [
+    { icon: "🤖", title: "Assistant 24/7", desc: "Une question sur les BSPCE, le PEE, la mutuelle ? Réponse instantanée, sourcée, neutre." },
+    { icon: "📊", title: "Simulations personnalisées", desc: "Net après impôt, valorisation equity, projections sur 4 ans — adaptées à sa situation." },
+    { icon: "⚖️", title: "Comparaison éclairée", desc: "L'IA replace l'offre dans son marché : « Votre fixe est au P75 du marché Series B Paris. »" },
+    { icon: "💡", title: "Aide à la décision", desc: "Synthèse claire des points forts, des questions à poser, des éléments à négocier." },
+  ];
+
+  const Pillar = ({
+    label,
+    title,
+    accent,
+    items,
+    align,
+  }: {
+    label: string;
+    title: string;
+    accent: string;
+    items: { icon: string; title: string; desc: string }[];
+    align: "left" | "right";
+  }) => (
+    <div className="relative p-6 md:p-8 rounded-3xl bg-white border border-[rgba(45,38,64,0.08)] shadow-[0_4px_30px_rgba(45,38,64,0.04)]">
+      <div className="flex items-center gap-3 mb-6">
+        <span
+          className="inline-block px-3 py-1 rounded-full text-[11px] font-medium tracking-wider uppercase"
+          style={{ background: `${accent}1F`, color: accent, border: `1px solid ${accent}40` }}
+        >
+          {label}
+        </span>
+        <div className="flex-1 h-px bg-[rgba(45,38,64,0.08)]" />
+      </div>
+      <h3 className="font-display text-[#2D2640] leading-tight" style={{ fontSize: "clamp(22px, 2.4vw, 28px)" }}>
+        {title}
+      </h3>
+      <div className="mt-6 space-y-4">
+        {items.map((f, i) => (
+          <div
+            key={f.title}
+            className="scroll-reveal flex items-start gap-4 p-4 rounded-2xl bg-[#FAF8F5] border border-[rgba(45,38,64,0.05)]"
+            style={{ ["--reveal-delay" as never]: `${i * 80}ms` }}
+          >
+            <div
+              className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-[18px]"
+              style={{ background: `${accent}1A` }}
+            >
+              {f.icon}
+            </div>
+            <div className={align === "right" ? "text-left" : "text-left"}>
+              <div className="font-display text-[16px] text-[#2D2640]">{f.title}</div>
+              <p className="mt-1 text-[13px] text-[#524970] font-light leading-relaxed">{f.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
-    <section className="py-20 md:py-28 bg-[#FAF8F5] px-5 scroll-reveal">
-      <div className="max-w-5xl mx-auto">
+    <section className="relative py-20 md:py-28 bg-[#FAF8F5] px-5 scroll-reveal overflow-hidden">
+      <div className="orb orb-1 -top-20 -left-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(139,127,168,0.18), transparent 70%)" }} />
+      <div className="orb orb-2 -bottom-20 -right-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.18), transparent 70%)" }} />
+      <div className="relative max-w-6xl mx-auto">
         <div className="text-center">
           <Tag>Intelligence artificielle</Tag>
           <h2 className="mt-4 font-display text-[#2D2640]" style={{ fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.15 }}>
-            L'IA qui augmente
+            Une IA qui aide les deux côtés
             <br />
-            <span className="text-[#8B7FA8]">votre intuition RH</span>
+            <span className="text-[#8B7FA8]">de la table.</span>
           </h2>
+          <p className="mt-5 text-[15px] md:text-[16px] text-[#524970] font-light max-w-2xl mx-auto">
+            Côté RH, elle valorise. Côté candidat, elle éclaire.
+            Une seule IA, deux missions, zéro biais.
+          </p>
         </div>
 
-        <div className="mt-12 grid md:grid-cols-2 gap-5">
-          {features.map((f, i) => (
-            <div
-              key={f.title}
-              className="feature-card scroll-reveal p-6 bg-white border border-[rgba(45,38,64,0.08)] rounded-2xl"
-              style={{ ["--reveal-delay" as never]: `${i * 100}ms` }}
-            >
-              <div className="text-3xl">{f.icon}</div>
-              <h3 className="mt-3 font-display text-[20px] text-[#2D2640]">{f.title}</h3>
-              <p className="mt-2 text-[14px] text-[#524970] font-light leading-relaxed">{f.desc}</p>
-            </div>
-          ))}
+        <div className="mt-12 grid md:grid-cols-2 gap-6 relative">
+          <Pillar
+            label="Côté RH"
+            title="Valorisez chaque élément de votre offre."
+            accent="#C4A882"
+            items={rhFeatures}
+            align="left"
+          />
+          <Pillar
+            label="Côté Candidat"
+            title="Décidez en confiance, sans pression."
+            accent="#8B7FA8"
+            items={candidatFeatures}
+            align="right"
+          />
+
+          {/* Connecting node (desktop) */}
+          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-14 h-14 rounded-full bg-[#2D2640] text-white items-center justify-center font-display text-[18px] shadow-[0_8px_30px_rgba(45,38,64,0.25)]">
+            IA
+          </div>
         </div>
+
+        <p className="mt-10 text-center text-[13px] text-[#9B97A0] italic">
+          Aucun coaching biaisé. L'IA est neutre, sourcée, et factuelle des deux côtés.
+        </p>
       </div>
     </section>
   );

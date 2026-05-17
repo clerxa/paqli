@@ -372,6 +372,33 @@ export type Database = {
           },
         ]
       }
+      demo_requests: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          source: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          source?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          source?: string | null
+        }
+        Relationships: []
+      }
       equity_devices: {
         Row: {
           cliff_months: number

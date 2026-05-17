@@ -1560,6 +1560,9 @@ function Assistant({
   candidateName,
   hasSimulated,
   returnVisits,
+  proactiveSuggestion,
+  onClearProactiveSuggestion,
+  onAssistantUserMessage,
 }: {
   token: string;
   pkg: PackageData;
@@ -1567,6 +1570,9 @@ function Assistant({
   candidateName: string | null;
   hasSimulated: boolean;
   returnVisits: number;
+  proactiveSuggestion?: ProactiveSuggestion | null;
+  onClearProactiveSuggestion?: () => void;
+  onAssistantUserMessage?: () => void;
 }) {
   const [messages, setMessages] = useState<
     Array<{ role: "user" | "assistant"; content: string }>
@@ -1585,6 +1591,21 @@ function Assistant({
   const welcomeMessage = buildAssistantWelcomeMessage(firstName, orgName, hasEquity);
   const placeholder = buildAssistantPlaceholder(firstName, hasSimulated, returnVisits);
 
+  // Hide suggestion as soon as user starts typing
+  useEffect(() => {
+    if (input.trim().length > 0 && proactiveSuggestion) {
+      onClearProactiveSuggestion?.();
+    }
+  }, [input, proactiveSuggestion, onClearProactiveSuggestion]);
+
+  function handleAcceptSuggestion(question: string) {
+    setInput(question);
+    onClearProactiveSuggestion?.();
+    setTimeout(() => {
+      document.getElementById("candidate-assistant-input")?.focus();
+    }, 0);
+  }
+
   async function send() {
     const q = input.trim();
     if (!q || loading) return;
@@ -1592,6 +1613,7 @@ function Assistant({
     const next = [...messages, { role: "user" as const, content: q }];
     setMessages(next);
     setLoading(true);
+    onAssistantUserMessage?.();
     void track({ data: { token, eventType: "question", metadata: { question: q.slice(0, 100) } } }).catch(() => {});
 
     try {

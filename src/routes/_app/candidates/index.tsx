@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
-export const Route = createFileRoute("/_app/candidates")({
+export const Route = createFileRoute("/_app/candidates/")({
   component: CandidatesPage,
 });
 

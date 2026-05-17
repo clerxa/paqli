@@ -29,6 +29,7 @@ import {
   type BenchmarkContent,
 } from "@/lib/competitorBenchmark.functions";
 import { inviteUserFn } from "@/lib/inviteUser.functions";
+import { OrgCatalogSections } from "@/components/paqli/settings/OrgCatalogSections";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -584,6 +585,8 @@ function CompanyTab() {
           )}
         </div>
       </Card>
+
+      <OrgCatalogSections />
     </div>
   );
 }

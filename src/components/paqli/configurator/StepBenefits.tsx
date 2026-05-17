@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
+import { Link } from "@tanstack/react-router";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
+import { useOrgCatalogs } from "@/lib/orgCatalog";
 import {
   BENEFIT_CATALOG,
   CATEGORY_LABELS,
@@ -18,6 +20,7 @@ const CATEGORIES = VISIBLE_CATEGORIES;
 
 export function StepBenefits() {
   const { config, patch } = usePackageConfig();
+  const { benefits: orgBenefits } = useOrgCatalogs();
   const [activeCategory, setActiveCategory] = useState<BenefitCategory>("health");
 
   const selected = config.benefitsV2 ?? [];
@@ -30,17 +33,38 @@ export function StepBenefits() {
     if (exists) {
       setSelected(selected.filter((b) => b.benefit_key !== def.key));
     } else {
+      // Use org catalog defaults if this benefit is part of the entreprise catalogue
+      const fromOrg = orgBenefits.find((o) => o.benefit_key === def.key);
       setSelected([
         ...selected,
         {
           benefit_key: def.key,
           category: def.category,
           value_type: def.valueType,
-          monthly_value: def.defaultMonthlyValue ?? null,
-          annual_value: def.defaultAnnualValue ?? null,
+          monthly_value:
+            fromOrg?.monthly_value ?? def.defaultMonthlyValue ?? null,
+          annual_value:
+            fromOrg?.annual_value ?? def.defaultAnnualValue ?? null,
         },
       ]);
     }
+  }
+
+  function loadFromOrgCatalog() {
+    const next: PackageBenefit[] = [...selected];
+    for (const o of orgBenefits) {
+      if (next.find((s) => s.benefit_key === o.benefit_key)) continue;
+      next.push({
+        benefit_key: o.benefit_key,
+        category: o.category,
+        value_type: o.value_type,
+        monthly_value: o.monthly_value,
+        annual_value: o.annual_value,
+        employer_share: o.employer_share,
+        custom_label: o.custom_label,
+      });
+    }
+    setSelected(next);
   }
 
   function updateBenefit(key: string, p: Partial<PackageBenefit>) {
@@ -85,6 +109,40 @@ export function StepBenefits() {
           </div>
         )}
       </div>
+
+      {orgBenefits.length > 0 &&
+        orgBenefits.some(
+          (o) => !selected.find((s) => s.benefit_key === o.benefit_key),
+        ) && (
+          <div className="flex items-center justify-between gap-3 rounded-lg px-4 py-3 bg-[#F5F2FA] border border-[rgba(139,127,168,0.2)]">
+            <div className="text-[12px] text-aubergine">
+              💡 Votre entreprise a {orgBenefits.length} avantage
+              {orgBenefits.length > 1 ? "s" : ""} configuré
+              {orgBenefits.length > 1 ? "s" : ""} dans son catalogue.
+            </div>
+            <button
+              type="button"
+              onClick={loadFromOrgCatalog}
+              className="text-[11px] font-medium px-3 py-1.5 rounded-md bg-aubergine text-lin whitespace-nowrap"
+            >
+              Tout pré-remplir
+            </button>
+          </div>
+        )}
+
+      {orgBenefits.length === 0 && (
+        <p className="text-[11px] text-grey italic">
+          💡 Configurez vos avantages dans{" "}
+          <Link
+            to="/settings"
+            search={{ tab: "company" }}
+            className="text-aubergine underline"
+          >
+            Paramètres → Mon entreprise
+          </Link>{" "}
+          pour les pré-remplir automatiquement à chaque package.
+        </p>
+      )}
 
       {/* Catégories */}
       <div className="flex gap-1.5 flex-wrap">

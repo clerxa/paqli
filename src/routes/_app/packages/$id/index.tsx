@@ -635,6 +635,7 @@ function SendLinkModal({
   const [expires, setExpires] = useState<number | null>(30);
   const [busy, setBusy] = useState(false);
 
+  const navigate = useNavigate();
   async function submit() {
     setBusy(true);
     try {
@@ -649,7 +650,19 @@ function SendLinkModal({
       onCreated();
     } catch (e) {
       console.error(e);
-      toast.error("Erreur");
+      const err = e as Error & { code?: string; used?: number; quota?: number };
+      if (err?.code === "QUOTA_REACHED") {
+        toast.error(`Quota mensuel atteint (${err.used}/${err.quota} liens)`, {
+          description: "Passez à un plan supérieur pour envoyer plus de liens.",
+          action: {
+            label: "Voir les plans",
+            onClick: () => navigate({ to: "/settings", hash: "plan" }),
+          },
+          duration: 10000,
+        });
+      } else {
+        toast.error("Erreur");
+      }
     } finally {
       setBusy(false);
     }

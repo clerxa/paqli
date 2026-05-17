@@ -8,7 +8,8 @@ export type ActionAlertType =
   | "hot_candidate_silent"
   | "sim_no_response"
   | "not_opened_72h"
-  | "package_score_low";
+  | "package_score_low"
+  | "thinking_stalled";
 
 export interface ActionAlert {
   id: string;

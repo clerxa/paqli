@@ -162,6 +162,14 @@ export function Configurator() {
           <PreviewPanel config={config} />
         </aside>
       </div>
+
+      {showPreview && (
+        <ConfiguratorPreviewPanel
+          config={config}
+          organization={organization}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </>
   );
 }

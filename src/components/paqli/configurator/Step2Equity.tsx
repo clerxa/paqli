@@ -78,12 +78,27 @@ export function Step2Equity() {
           Equity
         </h2>
         <p className="text-[12px] text-grey mt-1">
-          Étape optionnelle. Sélectionnez les dispositifs proposés au candidat.
+          {catalogTypes.length > 0
+            ? "Sélectionnez les dispositifs proposés au candidat. Les paramètres par défaut viennent de votre catalogue entreprise."
+            : "Étape optionnelle. Sélectionnez les dispositifs proposés au candidat."}
         </p>
+        {catalogTypes.length === 0 && (
+          <p className="text-[11px] text-grey mt-1.5 italic">
+            💡 Pour gagner du temps, configurez vos dispositifs d'equity dans{" "}
+            <Link
+              to="/settings"
+              search={{ tab: "company" }}
+              className="text-aubergine underline"
+            >
+              Paramètres → Mon entreprise
+            </Link>
+            .
+          </p>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {types.map((t) => (
+        {visibleTypes.map((t) => (
           <Chip
             key={t.value}
             selected={devices.some((d) => d.type === t.value)}

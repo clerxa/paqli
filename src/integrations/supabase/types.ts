@@ -377,24 +377,39 @@ export type Database = {
           company: string | null
           created_at: string
           email: string
+          employees_count: string | null
+          first_name: string | null
           id: string
+          last_name: string | null
           name: string | null
+          phone: string | null
+          role: string | null
           source: string | null
         }
         Insert: {
           company?: string | null
           created_at?: string
           email: string
+          employees_count?: string | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           name?: string | null
+          phone?: string | null
+          role?: string | null
           source?: string | null
         }
         Update: {
           company?: string | null
           created_at?: string
           email?: string
+          employees_count?: string | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           name?: string | null
+          phone?: string | null
+          role?: string | null
           source?: string | null
         }
         Relationships: []

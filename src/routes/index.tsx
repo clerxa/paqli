@@ -654,8 +654,12 @@ function AISection() {
         </div>
 
         <div className="mt-12 grid md:grid-cols-2 gap-5">
-          {features.map((f) => (
-            <div key={f.title} className="feature-card p-6 bg-white border border-[rgba(45,38,64,0.08)] rounded-2xl">
+          {features.map((f, i) => (
+            <div
+              key={f.title}
+              className="feature-card scroll-reveal p-6 bg-white border border-[rgba(45,38,64,0.08)] rounded-2xl"
+              style={{ ["--reveal-delay" as never]: `${i * 100}ms` }}
+            >
               <div className="text-3xl">{f.icon}</div>
               <h3 className="mt-3 font-display text-[20px] text-[#2D2640]">{f.title}</h3>
               <p className="mt-2 text-[14px] text-[#524970] font-light leading-relaxed">{f.desc}</p>

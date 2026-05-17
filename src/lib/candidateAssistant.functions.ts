@@ -81,7 +81,7 @@ export type AskCandidateAssistantResult =
 export const askCandidateAssistant = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<AskCandidateAssistantResult> => {
-    const apiKey = process.env.LOVABLE_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return {
         answer: null,
@@ -156,7 +156,7 @@ export const askCandidateAssistant = createServerFn({ method: "POST" })
         .eq("id", link.id);
     };
 
-    // Étape 4 : appel Lovable AI Gateway
+    // Étape 4 : appel Anthropic Claude Haiku 4.5
     const system = buildSystemPrompt(
       data.orgName,
       data.jobTitle,
@@ -166,15 +166,18 @@ export const askCandidateAssistant = createServerFn({ method: "POST" })
 
     let res: Response;
     try {
-      res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [{ role: "system", content: system }, ...data.messages],
+          model: "claude-haiku-4-5",
+          max_tokens: 1024,
+          system,
+          messages: data.messages,
         }),
       });
     } catch {
@@ -189,16 +192,14 @@ export const askCandidateAssistant = createServerFn({ method: "POST" })
       };
     }
 
-    if (res.status === 429 || res.status === 402) {
+    if (res.status === 429 || res.status === 529) {
       await rollback();
       return {
         answer: null,
         error: {
-          code: res.status === 402 ? "QUOTA_EXHAUSTED" : "GATEWAY_RATE_LIMITED",
+          code: "GATEWAY_RATE_LIMITED",
           message:
-            res.status === 402
-              ? "Le crédit IA est temporairement épuisé. Contactez le support Paqli."
-              : "L'assistant est surchargé. Réessayez dans quelques instants.",
+            "L'assistant est surchargé. Réessayez dans quelques instants.",
         },
       };
     }
@@ -216,7 +217,7 @@ export const askCandidateAssistant = createServerFn({ method: "POST" })
 
     const json = await res.json();
     const answer: string =
-      json?.choices?.[0]?.message?.content ?? "Désolé, aucune réponse générée.";
+      json?.content?.[0]?.text ?? "Désolé, aucune réponse générée.";
 
     // Persist Q&A so recruiters can review the candidate's AI conversation
     const lastUserMessage = [...data.messages]

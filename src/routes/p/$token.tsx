@@ -2019,16 +2019,19 @@ function DecisionDeadlineBanner({
   const accent = isUrgent ? "#C46A1F" : "#8B7FA8";
   const bg = isUrgent ? "#FCEEE6" : "#F5F2FA";
 
+  const isSticky = timeLeft.total > 0 && timeLeft.total < 72 * 3_600_000;
+
   return (
     <div
-      className="rounded-2xl p-5 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      className={`rounded-2xl p-5 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${isSticky ? "sticky top-0 z-20 shadow-md" : ""}`}
       style={{ background: bg, border: `1px solid ${accent}33` }}
     >
       <div className="flex items-start gap-3">
         <span style={{ fontSize: 22 }}>{isUrgent ? "⚡" : "📅"}</span>
         <div>
           <div className="font-display text-aubergine" style={{ fontSize: 15 }}>
-            Offre disponible jusqu'au {deadlineFr}
+            {isUrgent ? "Offre expire bientôt — " : "Offre disponible jusqu'au "}
+            {deadlineFr}
           </div>
           <div className="text-[12px] text-aubergine-light mt-1 leading-relaxed">
             {isUrgent

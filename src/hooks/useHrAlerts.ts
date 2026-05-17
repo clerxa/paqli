@@ -20,7 +20,8 @@ export function useHrAlerts() {
     queryFn: async (): Promise<HrAlert[]> => {
       // Trigger detection (cheap, idempotent thanks to unique index)
       await refresh({ data: undefined }).catch(() => null);
-      return list({ data: {} });
+      const result = await list({ data: {} });
+      return result as HrAlert[];
     },
     refetchInterval: 60_000,
     staleTime: 30_000,

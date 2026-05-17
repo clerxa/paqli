@@ -177,17 +177,7 @@ export const refreshHrAlerts = createServerFn({ method: "POST" })
       }
     }
 
-    const toInsert: Array<{
-      organization_id: string;
-      link_id: string;
-      package_id: string | null;
-      type: HrAlertType;
-      severity: HrAlertSeverity;
-      title: string;
-      message: string;
-      suggestion_message: string | null;
-      trigger_data: Record<string, unknown>;
-    }> = [];
+    const toInsert: any[] = [];
 
     for (const l of links) {
       const candidateName = l.candidate_name ?? null;
@@ -341,7 +331,7 @@ export const listHrAlerts = createServerFn({ method: "GET" })
       })
       .parse(input ?? {}),
   )
-  .handler(async ({ data, context }): Promise<HrAlert[]> => {
+  .handler(async ({ data, context }): Promise<any> => {
     const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("organization_id")
@@ -410,7 +400,7 @@ export const updateHrAlertStatus = createServerFn({ method: "POST" })
     const orgId = profile?.organization_id;
     if (!orgId) throw new Error("No org");
 
-    const patch: Record<string, unknown> = { status: data.status };
+    const patch: any = { status: data.status };
     if (data.status === "read") patch.read_at = new Date().toISOString();
     if (data.status === "actioned") patch.actioned_at = new Date().toISOString();
 

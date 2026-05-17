@@ -55,6 +55,13 @@ export function CandidateHeroReveal({
   const hasSalary = (pkg.gross_salary ?? 0) > 0;
   const orgName = organization?.name ?? "L'équipe";
   const firstName = candidateName ? candidateName.split(" ")[0] : null;
+  const greeting = buildGreeting(
+    candidateName,
+    openedAt,
+    returnVisits,
+    offerStatus,
+    orgName,
+  );
 
   return (
     <section

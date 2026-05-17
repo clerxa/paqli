@@ -491,6 +491,60 @@ export type Database = {
           },
         ]
       }
+      hr_alerts: {
+        Row: {
+          actioned_at: string | null
+          created_at: string
+          id: string
+          link_id: string
+          message: string
+          organization_id: string
+          package_id: string | null
+          read_at: string | null
+          severity: string
+          status: string
+          suggestion_message: string | null
+          title: string
+          trigger_data: Json
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          actioned_at?: string | null
+          created_at?: string
+          id?: string
+          link_id: string
+          message: string
+          organization_id: string
+          package_id?: string | null
+          read_at?: string | null
+          severity?: string
+          status?: string
+          suggestion_message?: string | null
+          title: string
+          trigger_data?: Json
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          actioned_at?: string | null
+          created_at?: string
+          id?: string
+          link_id?: string
+          message?: string
+          organization_id?: string
+          package_id?: string | null
+          read_at?: string | null
+          severity?: string
+          status?: string
+          suggestion_message?: string | null
+          title?: string
+          trigger_data?: Json
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           company_values: string[] | null

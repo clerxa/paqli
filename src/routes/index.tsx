@@ -578,6 +578,79 @@ function SolutionSection() {
 }
 
 /* -------------------------------------------------- */
+/* Experience — Candidate experience as brand        */
+/* -------------------------------------------------- */
+function ExperienceSection() {
+  const moments = [
+    { icon: "📩", label: "Le premier email", before: "« Voici le PDF en PJ »", after: "« Voici votre espace dédié »" },
+    { icon: "📱", label: "Le soir, dans le canapé", before: "PDF illisible sur mobile", after: "Espace responsive, fluide" },
+    { icon: "🤔", label: "Le doute du dimanche", before: "Email sans réponse", after: "Paq répond, instantanément" },
+    { icon: "💬", label: "La discussion avec son/sa conjoint·e", before: "« J'ai pas trop compris »", after: "« Regarde, tout est là »" },
+  ];
+  return (
+    <section className="relative py-20 md:py-28 bg-[#F0EBE8] px-5 scroll-reveal overflow-hidden">
+      <div className="orb orb-1 -top-32 -right-32 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(139,127,168,0.22), transparent 70%)" }} />
+      <div className="orb orb-2 -bottom-20 -left-20 w-[360px] h-[360px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.2), transparent 70%)" }} />
+      <div className="relative max-w-6xl mx-auto">
+        <div className="text-center">
+          <Tag>Expérience candidat</Tag>
+          <h2 className="mt-4 font-display text-[#2D2640]" style={{ fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.15 }}>
+            Votre marque employeur
+            <br />
+            <span className="text-[#8B7FA8]">se joue avant la signature.</span>
+          </h2>
+          <p className="mt-5 text-[15px] md:text-[16px] text-[#524970] font-light max-w-2xl mx-auto">
+            Pas dans les vidéos « life at », ni dans les goodies du Welcome Pack.
+            Elle se joue dans l'expérience que vit votre candidat — sur son téléphone, le dimanche soir,
+            au moment où il décide.
+          </p>
+        </div>
+
+        {/* Moments grid */}
+        <div className="mt-14 grid md:grid-cols-2 gap-4">
+          {moments.map((m, i) => (
+            <div
+              key={m.label}
+              className="scroll-reveal p-5 md:p-6 bg-white rounded-2xl border border-[rgba(45,38,64,0.08)]"
+              style={{ ["--reveal-delay" as never]: `${i * 100}ms` }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] flex items-center justify-center text-[18px]">{m.icon}</div>
+                <div className="text-[11px] uppercase tracking-wider text-[#9B97A0] font-medium">{m.label}</div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-[rgba(184,90,106,0.06)] border border-[rgba(184,90,106,0.15)]">
+                  <div className="text-[10px] uppercase tracking-wider text-[#B85A6A] font-medium">Sans Paqli</div>
+                  <p className="mt-1.5 text-[13px] text-[#524970] font-light italic leading-snug">{m.before}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-[rgba(59,109,17,0.06)] border border-[rgba(59,109,17,0.18)]">
+                  <div className="text-[10px] uppercase tracking-wider text-[#3B6D11] font-medium">Avec Paqli</div>
+                  <p className="mt-1.5 text-[13px] text-[#2D2640] font-medium leading-snug">{m.after}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom quote bar */}
+        <div className="mt-12 p-6 md:p-8 rounded-2xl bg-[#2D2640] text-white text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[rgba(196,168,130,0.1)] to-transparent" />
+          <div className="relative">
+            <div className="text-[11px] uppercase tracking-wider text-[#C4A882] font-medium">Le nouveau standard</div>
+            <p className="mt-3 font-display text-[20px] md:text-[26px] leading-snug max-w-3xl mx-auto">
+              « Une expérience candidat exceptionnelle vaut mieux que dix posts LinkedIn sur la culture d'entreprise. »
+            </p>
+            <p className="mt-4 text-[13px] text-[#B8AECF] font-light">
+              Onboarding, fidélisation, parrainage : tout commence ici.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------- */
 /* Product tabs                                       */
 /* -------------------------------------------------- */
 function ProductSection() {

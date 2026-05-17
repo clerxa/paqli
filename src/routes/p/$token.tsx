@@ -33,6 +33,7 @@ import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
 import { TotalCompensationBlock } from "@/components/paqli/candidate/TotalCompensationBlock";
 import { CandidateHeroReveal } from "@/components/paqli/candidate/CandidateHeroReveal";
 import { MobileFloatingCTA } from "@/components/paqli/candidate/MobileFloatingCTA";
+import { CurrentPackageComparator } from "@/components/paqli/candidate/CurrentPackageComparator";
 import {
   buildAssistantPlaceholder,
   buildAssistantWelcomeMessage,

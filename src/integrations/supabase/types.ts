@@ -701,6 +701,129 @@ export type Database = {
           },
         ]
       }
+      org_benefit_catalog: {
+        Row: {
+          annual_value: number | null
+          benefit_key: string
+          category: string
+          created_at: string
+          custom_label: string | null
+          display_order: number
+          employer_share: number | null
+          id: string
+          monthly_value: number | null
+          organization_id: string
+          updated_at: string
+          value_type: string
+        }
+        Insert: {
+          annual_value?: number | null
+          benefit_key: string
+          category: string
+          created_at?: string
+          custom_label?: string | null
+          display_order?: number
+          employer_share?: number | null
+          id?: string
+          monthly_value?: number | null
+          organization_id: string
+          updated_at?: string
+          value_type?: string
+        }
+        Update: {
+          annual_value?: number | null
+          benefit_key?: string
+          category?: string
+          created_at?: string
+          custom_label?: string | null
+          display_order?: number
+          employer_share?: number | null
+          id?: string
+          monthly_value?: number | null
+          organization_id?: string
+          updated_at?: string
+          value_type?: string
+        }
+        Relationships: []
+      }
+      org_equity_catalog: {
+        Row: {
+          cliff_months: number
+          created_at: string
+          default_strike_price: number
+          default_valuation_m: number
+          display_order: number
+          id: string
+          organization_id: string
+          special_conditions: string | null
+          type: string
+          updated_at: string
+          vesting_years: number
+        }
+        Insert: {
+          cliff_months?: number
+          created_at?: string
+          default_strike_price?: number
+          default_valuation_m?: number
+          display_order?: number
+          id?: string
+          organization_id: string
+          special_conditions?: string | null
+          type: string
+          updated_at?: string
+          vesting_years?: number
+        }
+        Update: {
+          cliff_months?: number
+          created_at?: string
+          default_strike_price?: number
+          default_valuation_m?: number
+          display_order?: number
+          id?: string
+          organization_id?: string
+          special_conditions?: string | null
+          type?: string
+          updated_at?: string
+          vesting_years?: number
+        }
+        Relationships: []
+      }
+      org_savings_catalog: {
+        Row: {
+          created_at: string
+          default_avg_3y: number | null
+          default_cap_amount: number | null
+          default_matching_rate: number | null
+          display_order: number
+          id: string
+          organization_id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_avg_3y?: number | null
+          default_cap_amount?: number | null
+          default_matching_rate?: number | null
+          display_order?: number
+          id?: string
+          organization_id: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_avg_3y?: number | null
+          default_cap_amount?: number | null
+          default_matching_rate?: number | null
+          display_order?: number
+          id?: string
+          organization_id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       organizations: {
         Row: {
           address_city: string | null

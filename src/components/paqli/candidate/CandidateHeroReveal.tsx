@@ -35,7 +35,7 @@ export function CandidateHeroReveal({
   const totalTC =
     (estimate.salaryEst ?? 0) +
     (estimate.variableEst ?? 0) +
-    (estimate.benefitsTotal ?? 0) +
+    (estimate.benefitsEst ?? 0) +
     (estimate.peeEst ?? 0) +
     (estimate.interEst ?? 0) +
     (estimate.participationEst ?? 0);

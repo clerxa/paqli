@@ -120,20 +120,24 @@ type TabKey =
   | "team"
   | "package"
   | "comparatif"
+  | "mon_offre"
   | "questions"
   | "next";
 
-const TABS: { key: TabKey; label: string; highlight?: boolean }[] = [
+const TABS: { key: TabKey; label: string; highlight?: boolean; optional?: boolean }[] = [
   { key: "welcome", label: "Bienvenue" },
   { key: "offre", label: "Offre" },
   { key: "entreprise", label: "Entreprise" },
   { key: "flex", label: "Flexibilité" },
   { key: "team", label: "Équipe & culture" },
   { key: "package", label: "Package", highlight: true },
-  { key: "comparatif", label: "Comparatif" },
+  { key: "comparatif", label: "Comparatif marché" },
+  { key: "mon_offre", label: "Mon offre actuelle", optional: true },
   { key: "questions", label: "Échanger" },
   { key: "next", label: "Ma décision" },
 ];
+
+const REQUIRED_TABS = TABS.filter((t) => !t.optional).map((t) => t.key);
 
 function PackageView({
   data,

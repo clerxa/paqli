@@ -209,7 +209,8 @@ function PackageView({
   });
 
   const tabOrder = TABS.map((t) => t.key);
-  const allTabsVisited = tabOrder.every((k) => visitedTabs.has(k));
+  const optionalTabs = new Set(TABS.filter((t) => t.optional).map((t) => t.key));
+  const allTabsVisited = REQUIRED_TABS.every((k) => visitedTabs.has(k));
   const allTabsVisitedRef = useRef(allTabsVisited);
 
   // When current tab changes, mark visited + track
@@ -225,7 +226,7 @@ function PackageView({
       }
       behavior.track("section_view", { section: `tab_${tab}` });
       const wasComplete = allTabsVisitedRef.current;
-      const nowComplete = tabOrder.every((k) => next.has(k));
+      const nowComplete = REQUIRED_TABS.every((k) => next.has(k));
       if (!wasComplete && nowComplete) {
         allTabsVisitedRef.current = true;
         behavior.track("section_view", { section: "all_tabs_completed" });
@@ -235,16 +236,18 @@ function PackageView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  // Guarded tab change — only allow visited or the immediate next tab (until all done)
+  // Guarded tab change — optional tabs are always reachable; required tabs follow
+  // sequential gating (visited or immediate next) until all required are visited.
   const canGoToTab = useCallback(
     (target: TabKey) => {
+      if (optionalTabs.has(target)) return true;
       if (allTabsVisited) return true;
       if (visitedTabs.has(target)) return true;
       const currentIdx = tabOrder.indexOf(tab);
       const targetIdx = tabOrder.indexOf(target);
       return targetIdx === currentIdx + 1;
     },
-    [allTabsVisited, visitedTabs, tab, tabOrder],
+    [allTabsVisited, visitedTabs, tab, tabOrder, optionalTabs],
   );
 
   const tryChangeTab = useCallback(

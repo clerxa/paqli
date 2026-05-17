@@ -875,10 +875,11 @@ function PricingSection({ onDemo }: { onDemo: () => void }) {
 /* -------------------------------------------------- */
 function FinalCTA({ onDemo }: { onDemo: () => void }) {
   return (
-    <section className="py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal">
-      <div className="max-w-3xl mx-auto text-center">
+    <section className="relative py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal overflow-hidden">
+      <div className="orb orb-1 top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px]" style={{ background: "radial-gradient(ellipse, rgba(196,168,130,0.25), transparent 70%)" }} />
+      <div className="relative max-w-3xl mx-auto text-center">
         <h2 className="font-display leading-tight" style={{ fontSize: "clamp(32px, 4.5vw, 52px)" }}>
-          Prêt à closer mieux ?
+          Prêt à closer <span className="text-aurora">mieux ?</span>
         </h2>
         <p className="mt-4 text-[16px] text-[#B8AECF] font-light">
           Rejoignez les équipes talent qui utilisent Paqli pour transformer leurs offres en décisions éclairées.

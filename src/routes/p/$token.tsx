@@ -801,7 +801,7 @@ function TabBar({
   const currentIdx = order.indexOf(tab);
   return (
     <div
-      className="flex flex-wrap gap-1.5 p-1.5 rounded-2xl mb-6 sticky top-2 z-10"
+      className="flex flex-nowrap sm:flex-wrap gap-1.5 p-1.5 rounded-2xl mb-4 sm:mb-6 sticky top-1 sm:top-2 z-10 overflow-x-auto sm:overflow-visible no-scrollbar snap-x snap-mandatory"
       style={{ background: "#FFFFFF", border: "0.5px solid rgba(45,38,64,0.08)", boxShadow: "0 4px 16px rgba(45,38,64,0.04)" }}
     >
       {TABS.map((t, idx) => {
@@ -817,7 +817,7 @@ function TabBar({
             onClick={() => onChange(t.key)}
             disabled={locked}
             title={locked ? "Terminez l'étape précédente pour débloquer" : undefined}
-            className="px-3 py-2 rounded-xl text-[12px] transition-all flex items-center gap-1"
+            className="px-3 py-2 rounded-xl text-[12px] transition-all flex items-center gap-1 whitespace-nowrap flex-shrink-0 snap-start min-h-[36px]"
             style={
               locked
                 ? {

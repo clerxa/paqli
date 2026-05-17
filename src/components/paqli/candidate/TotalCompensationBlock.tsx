@@ -13,7 +13,7 @@ interface Props {
  * Affiche les avantages valorisés en € + les avantages qualitatifs en chips.
  * Cadre rassurant : "Ce que vous n'avancez pas".
  */
-export function TotalCompensationBlock({ breakdown, totalAnnual }: Props) {
+export function TotalCompensationBlock({ breakdown, totalAnnual, isReturnVisit = false, hasSimulated = false }: Props) {
   if (!breakdown || breakdown.length === 0) return null;
 
   const valued = breakdown.filter((b) => b.annualValue > 0);

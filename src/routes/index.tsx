@@ -403,8 +403,10 @@ function SolutionSection() {
     { n: 5, icon: "✅", title: "Closer", desc: "Promesse d'embauche" },
   ];
   return (
-    <section className="py-20 md:py-28 bg-[#2D2640] px-5 text-white scroll-reveal">
-      <div className="max-w-5xl mx-auto text-center">
+    <section className="relative py-20 md:py-28 bg-[#2D2640] px-5 text-white scroll-reveal overflow-hidden">
+      <div className="orb orb-1 top-10 -left-32 w-[400px] h-[400px]" style={{ background: "radial-gradient(circle, rgba(139,127,168,0.35), transparent 70%)" }} />
+      <div className="orb orb-2 -bottom-20 -right-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.25), transparent 70%)" }} />
+      <div className="relative max-w-5xl mx-auto text-center">
         <Tag dark>La solution Paqli</Tag>
         <h2 className="mt-4 font-display leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
           Une conversation transparente,

@@ -714,6 +714,7 @@ function PackageView({
       />
 
       <FooterDisclaimer />
+      </div>
     </PageShell>
   );
 }

@@ -392,6 +392,98 @@ function ProblemSection() {
 }
 
 /* -------------------------------------------------- */
+/* Last Mile — positioning vs ATS                     */
+/* -------------------------------------------------- */
+function LastMileSection() {
+  const atsSteps = [
+    { label: "Sourcing", tool: "LinkedIn, WTJ" },
+    { label: "Tri & scoring", tool: "Votre ATS" },
+    { label: "Entretiens", tool: "Votre ATS" },
+    { label: "Décision interne", tool: "Votre ATS" },
+  ];
+  return (
+    <section className="relative py-20 md:py-28 bg-[#F0EBE8] px-5 scroll-reveal overflow-hidden">
+      <div className="orb orb-1 -top-20 right-1/4 w-[360px] h-[360px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.25), transparent 70%)" }} />
+      <div className="relative max-w-6xl mx-auto">
+        <div className="text-center">
+          <Tag>Positionnement</Tag>
+          <h2 className="mt-4 font-display text-[#2D2640]" style={{ fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.15 }}>
+            Le dernier mètre du recrutement.
+            <br />
+            <span className="text-[#8B7FA8]">Celui que votre ATS oublie.</span>
+          </h2>
+          <p className="mt-5 text-[15px] md:text-[16px] text-[#524970] font-light max-w-2xl mx-auto">
+            Les ATS gèrent le sourcing, le tri, les entretiens. Mais entre la décision interne
+            et la signature du candidat, il reste un trou noir. Paqli s'y installe.
+          </p>
+        </div>
+
+        {/* Pipeline visualization */}
+        <div className="mt-14 relative">
+          {/* ATS chain */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-2 items-stretch">
+            {atsSteps.map((s, i) => (
+              <div key={s.label} className="relative">
+                <div className="h-full p-4 rounded-2xl bg-white border border-[rgba(45,38,64,0.08)] text-left">
+                  <div className="text-[10px] uppercase tracking-wider text-[#9B97A0]">Étape {i + 1}</div>
+                  <div className="mt-1 font-display text-[15px] md:text-[16px] text-[#2D2640]">{s.label}</div>
+                  <div className="mt-1 text-[11px] text-[#524970] font-light">{s.tool}</div>
+                </div>
+                {/* Arrow between steps (desktop) */}
+                <div className="hidden md:block absolute top-1/2 -right-1 -translate-y-1/2 text-[#C4A882] text-[14px] z-10">→</div>
+              </div>
+            ))}
+
+            {/* Paqli — the last mile */}
+            <div className="relative col-span-2 md:col-span-1">
+              <div className="h-full p-4 rounded-2xl bg-[#2D2640] text-white border border-[rgba(196,168,130,0.4)] shadow-[0_10px_40px_rgba(45,38,64,0.25)] relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-[rgba(196,168,130,0.18)] to-transparent" />
+                <div className="relative">
+                  <div className="text-[10px] uppercase tracking-wider text-[#C4A882] font-medium">Le dernier mètre</div>
+                  <div className="mt-1 font-display text-[15px] md:text-[16px]">Closing candidat</div>
+                  <div className="mt-1 text-[11px] text-[#B8AECF] font-light">Paqli</div>
+                </div>
+              </div>
+              {/* Pulse ring */}
+              <span className="ping-soft absolute -top-2 -right-2 w-4 h-4 rounded-full bg-[#C4A882]" />
+            </div>
+          </div>
+
+          {/* Caption row */}
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-2 text-[11px] text-[#9B97A0]">
+            <div className="md:col-span-4 text-center md:text-left italic">
+              ↑ Ce que votre ATS fait déjà très bien
+            </div>
+            <div className="col-span-2 md:col-span-1 text-center md:text-left font-medium text-[#2D2640]">
+              ↑ Là où 1 offre sur 3 se perd
+            </div>
+          </div>
+        </div>
+
+        {/* Three pillars */}
+        <div className="mt-14 grid md:grid-cols-3 gap-5">
+          {[
+            { icon: "🔌", title: "Complémentaire, pas concurrent", desc: "Paqli s'intègre à votre ATS (Greenhouse, Lever, Teamtailor…). On ne remplace rien." },
+            { icon: "🎯", title: "Une seule mission : closer", desc: "Du « OK on lui fait une offre » au « C'est signé ». Tout ce qui se passe entre les deux." },
+            { icon: "📈", title: "Le KPI qui manquait", desc: "Taux d'acceptation, temps de décision, signaux d'hésitation. Mesurez ce que votre ATS ignore." },
+          ].map((p, i) => (
+            <div
+              key={p.title}
+              className="feature-card scroll-reveal p-6 bg-white border border-[rgba(45,38,64,0.08)] rounded-2xl"
+              style={{ ["--reveal-delay" as never]: `${i * 100}ms` }}
+            >
+              <div className="text-3xl">{p.icon}</div>
+              <h3 className="mt-3 font-display text-[18px] text-[#2D2640]">{p.title}</h3>
+              <p className="mt-2 text-[13px] text-[#524970] font-light leading-relaxed">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------- */
 /* Solution                                           */
 /* -------------------------------------------------- */
 function SolutionSection() {
@@ -1088,6 +1180,7 @@ function LandingPage() {
       <Hero onDemo={openDemo} />
       <LogoBar />
       <ProblemSection />
+      <LastMileSection />
       <SolutionSection />
       <ProductSection />
       <TotalCompSection />

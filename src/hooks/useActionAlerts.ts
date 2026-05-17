@@ -112,6 +112,29 @@ export function useActionAlerts(organizationId: string | undefined) {
         continue;
       }
 
+      // P2 — thinking stalled > 48h
+      if (link.status === "thinking") {
+        const hThinking = link.thinking_at
+          ? (now.getTime() - new Date(link.thinking_at).getTime()) / 3600000
+          : 0;
+        if (hThinking >= 48) {
+          out.push({
+            id: link.id,
+            type: "thinking_stalled",
+            priority: 2,
+            candidateName: candName,
+            packageTitle: pkgTitle,
+            packageId: pkg?.id ?? "",
+            linkId: link.id,
+            message: `En réflexion depuis ${Math.max(1, Math.round(hThinking / 24))} jour(s) — relancer ?`,
+            ctaPrimary: { label: "✨ Message IA", action: "ai_message" },
+            ctaSecondary: { label: "Voir le profil", action: "view_candidate" },
+            createdAt: link.thinking_at ? new Date(link.thinking_at) : now,
+          });
+        }
+        continue;
+      }
+
       if (link.status !== "pending") continue;
 
       // P1 — deadline < 24h

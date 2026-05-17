@@ -5,13 +5,15 @@ import { formatEur } from "@/lib/clientCalc";
 interface Props {
   breakdown: BenefitBreakdownItem[];
   totalAnnual: number;
+  isReturnVisit?: boolean;
+  hasSimulated?: boolean;
 }
 
 /**
  * Affiche les avantages valorisés en € + les avantages qualitatifs en chips.
  * Cadre rassurant : "Ce que vous n'avancez pas".
  */
-export function TotalCompensationBlock({ breakdown, totalAnnual }: Props) {
+export function TotalCompensationBlock({ breakdown, totalAnnual, isReturnVisit = false, hasSimulated = false }: Props) {
   if (!breakdown || breakdown.length === 0) return null;
 
   const valued = breakdown.filter((b) => b.annualValue > 0);
@@ -30,6 +32,18 @@ export function TotalCompensationBlock({ breakdown, totalAnnual }: Props) {
 
   return (
     <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-4">
+      {isReturnVisit && hasSimulated && (
+        <div
+          className="flex items-start gap-2 mb-4 rounded-xl px-3 py-2.5"
+          style={{ background: "#F5F2FA", border: "0.5px solid rgba(139,127,168,0.25)" }}
+        >
+          <span style={{ fontSize: 14 }}>💡</span>
+          <p className="text-[12px] text-aubergine-light leading-relaxed">
+            Lors de votre dernière visite, vous avez simulé votre package.
+            Vous pouvez affiner les paramètres selon votre situation personnelle.
+          </p>
+        </div>
+      )}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
           <div className="text-[11px] uppercase tracking-[0.08em] font-medium text-aubergine-light">

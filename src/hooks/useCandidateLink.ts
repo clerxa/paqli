@@ -23,8 +23,11 @@ export interface CandidateLinkData {
   id: string;
   token: string;
   candidate_name: string | null;
+  candidate_email: string | null;
   expires_at: string | null;
   opened_at: string | null;
+  simulated_at: string | null;
+  return_visits: number;
   offerStatus: string;
   statusUpdatedAt: string | null;
   decisionDeadline: string | null;
@@ -60,8 +63,11 @@ export function useCandidateLink(token: string) {
           id: ok.linkId,
           token: ok.token,
           candidate_name: ok.candidateName,
+          candidate_email: (ok as any).candidateEmail ?? null,
           expires_at: ok.expiresAt,
           opened_at: ok.openedAt,
+          simulated_at: (ok as any).simulatedAt ?? null,
+          return_visits: (ok as any).returnVisits ?? 0,
           offerStatus: ok.offerStatus,
           statusUpdatedAt: ok.statusUpdatedAt,
           decisionDeadline: (ok as any).decisionDeadline ?? null,

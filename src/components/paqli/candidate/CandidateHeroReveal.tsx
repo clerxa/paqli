@@ -5,6 +5,7 @@ import {
   type CandidateParams,
   type PackageData,
 } from "@/lib/clientCalc";
+import { buildGreeting } from "@/lib/candidatePersonalization";
 
 interface OrgLite {
   name?: string | null;
@@ -15,6 +16,9 @@ interface CandidateHeroRevealProps {
   pkg: PackageData;
   organization: OrgLite | null | undefined;
   candidateName: string | null;
+  openedAt?: string | null;
+  returnVisits?: number;
+  offerStatus?: string;
   onReveal: () => void;
 }
 
@@ -28,6 +32,9 @@ export function CandidateHeroReveal({
   pkg,
   organization,
   candidateName,
+  openedAt = null,
+  returnVisits = 0,
+  offerStatus = "pending",
   onReveal,
 }: CandidateHeroRevealProps) {
   const estimate = calcPackageEstimate(pkg, DEFAULT_PARAMS);
@@ -48,6 +55,14 @@ export function CandidateHeroReveal({
   const hasSalary = (pkg.gross_salary ?? 0) > 0;
   const orgName = organization?.name ?? "L'équipe";
   const firstName = candidateName ? candidateName.split(" ")[0] : null;
+  void firstName;
+  const greeting = buildGreeting(
+    candidateName,
+    openedAt,
+    returnVisits,
+    offerStatus,
+    orgName,
+  );
 
   return (
     <section
@@ -104,14 +119,18 @@ export function CandidateHeroReveal({
 
         {/* Reveal body */}
         <div className="mt-10 text-center">
-          {firstName && (
-            <div
-              className="text-[13px] mb-2"
-              style={{ color: "#D6CDE8" }}
-            >
-              Bonjour {firstName},
-            </div>
-          )}
+          <div
+            className="font-display text-white mb-1"
+            style={{ fontSize: 22, lineHeight: 1.2 }}
+          >
+            {greeting.headline}
+          </div>
+          <div
+            className="text-[13px] mb-4"
+            style={{ color: "#D6CDE8" }}
+          >
+            {greeting.subline}
+          </div>
 
           {hasSalary ? (
             <>

@@ -27,6 +27,10 @@ import {
 import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
 import { TotalCompensationBlock } from "@/components/paqli/candidate/TotalCompensationBlock";
 import { CandidateHeroReveal } from "@/components/paqli/candidate/CandidateHeroReveal";
+import {
+  buildAssistantPlaceholder,
+  buildAssistantWelcomeMessage,
+} from "@/lib/candidatePersonalization";
 
 export const Route = createFileRoute("/p/$token")({
   component: PublicPackagePage,
@@ -287,6 +291,9 @@ function PackageView({
           pkg={pkg}
           organization={org}
           candidateName={data.candidate_name}
+          openedAt={data.opened_at}
+          returnVisits={data.return_visits}
+          offerStatus={data.offerStatus}
           onReveal={handleReveal}
         />
       </PageShell>
@@ -559,6 +566,8 @@ function PackageView({
             <TotalCompensationBlock
               breakdown={estimate.benefitsBreakdown}
               totalAnnual={estimate.benefitsEst}
+              isReturnVisit={!!data.opened_at && (data.return_visits ?? 0) > 0}
+              hasSimulated={!!data.simulated_at}
             />
           )}
 
@@ -657,7 +666,14 @@ function PackageView({
         <>
           <SectionTitle><Sparkles size={14} className="inline mr-1" /> Une question sur ce package ?</SectionTitle>
           <div data-section="assistant_ia">
-            <Assistant token={data.token} pkg={pkg} params={params} />
+            <Assistant
+              token={data.token}
+              pkg={pkg}
+              params={params}
+              candidateName={data.candidate_name}
+              hasSimulated={!!data.simulated_at}
+              returnVisits={data.return_visits ?? 0}
+            />
           </div>
           <SectionTitle className="mt-6">Échangez avec l'équipe</SectionTitle>
           <div data-section="messagerie">
@@ -713,7 +729,10 @@ function PackageView({
         allUnlocked={allTabsVisited}
       />
 
-      <FooterDisclaimer />
+      <FooterDisclaimer
+        orgName={org?.name ?? null}
+        candidateName={data.candidate_name}
+      />
       </div>
     </PageShell>
   );
@@ -1498,10 +1517,16 @@ function Assistant({
   token,
   pkg,
   params,
+  candidateName,
+  hasSimulated,
+  returnVisits,
 }: {
   token: string;
   pkg: PackageData;
   params: CandidateParams;
+  candidateName: string | null;
+  hasSimulated: boolean;
+  returnVisits: number;
 }) {
   const [messages, setMessages] = useState<
     Array<{ role: "user" | "assistant"; content: string }>
@@ -1511,6 +1536,14 @@ function Assistant({
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const ask = useServerFn(askCandidateAssistant);
   const track = useServerFn(trackLink);
+
+  const firstName = candidateName
+    ? candidateName.trim().split(/\s+/)[0] ?? null
+    : null;
+  const orgName = pkg.organizations?.name ?? "l'entreprise";
+  const hasEquity = (pkg.equity_devices ?? []).length > 0;
+  const welcomeMessage = buildAssistantWelcomeMessage(firstName, orgName, hasEquity);
+  const placeholder = buildAssistantPlaceholder(firstName, hasSimulated, returnVisits);
 
   async function send() {
     const q = input.trim();
@@ -1617,9 +1650,17 @@ function Assistant({
     <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-4 mb-6">
       <div className="space-y-2 max-h-[320px] overflow-y-auto mb-3">
         {messages.length === 0 && (
-          <div className="text-[12px] text-grey py-4 text-center">
-            Posez votre question — l'assistant vous explique le fonctionnement
-            des dispositifs.
+          <div className="flex justify-start">
+            <div
+              className="max-w-[85%] text-[13px] leading-relaxed rounded-2xl px-3 py-2 whitespace-pre-wrap"
+              style={{
+                background: "#F0EBE8",
+                color: "#2D2640",
+                border: "1px solid rgba(139,127,168,0.2)",
+              }}
+            >
+              ✨ {welcomeMessage}
+            </div>
           </div>
         )}
         {messages.map((m, i) => (
@@ -1682,7 +1723,7 @@ function Assistant({
           placeholder={
             quotaExceeded
               ? "Limite atteinte — utilisez la messagerie."
-              : "Ex : Que se passe-t-il avec mes BSPCE si l'entreprise est rachetée ?"
+              : placeholder
           }
           rows={2}
           disabled={quotaExceeded}
@@ -1715,12 +1756,30 @@ function Dot({ delay = 0 }: { delay?: number }) {
   );
 }
 
-function FooterDisclaimer() {
+function FooterDisclaimer({
+  orgName,
+  candidateName,
+}: {
+  orgName: string | null;
+  candidateName: string | null;
+}) {
+  const today = new Date().toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
   return (
     <footer
       className="rounded-[12px] mt-6 text-[11px] leading-relaxed"
       style={{ background: "#F0EBE8", color: "#9B97A0", padding: 20 }}
     >
+      {(orgName || candidateName) && (
+        <p className="mb-3 text-aubergine-light">
+          Cette simulation a été préparée
+          {orgName ? ` par ${orgName}` : ""}
+          {candidateName ? ` pour ${candidateName}` : ""}.
+        </p>
+      )}
       <p>
         Les estimations présentées sur cette page sont indicatives et arrondies.
         Elles sont calculées sur la base des règles fiscales françaises en
@@ -1739,7 +1798,7 @@ function FooterDisclaimer() {
         expert-comptable.
       </p>
       <p className="mt-3 text-aubergine-light">
-        Simulation générée par Paqli · paqli.fr
+        Générée le {today} · Paqli · paqli.fr
       </p>
     </footer>
   );
@@ -2005,6 +2064,9 @@ function DecisionDeadlineBanner({
     );
   }
 
+  // Banner only appears when deadline is within 72h (per spec)
+  if (timeLeft.total >= 72 * 3_600_000) return null;
+
   const deadlineFr = new Date(deadline).toLocaleDateString("fr-FR", {
     weekday: "long",
     day: "numeric",
@@ -2016,16 +2078,19 @@ function DecisionDeadlineBanner({
   const accent = isUrgent ? "#C46A1F" : "#8B7FA8";
   const bg = isUrgent ? "#FCEEE6" : "#F5F2FA";
 
+  const isSticky = timeLeft.total > 0 && timeLeft.total < 72 * 3_600_000;
+
   return (
     <div
-      className="rounded-2xl p-5 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      className={`rounded-2xl p-5 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${isSticky ? "sticky top-0 z-20 shadow-md" : ""}`}
       style={{ background: bg, border: `1px solid ${accent}33` }}
     >
       <div className="flex items-start gap-3">
         <span style={{ fontSize: 22 }}>{isUrgent ? "⚡" : "📅"}</span>
         <div>
           <div className="font-display text-aubergine" style={{ fontSize: 15 }}>
-            Offre disponible jusqu'au {deadlineFr}
+            {isUrgent ? "Offre expire bientôt — " : "Offre disponible jusqu'au "}
+            {deadlineFr}
           </div>
           <div className="text-[12px] text-aubergine-light mt-1 leading-relaxed">
             {isUrgent

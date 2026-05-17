@@ -47,6 +47,9 @@ export function DecisionBlock({
 
   const status = data.offerStatus;
   const statusUpdatedAt = data.statusUpdatedAt;
+  const firstName = data.candidate_name
+    ? data.candidate_name.trim().split(/\s+/)[0] ?? null
+    : null;
 
   async function handleAccept() {
     setSubmitting(true);
@@ -106,7 +109,7 @@ export function DecisionBlock({
               onClick={() => setShowAccept(true)}
               className="flex-1 flex items-center justify-center gap-2 bg-[#EAF3DE] text-[#27500A] border border-[rgba(59,109,17,0.2)] rounded-lg py-3 text-[13px] font-medium hover:bg-[#D5EBC0] transition-colors"
             >
-              ✅ Accepter cette offre
+              ✅ Accepter l'offre {orgName}
             </button>
             <button
               onClick={() => setShowDecline(true)}
@@ -130,15 +133,17 @@ export function DecisionBlock({
                 className="font-display text-[#27500A]"
                 style={{ fontSize: 16 }}
               >
-                Vous avez accepté cette offre
+                {firstName
+                  ? `${firstName}, votre décision est enregistrée`
+                  : "Votre décision est enregistrée"}
               </div>
               <div className="text-[12px] text-[#3B6D11] mt-1">
                 Le {formatFrDate(statusUpdatedAt)} · L'équipe RH de {orgName} a
                 été notifiée
               </div>
               <p className="text-[12px] text-[#27500A] mt-3 leading-relaxed">
-                {orgName} vous contactera prochainement pour la suite du
-                processus.
+                L'équipe de {orgName} vous contactera prochainement pour la
+                suite du processus.
               </p>
             </div>
           </div>
@@ -192,9 +197,11 @@ export function DecisionBlock({
             Accepter l'offre
           </h3>
           <p className="text-[13px] text-aubergine-light leading-relaxed text-center mb-5">
-            Vous êtes sur le point d'accepter l'offre de <strong>{orgName}</strong>{" "}
-            pour le poste de <strong>{pkgTitle}</strong>. L'équipe RH sera
-            notifiée immédiatement.
+            {firstName
+              ? `${firstName}, vous êtes sur le point d'accepter`
+              : "Vous êtes sur le point d'accepter"}{" "}
+            l'offre de <strong>{orgName}</strong> pour le poste de{" "}
+            <strong>{pkgTitle}</strong>. L'équipe RH sera notifiée immédiatement.
           </p>
           <div className="flex gap-3">
             <button

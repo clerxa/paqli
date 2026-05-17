@@ -219,13 +219,16 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 px-3 pt-6 overflow-y-auto">
-          {main.map((item) => (
-            <NavLink
-              key={item.label}
-              item={item}
-              active={!!item.to && pathname.startsWith(item.to)}
-            />
-          ))}
+          {main.map((item) => {
+            const badge = item.to ? badgeByRoute[item.to] : undefined;
+            return (
+              <NavLink
+                key={item.label}
+                item={{ ...item, badge: badge && badge > 0 ? badge : undefined }}
+                active={!!item.to && pathname.startsWith(item.to)}
+              />
+            );
+          })}
 
           <SectionLabel>Formation</SectionLabel>
           {formation.map((item) => (

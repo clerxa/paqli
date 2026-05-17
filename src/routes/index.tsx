@@ -492,7 +492,7 @@ function SolutionSection() {
   const parcoursEntreprise = [
     { n: 1, icon: "⚙️", title: "Vous configurez", desc: "L'offre, l'équipe, les avantages, le package" },
     { n: 2, icon: "🔗", title: "Vous partagez", desc: "Un espace candidat unique et sécurisé" },
-    { n: 3, icon: "📊", title: "Vous suivez", desc: "Les signaux IA en temps réel" },
+    { n: 3, icon: "📊", title: "Vous suivez", desc: "Les signaux Paq en temps réel" },
     { n: 4, icon: "✅", title: "Vous closez", desc: "Avec une promesse d'embauche signée" },
   ];
   const parcoursCandidat = [
@@ -585,12 +585,12 @@ function ProductSection() {
     {
       id: "config",
       label: "RH — Configurateur",
-      desc: "Espace candidat complet en 5 minutes : offre, équipe, avantages, package. Score IA instantané.",
+      desc: "Espace candidat complet en 5 minutes : offre, équipe, avantages, package. Score Paq instantané.",
       mockup: (
         <div className="p-6 bg-white rounded-xl border border-[rgba(45,38,64,0.08)]">
           <div className="flex items-center justify-between">
             <div className="text-[11px] uppercase tracking-wider text-[#9B97A0]">Étape 3 / 5</div>
-            <div className="text-[12px] text-[#8B7FA8]">Score IA <span className="font-medium text-[#2D2640]">78/100</span></div>
+            <div className="text-[12px] text-[#8B7FA8]">Score Paq <span className="font-medium text-[#2D2640]">78/100</span></div>
           </div>
           <div className="mt-4 space-y-2">
             <FieldRow label="Fixe annuel" value="75 000 €" />
@@ -599,7 +599,7 @@ function ProductSection() {
             <FieldRow label="PEE abondé" value="3 768 €" />
           </div>
           <div className="mt-4 p-3 bg-[#FAF8F5] rounded-lg text-[12px] text-[#524970]">
-            💡 <span className="font-medium text-[#2D2640]">Conseil IA :</span> Ajoutez un budget formation pour augmenter le score de +8 pts.
+            💡 <span className="font-medium text-[#2D2640]">Conseil de Paq :</span> Ajoutez un budget formation pour augmenter le score de +8 pts.
           </div>
         </div>
       ),
@@ -625,7 +625,7 @@ function ProductSection() {
     {
       id: "dashboard",
       label: "RH — Dashboard",
-      desc: "Signaux d'engagement, alertes IA, \"Que faire maintenant ?\"",
+      desc: "Signaux d'engagement, alertes Paq, \"Que faire maintenant ?\"",
       mockup: (
         <div className="p-6 bg-white rounded-xl border border-[rgba(45,38,64,0.08)]">
           <div className="text-[11px] uppercase tracking-wider text-[#9B97A0]">3 candidats actifs</div>
@@ -773,14 +773,14 @@ function CompRow({ label, value }: { label: string; value: string }) {
 function AISection() {
   const rhFeatures = [
     { icon: "✨", title: "Score d'attractivité", desc: "Diagnostic instantané de votre offre vs marché. Points forts, alertes, axes d'amélioration." },
-    { icon: "🎯", title: "Conseil de valorisation", desc: "L'IA suggère quoi mettre en avant pour ce candidat — equity, formation, flexibilité." },
+    { icon: "🎯", title: "Conseil de valorisation", desc: "Paq suggère quoi mettre en avant pour ce candidat — equity, formation, flexibilité." },
     { icon: "🧠", title: "Signaux comportementaux", desc: "« Thomas a passé 4 min sur l'equity. » Détecte les hésitations, prédit l'intention." },
-    { icon: "💬", title: "Messages de relance IA", desc: "Personnalisés selon le comportement du candidat. Un clic, pas 20 minutes." },
+    { icon: "💬", title: "Messages signés Paq", desc: "Personnalisés selon le comportement du candidat. Un clic, pas 20 minutes." },
   ];
   const candidatFeatures = [
     { icon: "🤖", title: "Assistant 24/7", desc: "Une question sur les BSPCE, le PEE, la mutuelle ? Réponse instantanée, sourcée, neutre." },
     { icon: "📊", title: "Simulations personnalisées", desc: "Net après impôt, valorisation equity, projections sur 4 ans — adaptées à sa situation." },
-    { icon: "⚖️", title: "Comparaison éclairée", desc: "L'IA replace l'offre dans son marché : « Votre fixe est au P75 du marché Series B Paris. »" },
+    { icon: "⚖️", title: "Comparaison éclairée", desc: "Paq replace l'offre dans son marché : « Votre fixe est au P75 du marché Series B Paris. »" },
     { icon: "💡", title: "Aide à la décision", desc: "Synthèse claire des points forts, des questions à poser, des éléments à négocier." },
   ];
 
@@ -839,15 +839,15 @@ function AISection() {
       <div className="orb orb-2 -bottom-20 -right-20 w-[420px] h-[420px]" style={{ background: "radial-gradient(circle, rgba(196,168,130,0.18), transparent 70%)" }} />
       <div className="relative max-w-6xl mx-auto">
         <div className="text-center">
-          <Tag>Intelligence artificielle</Tag>
+          <Tag>L'Agent Paq</Tag>
           <h2 className="mt-4 font-display text-[#2D2640]" style={{ fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.15 }}>
-            Une IA qui aide les deux côtés
+            Paq, l'agent qui éclaire les deux côtés
             <br />
             <span className="text-[#8B7FA8]">de la table.</span>
           </h2>
           <p className="mt-5 text-[15px] md:text-[16px] text-[#524970] font-light max-w-2xl mx-auto">
             Côté RH, elle valorise. Côté candidat, elle éclaire.
-            Une seule IA, deux missions, zéro biais.
+            Un seul agent, deux missions, zéro biais.
           </p>
         </div>
 
@@ -868,13 +868,13 @@ function AISection() {
           />
 
           {/* Connecting node (desktop) */}
-          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-14 h-14 rounded-full bg-[#2D2640] text-white items-center justify-center font-display text-[18px] shadow-[0_8px_30px_rgba(45,38,64,0.25)]">
-            IA
+          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full bg-[#2D2640] text-white items-center justify-center font-display text-[20px] shadow-[0_8px_30px_rgba(45,38,64,0.25)] border-2 border-[#C4A882]">
+            Paq
           </div>
         </div>
 
         <p className="mt-10 text-center text-[13px] text-[#9B97A0] italic">
-          Aucun coaching biaisé. L'IA est neutre, sourcée, et factuelle des deux côtés.
+          Aucun coaching biaisé. Paq est neutre, sourcé et factuel des deux côtés.
         </p>
       </div>
     </section>

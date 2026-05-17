@@ -133,15 +133,17 @@ export function DecisionBlock({
                 className="font-display text-[#27500A]"
                 style={{ fontSize: 16 }}
               >
-                Vous avez accepté cette offre
+                {firstName
+                  ? `${firstName}, votre décision est enregistrée`
+                  : "Votre décision est enregistrée"}
               </div>
               <div className="text-[12px] text-[#3B6D11] mt-1">
                 Le {formatFrDate(statusUpdatedAt)} · L'équipe RH de {orgName} a
                 été notifiée
               </div>
               <p className="text-[12px] text-[#27500A] mt-3 leading-relaxed">
-                {orgName} vous contactera prochainement pour la suite du
-                processus.
+                L'équipe de {orgName} vous contactera prochainement pour la
+                suite du processus.
               </p>
             </div>
           </div>

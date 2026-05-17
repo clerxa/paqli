@@ -206,7 +206,7 @@ function CandidateDetail() {
                 {pkg && (
                   <Link
                     to="/packages/$id"
-                    params={{ id: pkg.id }}
+                    params={{ id: link.package_id! }}
                     className="text-[11px] text-aubergine-light hover:text-aubergine underline"
                   >
                     Package : {pkg.title}
@@ -324,7 +324,7 @@ function CandidateDetail() {
               </h2>
               <Link
                 to="/packages/$id"
-                params={{ id: pkg.id }}
+                params={{ id: link.package_id! }}
                 className="text-[12px] text-aubergine-light hover:text-aubergine underline"
               >
                 Voir le détail →

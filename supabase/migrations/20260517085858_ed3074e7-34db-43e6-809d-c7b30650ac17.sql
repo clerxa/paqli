@@ -1,0 +1,1 @@
+UPDATE public.organizations SET plan = 'pro', monthly_link_quota = NULL WHERE id = '690af376-0745-46c6-af3b-0d6f6db256e2';

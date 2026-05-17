@@ -1,9 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getLinkQuotaFn } from "@/lib/linkQuota.functions";
 import { Package as PackageIcon, ArrowUpRight } from "lucide-react";
 import { Topbar } from "@/components/paqli/Topbar";
 import { MetricCard } from "@/components/paqli/MetricCard";
@@ -31,6 +28,7 @@ import {
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 import { loadPackage } from "@/lib/packageService";
 import type { PackageConfig } from "@/lib/packageConfig";
+import { useLinkQuota } from "@/hooks/useLinkQuota";
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: DashboardPage,
@@ -160,12 +158,7 @@ function DashboardPage() {
     }
   }
 
-  const fetchQuota = useServerFn(getLinkQuotaFn);
-  const { data: quota } = useQuery({
-    queryKey: ["link-quota"],
-    queryFn: () => fetchQuota(),
-    enabled: !!organization,
-  });
+  const { data: quota } = useLinkQuota();
 
   async function openCounterOffer(alert: FollowUpAlert) {
     try {

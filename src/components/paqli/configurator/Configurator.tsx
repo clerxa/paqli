@@ -18,11 +18,23 @@ import { Step4Scenarios } from "./Step4Scenarios";
 import { Step5Preview } from "./Step5Preview";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { validateScenarios, validateStep } from "@/lib/packageConfig";
+import { useAuth } from "@/hooks/useAuth";
+import { ConfiguratorPreviewPanel } from "./ConfiguratorPreviewPanel";
+import { Eye } from "lucide-react";
 
 export function Configurator() {
   const { config, setConfig, saveDraft, saveState } = usePackageConfig();
+  const { organization } = useAuth();
   const navigate = useNavigate();
   const [maxReached, setMaxReached] = useState(config.currentStep);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const previewLabel =
+    config.status === "active"
+      ? "Voir comme candidat"
+      : config.currentStep === 0 && !config.title
+        ? "Prévisualisation partielle"
+        : "Prévisualiser";
 
   const setStep = (n: number) =>
     setConfig((prev) => ({ ...prev, currentStep: n }));
@@ -96,6 +108,14 @@ export function Configurator() {
         actions={
           <div className="flex items-center gap-3">
             <SaveIndicator state={saveState} />
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-[rgba(45,38,64,0.15)] rounded-lg text-[12px] font-medium text-[#524970] hover:bg-[#F5F2FA] hover:border-[rgba(139,127,168,0.3)] transition-all flex-shrink-0"
+            >
+              <Eye size={14} />
+              {previewLabel}
+            </button>
             <Button variant="ghost" onClick={saveDraft}>
               Enregistrer
             </Button>
@@ -142,6 +162,14 @@ export function Configurator() {
           <PreviewPanel config={config} />
         </aside>
       </div>
+
+      {showPreview && (
+        <ConfiguratorPreviewPanel
+          config={config}
+          organization={organization}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </>
   );
 }

@@ -44,7 +44,7 @@ export const updateOfferStatus = createServerFn({ method: "POST" })
       previousStatus !== "pending" && previousStatus !== data.status;
 
     const nowIso = new Date().toISOString();
-    const updatePayload: Record<string, unknown> = {
+    const updatePayload = {
       status: data.status,
       status_updated_at: nowIso,
       decline_category:
@@ -53,14 +53,12 @@ export const updateOfferStatus = createServerFn({ method: "POST" })
         data.status === "declined" && data.declineReason
           ? data.declineReason.slice(0, 300)
           : null,
+      thinking_at: data.status === "thinking" ? nowIso : null,
+      thinking_note:
+        data.status === "thinking" && data.thinkingNote
+          ? data.thinkingNote.slice(0, 300)
+          : null,
     };
-
-    if (data.status === "thinking") {
-      updatePayload.thinking_at = nowIso;
-      updatePayload.thinking_note = data.thinkingNote
-        ? data.thinkingNote.slice(0, 300)
-        : null;
-    }
 
     await supabaseAdmin
       .from("candidate_links")

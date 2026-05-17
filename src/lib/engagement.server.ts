@@ -111,6 +111,9 @@ export async function computeEngagement(linkId: string): Promise<EngagementResul
 
   if (behaviors.some((b) => b.event_type === "reveal_clicked")) score += 12;
 
+  // Signal d'intérêt fort : statut "en réflexion"
+  if (events.some((e) => e.event_type === "status_thinking")) score += 20;
+
   if (link.status === "declined") score = Math.min(score, 20);
   score = Math.min(100, Math.max(0, score));
 
@@ -120,6 +123,7 @@ export async function computeEngagement(linkId: string): Promise<EngagementResul
   let intent: EngagementResult["intent"];
   if (link.status === "accepted") intent = "accepted";
   else if (link.status === "declined") intent = "declined";
+  else if (link.status === "thinking") intent = "likely_accept";
   else if (score >= 70 || events.some((e) => e.event_type === "rdv_click"))
     intent = "likely_accept";
   else if (score >= 45 && (link.return_visits ?? 0) > 0) intent = "uncertain";

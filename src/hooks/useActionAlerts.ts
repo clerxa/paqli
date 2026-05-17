@@ -39,7 +39,7 @@ export function useActionAlerts(organizationId: string | undefined) {
       .from("candidate_links")
       .select(
         `id, token, status, candidate_name, decision_deadline,
-         opened_at, simulated_at, created_at,
+         opened_at, simulated_at, created_at, thinking_at,
          engagement_score, engagement_label, intent_prediction,
          packages (id, title, attractiveness_score),
          link_events (event_type, created_at)`,

@@ -106,7 +106,7 @@ export function DecisionBlock({
               onClick={() => setShowAccept(true)}
               className="flex-1 flex items-center justify-center gap-2 bg-[#EAF3DE] text-[#27500A] border border-[rgba(59,109,17,0.2)] rounded-lg py-3 text-[13px] font-medium hover:bg-[#D5EBC0] transition-colors"
             >
-              ✅ Accepter cette offre
+              ✅ Accepter l'offre {orgName}
             </button>
             <button
               onClick={() => setShowDecline(true)}

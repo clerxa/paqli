@@ -118,14 +118,18 @@ export function CandidateHeroReveal({
 
         {/* Reveal body */}
         <div className="mt-10 text-center">
-          {firstName && (
-            <div
-              className="text-[13px] mb-2"
-              style={{ color: "#D6CDE8" }}
-            >
-              Bonjour {firstName},
-            </div>
-          )}
+          <div
+            className="font-display text-white mb-1"
+            style={{ fontSize: 22, lineHeight: 1.2 }}
+          >
+            {greeting.headline}
+          </div>
+          <div
+            className="text-[13px] mb-4"
+            style={{ color: "#D6CDE8" }}
+          >
+            {greeting.subline}
+          </div>
 
           {hasSalary ? (
             <>

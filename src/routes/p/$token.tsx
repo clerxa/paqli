@@ -729,7 +729,10 @@ function PackageView({
         allUnlocked={allTabsVisited}
       />
 
-      <FooterDisclaimer />
+      <FooterDisclaimer
+        orgName={org?.name ?? null}
+        candidateName={data.candidate_name}
+      />
       </div>
     </PageShell>
   );

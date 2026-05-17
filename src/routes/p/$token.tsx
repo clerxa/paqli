@@ -273,8 +273,29 @@ function PackageView({
     return true;
   });
 
+  const [revealed, setRevealed] = useState<boolean>(!!data.opened_at);
+
+  const handleReveal = useCallback(() => {
+    setRevealed(true);
+    behavior.track("reveal_clicked", { section: "hero", value: "total_compensation" });
+  }, [behavior]);
+
+  if (!revealed) {
+    return (
+      <PageShell>
+        <CandidateHeroReveal
+          pkg={pkg}
+          organization={org}
+          candidateName={data.candidate_name}
+          onReveal={handleReveal}
+        />
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell>
+      <div className="animate-paqli-slide-up">
       {data.counterOffer && <CounterOfferBanner info={data.counterOffer} />}
 
       {data.decisionDeadline && (

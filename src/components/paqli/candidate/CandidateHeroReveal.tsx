@@ -16,6 +16,9 @@ interface CandidateHeroRevealProps {
   pkg: PackageData;
   organization: OrgLite | null | undefined;
   candidateName: string | null;
+  openedAt?: string | null;
+  returnVisits?: number;
+  offerStatus?: string;
   onReveal: () => void;
 }
 
@@ -29,6 +32,9 @@ export function CandidateHeroReveal({
   pkg,
   organization,
   candidateName,
+  openedAt = null,
+  returnVisits = 0,
+  offerStatus = "pending",
   onReveal,
 }: CandidateHeroRevealProps) {
   const estimate = calcPackageEstimate(pkg, DEFAULT_PARAMS);

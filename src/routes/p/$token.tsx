@@ -1647,9 +1647,17 @@ function Assistant({
     <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-4 mb-6">
       <div className="space-y-2 max-h-[320px] overflow-y-auto mb-3">
         {messages.length === 0 && (
-          <div className="text-[12px] text-grey py-4 text-center">
-            Posez votre question — l'assistant vous explique le fonctionnement
-            des dispositifs.
+          <div className="flex justify-start">
+            <div
+              className="max-w-[85%] text-[13px] leading-relaxed rounded-2xl px-3 py-2 whitespace-pre-wrap"
+              style={{
+                background: "#F0EBE8",
+                color: "#2D2640",
+                border: "1px solid rgba(139,127,168,0.2)",
+              }}
+            >
+              ✨ {welcomeMessage}
+            </div>
           </div>
         )}
         {messages.map((m, i) => (

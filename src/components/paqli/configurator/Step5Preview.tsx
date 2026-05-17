@@ -108,7 +108,19 @@ export function Step5Preview() {
       }
     } catch (e) {
       console.error(e);
-      toast.error("Erreur lors de la génération du lien");
+      const err = e as Error & { code?: string; used?: number; quota?: number };
+      if (err?.code === "QUOTA_REACHED") {
+        toast.error(`Quota mensuel atteint (${err.used}/${err.quota} liens)`, {
+          description: "Passez à un plan supérieur pour envoyer plus de liens.",
+          action: {
+            label: "Voir les plans",
+            onClick: () => navigate({ to: "/settings", hash: "plan" }),
+          },
+          duration: 10000,
+        });
+      } else {
+        toast.error("Erreur lors de la génération du lien");
+      }
     } finally {
       setGenerating(false);
     }

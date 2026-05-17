@@ -1503,10 +1503,16 @@ function Assistant({
   token,
   pkg,
   params,
+  candidateName,
+  hasSimulated,
+  returnVisits,
 }: {
   token: string;
   pkg: PackageData;
   params: CandidateParams;
+  candidateName: string | null;
+  hasSimulated: boolean;
+  returnVisits: number;
 }) {
   const [messages, setMessages] = useState<
     Array<{ role: "user" | "assistant"; content: string }>
@@ -1516,6 +1522,14 @@ function Assistant({
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const ask = useServerFn(askCandidateAssistant);
   const track = useServerFn(trackLink);
+
+  const firstName = candidateName
+    ? candidateName.trim().split(/\s+/)[0] ?? null
+    : null;
+  const orgName = pkg.organizations?.name ?? "l'entreprise";
+  const hasEquity = (pkg.equity_devices ?? []).length > 0;
+  const welcomeMessage = buildAssistantWelcomeMessage(firstName, orgName, hasEquity);
+  const placeholder = buildAssistantPlaceholder(firstName, hasSimulated, returnVisits);
 
   async function send() {
     const q = input.trim();

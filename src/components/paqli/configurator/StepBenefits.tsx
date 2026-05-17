@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
+import { Link } from "@tanstack/react-router";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
+import { useOrgCatalogs } from "@/lib/orgCatalog";
 import {
   BENEFIT_CATALOG,
   CATEGORY_LABELS,
@@ -18,6 +20,7 @@ const CATEGORIES = VISIBLE_CATEGORIES;
 
 export function StepBenefits() {
   const { config, patch } = usePackageConfig();
+  const { benefits: orgBenefits } = useOrgCatalogs();
   const [activeCategory, setActiveCategory] = useState<BenefitCategory>("health");
 
   const selected = config.benefitsV2 ?? [];
@@ -30,17 +33,38 @@ export function StepBenefits() {
     if (exists) {
       setSelected(selected.filter((b) => b.benefit_key !== def.key));
     } else {
+      // Use org catalog defaults if this benefit is part of the entreprise catalogue
+      const fromOrg = orgBenefits.find((o) => o.benefit_key === def.key);
       setSelected([
         ...selected,
         {
           benefit_key: def.key,
           category: def.category,
           value_type: def.valueType,
-          monthly_value: def.defaultMonthlyValue ?? null,
-          annual_value: def.defaultAnnualValue ?? null,
+          monthly_value:
+            fromOrg?.monthly_value ?? def.defaultMonthlyValue ?? null,
+          annual_value:
+            fromOrg?.annual_value ?? def.defaultAnnualValue ?? null,
         },
       ]);
     }
+  }
+
+  function loadFromOrgCatalog() {
+    const next: PackageBenefit[] = [...selected];
+    for (const o of orgBenefits) {
+      if (next.find((s) => s.benefit_key === o.benefit_key)) continue;
+      next.push({
+        benefit_key: o.benefit_key,
+        category: o.category,
+        value_type: o.value_type,
+        monthly_value: o.monthly_value,
+        annual_value: o.annual_value,
+        employer_share: o.employer_share,
+        custom_label: o.custom_label,
+      });
+    }
+    setSelected(next);
   }
 
   function updateBenefit(key: string, p: Partial<PackageBenefit>) {

@@ -550,6 +550,12 @@ function PackageView({
             </>
           )}
 
+          {/* 3.b ANALYSE IA DU BENCHMARK */}
+          {(pkg.gross_salary ?? 0) > 0 && (
+            <BenchmarkAnalysisCard token={data.token} />
+          )}
+
+
           {/* 4. DISCLAIMER global */}
           <DisclaimerBlock>
             Ces montants sont des estimations indicatives arrondies, calculées sur

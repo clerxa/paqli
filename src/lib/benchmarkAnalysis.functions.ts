@@ -343,7 +343,8 @@ Retourne UNIQUEMENT un objet JSON valide (sans markdown, sans texte avant ou apr
     await supabaseAdmin
       .from("packages")
       .update({
-        benchmark_analysis: analysis as unknown as Record<string, unknown>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        benchmark_analysis: analysis as any,
         benchmark_analyzed_at: new Date().toISOString(),
       })
       .eq("id", pkg.id);

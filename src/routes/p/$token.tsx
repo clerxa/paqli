@@ -153,6 +153,14 @@ function PackageView({
 }) {
   const pkg = data.packages;
   const org = pkg.organizations;
+  const testimonials = ((pkg as any).testimonials ?? []) as Array<{
+    first_name: string;
+    job_title: string;
+    seniority_years: number | null;
+    quote: string;
+    quote_context: string | null;
+    avatar_url: string | null;
+  }>;
 
   const track = useServerFn(trackLink);
 
@@ -487,7 +495,7 @@ function PackageView({
       )}
 
       {tab === "team" && (
-        <TeamCultureTab pkg={pkg} org={org} testimonials={(data as any)?.package?.testimonials ?? []} onExternalLink={behavior.trackExternalLink} />
+        <TeamCultureTab pkg={pkg} org={org} testimonials={testimonials} onExternalLink={behavior.trackExternalLink} />
       )}
 
       {tab === "package" && (
@@ -682,7 +690,7 @@ function PackageView({
           }, tab !== "next" ? 250 : 0);
         }}
       />
-      <TestimonialPopups testimonials={(data as any)?.package?.testimonials ?? []} />
+      <TestimonialPopups testimonials={testimonials} />
       <PaqFloatingChat>
         <Assistant
           token={data.token}

@@ -521,7 +521,7 @@ function PackageView({
               estimate={estimate}
               orgName={org?.name ?? "L'entreprise"}
               achievementPct={achievementPct}
-              onAchievementPctChange={(v) => {
+              onAchievementPctChange={(v: number) => {
                 setAchievementPct(v);
                 behavior.trackSimulationChange("variable_achievement", v);
               }}

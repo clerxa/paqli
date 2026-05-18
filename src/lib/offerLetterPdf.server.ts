@@ -220,8 +220,8 @@ export async function buildOfferLetterPdf(s: OfferLetterSnapshot): Promise<Uint8
   doc.setCreator("Paqli");
 
   doc.registerFontkit(fontkit);
-  const fontSans = await doc.embedFont(interRegularUrl);
-  const fontSansBold = await doc.embedFont(interBoldUrl);
+  const fontSans = await doc.embedFont(b64ToBytes(interRegularB64));
+  const fontSansBold = await doc.embedFont(b64ToBytes(interBoldB64));
   // Use regular for "italic" slots (Inter italic not bundled); visual hierarchy
   // is preserved via color/size, and viewers no longer substitute glyph widths.
   const fontReg = fontSans;

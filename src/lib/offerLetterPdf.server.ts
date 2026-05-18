@@ -1,5 +1,10 @@
 // Real PDF generation for hiring promise documents — runs in Workers via pdf-lib.
-import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
+import { PDFDocument, rgb, type PDFFont, type PDFPage } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
+// Bundle real TTFs so viewers don't substitute Standard14 fonts (which causes
+// visible character gaps in Chrome/poppler/PDFium). Vite inlines as ArrayBuffer.
+import interRegularUrl from "@/assets/fonts/Inter_400Regular.ttf?arraybuffer";
+import interBoldUrl from "@/assets/fonts/Inter_700Bold.ttf?arraybuffer";
 
 export interface OfferLetterSnapshot {
   candidateName: string;

@@ -283,6 +283,40 @@ export const generateOfferLetter = createServerFn({ method: "POST" })
     };
   });
 
+export const listOfferLettersForLink = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ linkId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("offer_letters")
+      .select("id, status, pdf_path, created_at, updated_at, sent_at")
+      .eq("link_id", data.linkId)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const items = await Promise.all(
+      (rows ?? []).map(async (r) => {
+        let url: string | null = null;
+        if (r.pdf_path) {
+          const { data: signed } = await supabaseAdmin.storage
+            .from("offer-letters")
+            .createSignedUrl(r.pdf_path, 24 * 3600);
+          url = signed?.signedUrl ?? null;
+        }
+        return {
+          id: r.id,
+          status: r.status as string,
+          createdAt: r.created_at as string,
+          updatedAt: r.updated_at as string,
+          sentAt: r.sent_at as string | null,
+          previewUrl: url,
+        };
+      }),
+    );
+    return { letters: items };
+  });
+
 const SendInput = z.object({ letterId: z.string().uuid() });
 
 export const sendOfferLetter = createServerFn({ method: "POST" })

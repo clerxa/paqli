@@ -1063,6 +1063,8 @@ function TeamCultureTab({ pkg, org, testimonials, onExternalLink }: { pkg: Pkg; 
         </>
       )}
 
+      <TestimonialsBlock testimonials={testimonials} orgName={org?.name ?? null} />
+
       {hasGrowth && (
         <>
           <SectionTitle>Évolution & développement</SectionTitle>

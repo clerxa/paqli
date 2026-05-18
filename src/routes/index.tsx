@@ -1350,11 +1350,10 @@ function LandingPage() {
       <ProblemSection />
       <LastMileSection />
       <SolutionSection />
-      <ExperienceSection />
       <ProductSection />
       <TotalCompSection />
+      <MidCTA onDemo={openDemo} />
       <AISection />
-      <ControlSection />
       <TestimonialsSection />
       <PricingSection onDemo={openDemo} />
       <FinalCTA onDemo={openDemo} />

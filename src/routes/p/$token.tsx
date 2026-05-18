@@ -34,6 +34,7 @@ import { TotalCompensationBlock } from "@/components/paqli/candidate/TotalCompen
 import { CandidateHeroReveal } from "@/components/paqli/candidate/CandidateHeroReveal";
 import { MobileFloatingCTA } from "@/components/paqli/candidate/MobileFloatingCTA";
 import { CurrentPackageComparator } from "@/components/paqli/candidate/CurrentPackageComparator";
+import { PackageCompositionView } from "@/components/paqli/candidate/PackageCompositionView";
 import {
   buildAssistantPlaceholder,
   buildAssistantWelcomeMessage,

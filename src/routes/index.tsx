@@ -312,22 +312,25 @@ function Hero({ onDemo }: { onDemo: () => void }) {
 /* Logo bar                                           */
 /* -------------------------------------------------- */
 function LogoBar() {
-  const logos = ["Nexora", "Staveo", "Lumix", "Archon", "Pelios"];
+  const metrics = [
+    { value: "2026", label: "Règles fiscales à jour" },
+    { value: "5", label: "Régimes BSPCE couverts" },
+    { value: "30+", label: "Avantages catalogués" },
+    { value: "RGPD", label: "Hébergement EU" },
+  ];
   return (
-    <section className="py-6 bg-[#F0EBE8] overflow-hidden">
-      <div className="max-w-6xl mx-auto px-5 flex flex-col md:flex-row items-center gap-6">
-        <span className="text-[12px] text-[#524970] whitespace-nowrap">
-          Utilisé par les équipes talent de →
-        </span>
-        <div className="flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-          <div className="flex gap-16 animate-marquee whitespace-nowrap">
-            {[...logos, ...logos, ...logos].map((l, i) => (
-              <span key={i} className="font-display text-[22px] text-[#2D2640] opacity-40 hover:opacity-80 transition-opacity">
-                {l}
-              </span>
-            ))}
+    <section className="py-8 bg-[#F0EBE8]">
+      <div className="max-w-6xl mx-auto px-5 grid grid-cols-2 md:grid-cols-4 gap-5">
+        {metrics.map((m) => (
+          <div key={m.label} className="text-center md:text-left">
+            <div className="font-display text-[26px] md:text-[30px] text-[#2D2640] leading-none">
+              {m.value}
+            </div>
+            <div className="mt-1.5 text-[11px] md:text-[12px] text-[#524970] font-light">
+              {m.label}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </section>
   );

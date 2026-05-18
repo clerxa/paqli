@@ -1247,6 +1247,27 @@ function PricingSection({ onDemo }: { onDemo: () => void }) {
 /* -------------------------------------------------- */
 /* Final CTA + Footer                                 */
 /* -------------------------------------------------- */
+function MidCTA({ onDemo }: { onDemo: () => void }) {
+  return (
+    <section className="py-14 md:py-16 bg-[#FAF8F5] px-5 scroll-reveal">
+      <div className="max-w-3xl mx-auto text-center">
+        <h2 className="font-display text-[#2D2640]" style={{ fontSize: "clamp(24px, 3vw, 32px)", lineHeight: 1.2 }}>
+          Prêt à montrer la vraie valeur de votre package ?
+        </h2>
+        <button
+          onClick={onDemo}
+          className="mt-6 inline-flex items-center gap-2 px-8 py-3.5 bg-[#2D2640] text-white rounded-xl text-[14px] font-medium hover:bg-[#3D3554] transition-colors"
+        >
+          Demander une démo gratuite →
+        </button>
+        <p className="mt-4 text-[12px] text-[#9B97A0]">
+          20 minutes · Sans engagement · Réponse sous 24h
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function FinalCTA({ onDemo }: { onDemo: () => void }) {
   return (
     <section className="relative py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal overflow-hidden">

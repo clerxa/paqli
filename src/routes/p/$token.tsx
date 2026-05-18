@@ -484,7 +484,7 @@ function PackageView({
       )}
 
       {tab === "team" && (
-        <TeamCultureTab pkg={pkg} onExternalLink={behavior.trackExternalLink} />
+        <TeamCultureTab pkg={pkg} org={org} testimonials={(data as any)?.package?.testimonials ?? []} onExternalLink={behavior.trackExternalLink} />
       )}
 
       {tab === "package" && (

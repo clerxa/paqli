@@ -15,6 +15,7 @@ import { BehaviorView } from "@/components/paqli/BehaviorView";
 import { SalaryBreakdown } from "@/components/paqli/candidate/SalaryBreakdown";
 import { estimatePasRate } from "@/lib/clientCalc";
 import { OfferLetterModal } from "@/components/paqli/OfferLetterModal";
+import { EmployerBenchmarkCard } from "@/components/paqli/EmployerBenchmarkCard";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 
 import { supabase } from "@/integrations/supabase/client";

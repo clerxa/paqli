@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { callClaude } from "./claudeApi.server";
 import { inferJobFamily, inferSeniority } from "./jobBenchmark";
 
@@ -21,11 +22,13 @@ export interface BenchmarkAnalysis {
   analyzed_at: string;
 }
 
-const InputSchema = z.object({
+const TokenSchema = z.object({
   token: z.string().min(4).max(128).regex(/^[a-zA-Z0-9_-]+$/),
 });
 
-const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+const PackageIdSchema = z.object({
+  packageId: z.string().uuid(),
+});
 
 const FAMILY_LABEL: Record<string, string> = {
   software_engineer: "Software Engineer",
@@ -103,113 +106,88 @@ async function callClaudeWithWebSearch(params: {
   }
 }
 
-export const getBenchmarkAnalysis = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => InputSchema.parse(input))
-  .handler(async ({ data }): Promise<BenchmarkAnalysis | null> => {
-    // 1. Resolve package via candidate link (public-safe)
-    const { data: link } = await supabaseAdmin
-      .from("candidate_links")
-      .select("package_id")
-      .eq("token", data.token)
-      .maybeSingle();
+async function computeBenchmarkForPackage(packageId: string): Promise<BenchmarkAnalysis | null> {
+  const { data: pkg } = await supabaseAdmin
+    .from("packages")
+    .select("id, title, gross_salary, location_city")
+    .eq("id", packageId)
+    .maybeSingle();
 
-    if (!link?.package_id) return null;
+  if (!pkg) return null;
+  const fixedSalary = Number(pkg.gross_salary) || 0;
+  if (fixedSalary <= 0) return null;
 
-    const { data: pkg } = await supabaseAdmin
-      .from("packages")
-      .select(
-        "id, title, gross_salary, location_city, benchmark_analysis, benchmark_analyzed_at",
-      )
-      .eq("id", link.package_id)
-      .maybeSingle();
+  const title = pkg.title || "";
+  const jobFamily = inferJobFamily(title);
+  const seniority = inferSeniority(title);
+  const locationRaw = (pkg.location_city || "Paris").trim();
+  const locationKey = locationRaw.toLowerCase();
 
-    if (!pkg) return null;
-
-    const fixedSalary = Number(pkg.gross_salary) || 0;
-    if (fixedSalary <= 0) return null;
-
-    // 2. Return cached analysis if < 24h
-    if (pkg.benchmark_analysis && pkg.benchmark_analyzed_at) {
-      const age = Date.now() - new Date(pkg.benchmark_analyzed_at).getTime();
-      if (age < TWENTY_FOUR_HOURS) {
-        return pkg.benchmark_analysis as unknown as BenchmarkAnalysis;
+  let benchmarkRow:
+    | {
+        p25: number;
+        p50: number;
+        p75: number;
+        source: string | null;
+        version: string;
+        job_family: string;
+        seniority: string;
+        location: string;
       }
-    }
+    | null = null;
 
-    const title = pkg.title || "";
-    const jobFamily = inferJobFamily(title);
-    const seniority = inferSeniority(title);
-    const locationRaw = (pkg.location_city || "Paris").trim();
-    const locationKey = locationRaw.toLowerCase();
+  if (jobFamily !== "other") {
+    const { data: exact } = await supabaseAdmin
+      .from("salary_benchmarks")
+      .select("p25, p50, p75, source, version, job_family, seniority, location")
+      .eq("job_family", jobFamily)
+      .eq("seniority", seniority)
+      .eq("location", locationKey)
+      .maybeSingle();
 
-    // 3. Lookup salary_benchmarks
-    let benchmarkRow:
-      | {
-          p25: number;
-          p50: number;
-          p75: number;
-          source: string | null;
-          version: string;
-          job_family: string;
-          seniority: string;
-          location: string;
-        }
-      | null = null;
-
-    if (jobFamily !== "other") {
-      const { data: exact } = await supabaseAdmin
+    if (exact) {
+      benchmarkRow = {
+        ...exact,
+        p25: Number(exact.p25),
+        p50: Number(exact.p50),
+        p75: Number(exact.p75),
+      };
+    } else {
+      const { data: fallbackParis } = await supabaseAdmin
         .from("salary_benchmarks")
-        .select("p25, p50, p75, source, version, job_family, seniority, location")
+        .select(
+          "p25, p50, p75, source, version, job_family, seniority, location",
+        )
         .eq("job_family", jobFamily)
         .eq("seniority", seniority)
-        .eq("location", locationKey)
+        .eq("location", "paris")
         .maybeSingle();
 
-      if (exact) {
+      if (fallbackParis) {
         benchmarkRow = {
-          ...exact,
-          p25: Number(exact.p25),
-          p50: Number(exact.p50),
-          p75: Number(exact.p75),
+          ...fallbackParis,
+          p25: Number(fallbackParis.p25),
+          p50: Number(fallbackParis.p50),
+          p75: Number(fallbackParis.p75),
         };
-      } else {
-        const { data: fallbackParis } = await supabaseAdmin
-          .from("salary_benchmarks")
-          .select(
-            "p25, p50, p75, source, version, job_family, seniority, location",
-          )
-          .eq("job_family", jobFamily)
-          .eq("seniority", seniority)
-          .eq("location", "paris")
-          .maybeSingle();
-
-        if (fallbackParis) {
-          benchmarkRow = {
-            ...fallbackParis,
-            p25: Number(fallbackParis.p25),
-            p50: Number(fallbackParis.p50),
-            p75: Number(fallbackParis.p75),
-          };
-        }
       }
     }
+  }
 
-    let analysis: BenchmarkAnalysis;
+  let analysis: BenchmarkAnalysis;
 
-    try {
-      if (benchmarkRow) {
-        // CASE A: data found → AI coherence analysis
-        const gap = benchmarkRow.p50
-          ? Math.round(((fixedSalary - benchmarkRow.p50) / benchmarkRow.p50) * 100)
-          : 0;
-        const positioning: BenchmarkAnalysis["positioning"] =
-          fixedSalary < benchmarkRow.p25
-            ? "below"
-            : fixedSalary > benchmarkRow.p75
-              ? "above"
-              : "within";
+  if (benchmarkRow) {
+    const gap = benchmarkRow.p50
+      ? Math.round(((fixedSalary - benchmarkRow.p50) / benchmarkRow.p50) * 100)
+      : 0;
+    const positioning: BenchmarkAnalysis["positioning"] =
+      fixedSalary < benchmarkRow.p25
+        ? "below"
+        : fixedSalary > benchmarkRow.p75
+          ? "above"
+          : "within";
 
-        const userPrompt = `Package à analyser :
+    const userPrompt = `Package à analyser :
 - Poste : ${title}
 - Niveau : ${SENIORITY_LABEL[benchmarkRow.seniority] ?? benchmarkRow.seniority}
 - Ville : ${locationRaw}
@@ -223,40 +201,39 @@ Données marché (${benchmarkRow.source ?? "benchmark interne"} ${benchmarkRow.v
 
 Rédige une analyse concise de 2-3 phrases maximum pour le candidat tech qui reçoit ce package. Sois direct, factuel, sans jargon RH. Mentionne si l'offre est compétitive dans le contexte 2026 (marché en stabilisation, stretchflation, seniorisation). Réponds UNIQUEMENT avec le texte de l'analyse, sans introduction ni titre.`;
 
-        const text = await callClaude({
-          systemPrompt:
-            "Tu es un expert RH spécialisé dans les rémunérations tech en France.",
-          userPrompt,
-          caller: "benchmarkAnalysis",
-          maxTokens: 500,
-        });
+    const text = await callClaude({
+      systemPrompt:
+        "Tu es un expert RH spécialisé dans les rémunérations tech en France.",
+      userPrompt,
+      caller: "benchmarkAnalysis",
+      maxTokens: 500,
+    });
 
-        analysis = {
-          status: "found",
-          source: `${benchmarkRow.source ?? "Benchmark interne"} · ${benchmarkRow.version}`,
-          job_family:
-            FAMILY_LABEL[benchmarkRow.job_family] ?? benchmarkRow.job_family,
-          seniority:
-            SENIORITY_LABEL[benchmarkRow.seniority] ?? benchmarkRow.seniority,
-          location: locationRaw,
-          p25: benchmarkRow.p25,
-          p50: benchmarkRow.p50,
-          p75: benchmarkRow.p75,
-          proposed_salary: fixedSalary,
-          positioning,
-          positioning_label:
-            positioning === "below"
-              ? "En dessous du marché"
-              : positioning === "above"
-                ? "Au-dessus du marché"
-                : "Dans la fourchette marché",
-          gap_percent: gap,
-          ai_analysis: text,
-          analyzed_at: new Date().toISOString(),
-        };
-      } else {
-        // CASE B: no data → web search fallback
-        const userPrompt = `Un package vient d'être configuré pour ce profil :
+    analysis = {
+      status: "found",
+      source: `${benchmarkRow.source ?? "Benchmark interne"} · ${benchmarkRow.version}`,
+      job_family:
+        FAMILY_LABEL[benchmarkRow.job_family] ?? benchmarkRow.job_family,
+      seniority:
+        SENIORITY_LABEL[benchmarkRow.seniority] ?? benchmarkRow.seniority,
+      location: locationRaw,
+      p25: benchmarkRow.p25,
+      p50: benchmarkRow.p50,
+      p75: benchmarkRow.p75,
+      proposed_salary: fixedSalary,
+      positioning,
+      positioning_label:
+        positioning === "below"
+          ? "En dessous du marché"
+          : positioning === "above"
+            ? "Au-dessus du marché"
+            : "Dans la fourchette marché",
+      gap_percent: gap,
+      ai_analysis: text,
+      analyzed_at: new Date().toISOString(),
+    };
+  } else {
+    const userPrompt = `Un package vient d'être configuré pour ce profil :
 - Poste : ${title || "Non précisé"}
 - Ville : ${locationRaw}
 - Salaire fixe proposé : ${Math.round(fixedSalary / 1000)}k€
@@ -275,79 +252,129 @@ Retourne UNIQUEMENT un objet JSON valide (sans markdown, sans texte avant ou apr
   "ai_analysis": "<2-3 phrases d'analyse pour le candidat>"
 }`;
 
-        const raw = await callClaudeWithWebSearch({
-          systemPrompt:
-            "Tu es un expert RH spécialisé dans les rémunérations tech en France. Tu utilises web_search pour fonder ton analyse sur des données réelles et récentes.",
-          userPrompt,
-        });
+    const raw = await callClaudeWithWebSearch({
+      systemPrompt:
+        "Tu es un expert RH spécialisé dans les rémunérations tech en France. Tu utilises web_search pour fonder ton analyse sur des données réelles et récentes.",
+      userPrompt,
+    });
 
-        const clean = raw.replace(/```json|```/g, "").trim();
-        // Extract first JSON object if surrounded by text
-        const jsonMatch = clean.match(/\{[\s\S]*\}/);
-        const parsed = jsonMatch
-          ? (JSON.parse(jsonMatch[0]) as {
-              p25: number | null;
-              p50: number | null;
-              p75: number | null;
-              source?: string;
-              positioning?: BenchmarkAnalysis["positioning"];
-              positioning_label?: string;
-              gap_percent?: number;
-              ai_analysis?: string;
-            })
-          : null;
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    const parsed = jsonMatch
+      ? (JSON.parse(jsonMatch[0]) as {
+          p25: number | null;
+          p50: number | null;
+          p75: number | null;
+          source?: string;
+          positioning?: BenchmarkAnalysis["positioning"];
+          positioning_label?: string;
+          gap_percent?: number;
+          ai_analysis?: string;
+        })
+      : null;
 
-        if (!parsed) {
-          analysis = {
-            status: "unavailable",
-            source: "",
-            job_family: FAMILY_LABEL[jobFamily] ?? title,
-            seniority: SENIORITY_LABEL[seniority] ?? seniority,
-            location: locationRaw,
-            p25: null,
-            p50: null,
-            p75: null,
-            proposed_salary: fixedSalary,
-            positioning: "within",
-            positioning_label: "Données insuffisantes",
-            gap_percent: 0,
-            ai_analysis: raw.slice(0, 400),
-            analyzed_at: new Date().toISOString(),
-          };
-        } else {
-          analysis = {
-            status: "web_fallback",
-            source: parsed.source || "Recherche web temps réel",
-            job_family: FAMILY_LABEL[jobFamily] ?? title,
-            seniority: SENIORITY_LABEL[seniority] ?? seniority,
-            location: locationRaw,
-            p25: parsed.p25 ?? null,
-            p50: parsed.p50 ?? null,
-            p75: parsed.p75 ?? null,
-            proposed_salary: fixedSalary,
-            positioning: parsed.positioning ?? "within",
-            positioning_label:
-              parsed.positioning_label ?? "Dans la fourchette marché",
-            gap_percent: parsed.gap_percent ?? 0,
-            ai_analysis: parsed.ai_analysis ?? "",
-            analyzed_at: new Date().toISOString(),
-          };
-        }
-      }
-    } catch (err) {
-      console.error("[benchmarkAnalysis] échec:", err);
-      return null;
+    if (!parsed) {
+      analysis = {
+        status: "unavailable",
+        source: "",
+        job_family: FAMILY_LABEL[jobFamily] ?? title,
+        seniority: SENIORITY_LABEL[seniority] ?? seniority,
+        location: locationRaw,
+        p25: null,
+        p50: null,
+        p75: null,
+        proposed_salary: fixedSalary,
+        positioning: "within",
+        positioning_label: "Données insuffisantes",
+        gap_percent: 0,
+        ai_analysis: raw.slice(0, 400),
+        analyzed_at: new Date().toISOString(),
+      };
+    } else {
+      analysis = {
+        status: "web_fallback",
+        source: parsed.source || "Recherche web temps réel",
+        job_family: FAMILY_LABEL[jobFamily] ?? title,
+        seniority: SENIORITY_LABEL[seniority] ?? seniority,
+        location: locationRaw,
+        p25: parsed.p25 ?? null,
+        p50: parsed.p50 ?? null,
+        p75: parsed.p75 ?? null,
+        proposed_salary: fixedSalary,
+        positioning: parsed.positioning ?? "within",
+        positioning_label:
+          parsed.positioning_label ?? "Dans la fourchette marché",
+        gap_percent: parsed.gap_percent ?? 0,
+        ai_analysis: parsed.ai_analysis ?? "",
+        analyzed_at: new Date().toISOString(),
+      };
+    }
+  }
+
+  await supabaseAdmin
+    .from("packages")
+    .update({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      benchmark_analysis: analysis as any,
+      benchmark_analyzed_at: new Date().toISOString(),
+    })
+    .eq("id", packageId);
+
+  return analysis;
+}
+
+/**
+ * Public read-only: candidate side fetches the cached analysis via its token.
+ * Returns null if employer hasn't generated it yet.
+ */
+export const getBenchmarkAnalysis = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => TokenSchema.parse(input))
+  .handler(async ({ data }): Promise<BenchmarkAnalysis | null> => {
+    const { data: link } = await supabaseAdmin
+      .from("candidate_links")
+      .select("package_id")
+      .eq("token", data.token)
+      .maybeSingle();
+
+    if (!link?.package_id) return null;
+
+    const { data: pkg } = await supabaseAdmin
+      .from("packages")
+      .select("benchmark_analysis")
+      .eq("id", link.package_id)
+      .maybeSingle();
+
+    if (!pkg?.benchmark_analysis) return null;
+    return pkg.benchmark_analysis as unknown as BenchmarkAnalysis;
+  });
+
+/**
+ * Employer-side: generates (or regenerates) the benchmark analysis and persists
+ * it on the package. Authenticated; package must belong to the user's org.
+ */
+export const generatePackageBenchmark = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => PackageIdSchema.parse(input))
+  .handler(async ({ data, context }): Promise<BenchmarkAnalysis | null> => {
+    const { supabase } = context;
+
+    // RLS enforces org membership
+    const { data: pkg, error } = await supabase
+      .from("packages")
+      .select("id")
+      .eq("id", data.packageId)
+      .maybeSingle();
+
+    if (error || !pkg) {
+      throw new Error("Package introuvable ou accès refusé");
     }
 
-    // 4. Persist
-    await supabaseAdmin
-      .from("packages")
-      .update({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        benchmark_analysis: analysis as any,
-        benchmark_analyzed_at: new Date().toISOString(),
-      })
-      .eq("id", pkg.id);
-
-    return analysis;
+    try {
+      return await computeBenchmarkForPackage(data.packageId);
+    } catch (err) {
+      console.error("[generatePackageBenchmark] échec:", err);
+      throw new Error(
+        err instanceof Error ? err.message : "Échec de la génération",
+      );
+    }
   });

@@ -384,13 +384,14 @@ function CompanyTab() {
                 className={inputCls}
               />
             </Field>
-            <Field label="URL du logo">
-              <input
-                value={profile.logo_url}
-                onChange={(e) => setProfile((p) => ({ ...p, logo_url: e.target.value }))}
-                placeholder="https://…/logo.png"
-                className={inputCls}
-              />
+            <Field label="Logo de l'entreprise">
+              {organization?.id ? (
+                <LogoUploader
+                  organizationId={organization.id}
+                  value={profile.logo_url}
+                  onChange={(url) => setProfile((p) => ({ ...p, logo_url: url }))}
+                />
+              ) : null}
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">

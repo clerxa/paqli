@@ -154,7 +154,7 @@ export function CandidateHeroReveal({
                 className="text-[13px] mt-2"
                 style={{ color: "#B8AECF" }}
               >
-                par an · hors equity
+                brut par an · hors equity
               </div>
 
               {hasEquity && realisteEquity > 0 && (

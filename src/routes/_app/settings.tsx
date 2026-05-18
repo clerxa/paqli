@@ -171,7 +171,7 @@ function CompanyTab() {
       const { data } = await supabase
         .from("organizations")
         .select(
-          "name, description, key_figures, values, culture_note, links, source_urls, siret, address_street, address_zip, address_city, profile_generated_at",
+          "name, description, key_figures, values, culture_note, links, source_urls, siret, address_street, address_zip, address_city, profile_generated_at, tagline, founded_year, employee_count, website_url, linkedin_url, wtj_url, logo_url",
         )
         .eq("id", organization.id)
         .maybeSingle();
@@ -190,6 +190,13 @@ function CompanyTab() {
           address_zip: d.address_zip ?? "",
           address_city: d.address_city ?? "",
           profile_generated_at: d.profile_generated_at ?? null,
+          tagline: d.tagline ?? "",
+          founded_year: d.founded_year ?? null,
+          employee_count: d.employee_count ?? "",
+          website_url: d.website_url ?? "",
+          linkedin_url: d.linkedin_url ?? "",
+          wtj_url: d.wtj_url ?? "",
+          logo_url: d.logo_url ?? "",
         });
       }
       setLoading(false);
@@ -217,7 +224,14 @@ function CompanyTab() {
         address_street: profile.address_street || null,
         address_zip: profile.address_zip || null,
         address_city: profile.address_city || null,
-      })
+        tagline: profile.tagline || null,
+        founded_year: profile.founded_year,
+        employee_count: profile.employee_count || null,
+        website_url: profile.website_url || null,
+        linkedin_url: profile.linkedin_url || null,
+        wtj_url: profile.wtj_url || null,
+        logo_url: profile.logo_url || null,
+      } as any)
       .eq("id", organization.id);
     setSaving(false);
     if (error) toast.error("Erreur d'enregistrement");

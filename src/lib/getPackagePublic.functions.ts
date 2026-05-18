@@ -230,6 +230,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
                 : [],
             }
           : null,
+        testimonials,
         equity_devices: pkg.equity_devices ?? [],
         savings_devices: pkg.savings_devices ?? [],
         scenarios,

@@ -80,6 +80,7 @@ function SettingsPage() {
         </div>
       </div>
       {tab === "company" && <CompanyTab />}
+      {tab === "defaults" && <DefaultsTab />}
       {tab === "users" && <UsersTab />}
       {tab === "benchmark" && <BenchmarkTab />}
       {tab === "plan" && <PlanTab />}

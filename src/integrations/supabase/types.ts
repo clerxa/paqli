@@ -444,6 +444,59 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_testimonials: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_order: number
+          first_name: string
+          id: string
+          is_active: boolean
+          job_title: string
+          organization_id: string
+          quote: string
+          quote_context: string | null
+          seniority_years: number | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_order?: number
+          first_name: string
+          id?: string
+          is_active?: boolean
+          job_title: string
+          organization_id: string
+          quote: string
+          quote_context?: string | null
+          seniority_years?: number | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_order?: number
+          first_name?: string
+          id?: string
+          is_active?: boolean
+          job_title?: string
+          organization_id?: string
+          quote?: string
+          quote_context?: string | null
+          seniority_years?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_testimonials_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equity_devices: {
         Row: {
           cliff_months: number
@@ -916,8 +969,11 @@ export type Database = {
           created_at: string
           culture_note: string | null
           description: string | null
+          employee_count: string | null
+          founded_year: number | null
           id: string
           key_figures: Json
+          linkedin_url: string | null
           links: Json
           logo_url: string | null
           monthly_link_quota: number | null
@@ -927,8 +983,11 @@ export type Database = {
           siret: string | null
           slug: string
           source_urls: string[]
+          tagline: string | null
           updated_at: string
           values: string[]
+          website_url: string | null
+          wtj_url: string | null
         }
         Insert: {
           address_city?: string | null
@@ -937,8 +996,11 @@ export type Database = {
           created_at?: string
           culture_note?: string | null
           description?: string | null
+          employee_count?: string | null
+          founded_year?: number | null
           id?: string
           key_figures?: Json
+          linkedin_url?: string | null
           links?: Json
           logo_url?: string | null
           monthly_link_quota?: number | null
@@ -948,8 +1010,11 @@ export type Database = {
           siret?: string | null
           slug: string
           source_urls?: string[]
+          tagline?: string | null
           updated_at?: string
           values?: string[]
+          website_url?: string | null
+          wtj_url?: string | null
         }
         Update: {
           address_city?: string | null
@@ -958,8 +1023,11 @@ export type Database = {
           created_at?: string
           culture_note?: string | null
           description?: string | null
+          employee_count?: string | null
+          founded_year?: number | null
           id?: string
           key_figures?: Json
+          linkedin_url?: string | null
           links?: Json
           logo_url?: string | null
           monthly_link_quota?: number | null
@@ -969,8 +1037,11 @@ export type Database = {
           siret?: string | null
           slug?: string
           source_urls?: string[]
+          tagline?: string | null
           updated_at?: string
           values?: string[]
+          website_url?: string | null
+          wtj_url?: string | null
         }
         Relationships: []
       }

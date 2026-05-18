@@ -1097,6 +1097,9 @@ function TestimonialsSection() {
             </div>
           ))}
         </div>
+        <p className="mt-8 text-center text-[12px] text-[#9B97A0] italic">
+          Retours de nos premiers utilisateurs · Beta 2026
+        </p>
       </div>
     </section>
   );

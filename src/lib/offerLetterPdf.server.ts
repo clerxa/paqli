@@ -212,11 +212,14 @@ export async function buildOfferLetterPdf(s: OfferLetterSnapshot): Promise<Uint8
   doc.setProducer("Paqli");
   doc.setCreator("Paqli");
 
-  const fontReg = await doc.embedFont(StandardFonts.TimesRoman);
-  const fontBold = await doc.embedFont(StandardFonts.TimesRomanBold);
-  const fontItalic = await doc.embedFont(StandardFonts.TimesRomanItalic);
-  const fontSans = await doc.embedFont(StandardFonts.Helvetica);
-  const fontSansBold = await doc.embedFont(StandardFonts.HelveticaBold);
+  doc.registerFontkit(fontkit);
+  const fontSans = await doc.embedFont(interRegularUrl);
+  const fontSansBold = await doc.embedFont(interBoldUrl);
+  // Use regular for "italic" slots (Inter italic not bundled); visual hierarchy
+  // is preserved via color/size, and viewers no longer substitute glyph widths.
+  const fontReg = fontSans;
+  const fontBold = fontSansBold;
+  const fontItalic = fontSans;
 
   const page = doc.addPage([A4.width, A4.height]);
   let cur: Cursor = { page, y: A4.height - MARGIN.top };

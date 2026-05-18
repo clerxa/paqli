@@ -30,6 +30,16 @@ import {
 } from "@/lib/competitorBenchmark.functions";
 import { inviteUserFn } from "@/lib/inviteUser.functions";
 import { OrgCatalogSections } from "@/components/paqli/settings/OrgCatalogSections";
+import { SettingsSection } from "@/components/paqli/settings/SettingsSection";
+import { ProfileCompletenessBar } from "@/components/paqli/settings/ProfileCompletenessBar";
+import { TestimonialsSection } from "@/components/paqli/settings/TestimonialsSection";
+import {
+  calcLegalCompleteness,
+  calcPresentationCompleteness,
+  calcKeyFiguresCompleteness,
+  calcValuesCompleteness,
+  calcTestimonialsCompleteness,
+} from "@/lib/organizationCompleteness";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,

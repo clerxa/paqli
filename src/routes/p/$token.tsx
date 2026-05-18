@@ -488,24 +488,49 @@ function PackageView({
 
       {tab === "package" && (
         <>
-          {/* Package brut — prioritaire */}
-          <SectionTitle>Votre rémunération</SectionTitle>
+          {/* 1. VUE GLOBALE — Estimation totale tout compris (le plus large) */}
+          <SectionTitle>Estimation totale du package</SectionTitle>
+          <div className="rounded-2xl p-7 mb-3" style={{ background: "#2D2640" }}>
+            <div className="text-[10px] uppercase tracking-[0.15em]" style={{ color: "#B8AECF" }}>
+              Tout compris · rémunération + equity + épargne + avantages
+            </div>
+            {estimate.hasBspce ? (
+              <>
+                <div className="font-display text-white mt-2" style={{ fontSize: 38, lineHeight: 1.05 }}>
+                  ~{formatEur(estimate.totalRange.lowSeniority)} – ~{formatEur(estimate.totalRange.highSeniority)}
+                </div>
+                <div className="text-[11px] mt-1" style={{ color: "#B8AECF" }}>
+                  selon votre ancienneté au moment de la cession des BSPCE
+                </div>
+              </>
+            ) : (
+              <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
+                {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
+              </div>
+            )}
+            <div className="text-[12px] mt-3 leading-relaxed" style={{ color: "#B8AECF" }}>
+              Ordre de grandeur basé sur le scénario réaliste — règles fiscales 2026.
+            </div>
+          </div>
+
+          {/* 2. RÉMUNÉRATION BRUTE — fixe + variable */}
+          <SectionTitle className="mt-8">Rémunération brute annuelle</SectionTitle>
           {(() => {
             const fixe = pkg.gross_salary ?? 0;
             const variableCible = pkg.variable_target ?? 0;
             const brutTotal = fixe + variableCible;
             return (
-              <div className="rounded-2xl p-7 mb-3" style={{ background: "#2D2640" }}>
-                <div className="text-[10px] uppercase tracking-[0.15em]" style={{ color: "#B8AECF" }}>
-                  Package brut annuel {variableCible > 0 ? "(fixe + variable cible)" : "(fixe)"}
+              <div className="rounded-2xl p-6 mb-3" style={{ background: "#FAF8F5", border: "0.5px solid rgba(45,38,64,0.08)" }}>
+                <div className="text-[10px] uppercase tracking-[0.15em] text-grey">
+                  Package brut {variableCible > 0 ? "(fixe + variable cible)" : "(fixe)"}
                 </div>
-                <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
+                <div className="font-display text-aubergine mt-2" style={{ fontSize: 36, lineHeight: 1.05 }}>
                   {formatEur(brutTotal)}
                 </div>
-                <div className="text-[12px] mt-3 leading-relaxed flex flex-wrap gap-x-5 gap-y-1" style={{ color: "#B8AECF" }}>
-                  <span>Fixe : <strong className="text-white">{formatEur(fixe)}</strong> / an</span>
+                <div className="text-[12px] mt-3 leading-relaxed flex flex-wrap gap-x-5 gap-y-1 text-aubergine-light">
+                  <span>Fixe : <strong className="text-aubergine">{formatEur(fixe)}</strong> / an</span>
                   {variableCible > 0 && (
-                    <span>Variable cible : <strong className="text-white">{formatEur(variableCible)}</strong> / an</span>
+                    <span>Variable cible : <strong className="text-aubergine">{formatEur(variableCible)}</strong> / an</span>
                   )}
                   <span>soit ~{formatEur(Math.round(brutTotal / 12))} / mois brut</span>
                 </div>
@@ -513,6 +538,8 @@ function PackageView({
             );
           })()}
 
+          {/* 3. DÉTAIL net après impôts (zoom sur le salaire) */}
+          <SectionTitle className="mt-8">Détail net après impôts</SectionTitle>
           <div className="mb-6">
             <SalaryBreakdown
               grossAnnual={pkg.gross_salary ?? 0}
@@ -530,106 +557,91 @@ function PackageView({
             />
           </div>
 
-          {/* Mise PEE — seulement si pertinent */}
-          {peeDevice && (peeDevice.cap_amount ?? 0) > 0 && (
+          {/* 4. AVANTAGES */}
+          {estimate.benefitsBreakdown.length > 0 ? (
             <>
-              <SectionTitle>Votre mise PEE</SectionTitle>
-              <div data-section="simulation" className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-6">
-                <Field
-                  label="Votre mise PEE annuelle envisagée"
-                  info={`Plus vous versez, plus l'abondement de ${org?.name} est élevé. Les fonds sont bloqués 5 ans (sauf cas légaux de déblocage).`}
-                >
-                  <input
-                    type="range"
-                    min={0}
-                    max={peeDevice.cap_amount ?? 0}
-                    step={100}
-                    value={params.peeContribution}
-                    onChange={(e) => update("peeContribution", Number(e.target.value))}
-                    className="w-full accent-[#2D2640]"
-                  />
-                  <div className="text-[13px] text-aubergine mt-1">
-                    {formatEur(params.peeContribution)} / an
+              <SectionTitle className="mt-8">Avantages</SectionTitle>
+              <TotalCompensationBlock
+                breakdown={estimate.benefitsBreakdown}
+                totalAnnual={estimate.benefitsEst}
+                isReturnVisit={!!data.opened_at && (data.return_visits ?? 0) > 0}
+                hasSimulated={!!data.simulated_at}
+              />
+            </>
+          ) : (
+            estimate.benefitsEst > 0 && (
+              <>
+                <SectionTitle className="mt-8">Avantages</SectionTitle>
+                <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-4">
+                  <DetailLine label="Avantages valorisés" value={estimate.benefitsEst} info="Mutuelle, tickets restaurant, véhicule, formation — valeur annuelle estimée." />
+                </div>
+              </>
+            )
+          )}
+
+          {/* 5. ÉPARGNE SALARIALE — avec le simulateur PEE intégré */}
+          {hasSavings && (
+            <>
+              <SectionTitle className="mt-8">Épargne salariale</SectionTitle>
+              <div data-section="epargne" className="space-y-3 mb-4">
+                {peeDevice && (
+                  <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
+                    <div className="font-display text-aubergine" style={{ fontSize: 18 }}>🏦 Plan d'Épargne Entreprise (PEE)</div>
+                    <div className="text-[13px] text-aubergine-light mt-2">
+                      Abondement {org?.name} : <strong>{Math.round((peeDevice.matching_rate ?? 0) * 100)}%</strong>
+                    </div>
+                    {(peeDevice.cap_amount ?? 0) > 0 && (
+                      <div data-section="simulation" className="mt-4">
+                        <Field
+                          label="Votre mise PEE annuelle envisagée"
+                          info={`Plus vous versez, plus l'abondement de ${org?.name} est élevé. Les fonds sont bloqués 5 ans (sauf cas légaux de déblocage).`}
+                        >
+                          <input
+                            type="range"
+                            min={0}
+                            max={peeDevice.cap_amount ?? 0}
+                            step={100}
+                            value={params.peeContribution}
+                            onChange={(e) => update("peeContribution", Number(e.target.value))}
+                            className="w-full accent-[#2D2640]"
+                          />
+                          <div className="text-[13px] text-aubergine mt-1">
+                            Mise : <strong>{formatEur(params.peeContribution)}</strong> / an
+                            {" → "}
+                            {org?.name} ajoute ~<strong>{formatEur(estimate.peeEst)}</strong>
+                          </div>
+                        </Field>
+                      </div>
+                    )}
+                    <div className="text-[11px] text-grey mt-3 leading-relaxed" style={{ background: "#F0EBE8", padding: 10, borderRadius: 8 }}>
+                      ℹ️ Les fonds sont bloqués 5 ans minimum. Cas de déblocage anticipé : achat de la résidence principale, mariage, naissance, invalidité, rupture de contrat.
+                    </div>
                   </div>
-                </Field>
+                )}
+                {interDevice && (
+                  <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
+                    <div className="font-display text-aubergine" style={{ fontSize: 18 }}>📈 Intéressement</div>
+                    <div className="text-[13px] text-aubergine-light mt-2">
+                      Montant moyen (3 dernières années) : ~<strong>{formatEur(interDevice.avg_3y ?? 0)}</strong>
+                    </div>
+                    <div className="text-[11px] mt-3 leading-relaxed" style={{ background: "#FCEEE6", color: "#7A3F0E", padding: 10, borderRadius: 8 }}>
+                      ⚠️ Moyenne historique. L'intéressement dépend des résultats de l'entreprise — il peut être nul certaines années.
+                    </div>
+                  </div>
+                )}
+                {estimate.participationEst > 0 && (
+                  <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
+                    <div className="font-display text-aubergine" style={{ fontSize: 18 }}>💼 Participation</div>
+                    <div className="text-[13px] text-aubergine-light mt-2">
+                      Montant moyen (3 dernières années) : ~<strong>{formatEur(estimate.participationEst)}</strong>
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}
 
-          {/* Estimation totale (avec equity, épargne, avantages) */}
-          <SectionTitle>Estimation totale du package</SectionTitle>
-          <div className="rounded-2xl p-7 mb-3" style={{ background: "#FAF8F5", border: "0.5px solid rgba(45,38,64,0.08)" }}>
-            <div className="text-[10px] uppercase tracking-[0.15em] text-grey">
-              Tout compris (rémunération + equity + épargne + avantages)
-            </div>
-            {estimate.hasBspce ? (
-              <>
-                <div className="font-display text-aubergine mt-2" style={{ fontSize: 30, lineHeight: 1.05 }}>
-                  ~{formatEur(estimate.totalRange.lowSeniority)} – ~{formatEur(estimate.totalRange.highSeniority)}
-                </div>
-                <div className="text-[11px] mt-1 text-grey">
-                  selon votre ancienneté au moment de la cession des BSPCE
-                </div>
-              </>
-            ) : (
-              <div className="font-display text-aubergine mt-2" style={{ fontSize: 32, lineHeight: 1.05 }}>
-                {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
-              </div>
-            )}
-            <div className="text-[12px] mt-3 leading-relaxed text-aubergine-light">
-              Ordre de grandeur basé sur le scénario réaliste — règles fiscales 2026 (taux en vigueur).
-            </div>
-          </div>
-
-          <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-4 space-y-3">
-            {hasEquity && (
-              <DetailLine
-                label="Equity — scénario réaliste"
-                value={estimate.equityByScenario.find((s) => s.label === "realiste")?.estimate ?? 0}
-                valueColor="#8B7FA8"
-                info="Estimation après fiscalité — voir les scénarios détaillés ci-dessous."
-              />
-            )}
-            {peeDevice && (
-              <DetailLine
-                label="Abondement PEE employeur"
-                value={estimate.peeEst}
-                valueColor="#C4A882"
-                info={`Votre mise ${formatEur(params.peeContribution)} → ${org?.name} ajoute ${formatEur(estimate.peeEst)}.`}
-              />
-            )}
-            {estimate.interEst > 0 && (
-              <DetailLine label="Intéressement moyen" value={estimate.interEst} info="Moyenne historique sur les 3 dernières années — non garantie." />
-            )}
-            {estimate.participationEst > 0 && (
-              <DetailLine label="Participation moyenne" value={estimate.participationEst} info="Moyenne historique sur les 3 dernières années — non garantie." />
-            )}
-            {estimate.benefitsBreakdown.length === 0 && estimate.benefitsEst > 0 && (
-              <DetailLine label="Avantages valorisés" value={estimate.benefitsEst} info="Mutuelle, tickets restaurant, véhicule, formation — valeur annuelle estimée." />
-            )}
-          </div>
-
-          {estimate.benefitsBreakdown.length > 0 && (
-            <TotalCompensationBlock
-              breakdown={estimate.benefitsBreakdown}
-              totalAnnual={estimate.benefitsEst}
-              isReturnVisit={!!data.opened_at && (data.return_visits ?? 0) > 0}
-              hasSimulated={!!data.simulated_at}
-            />
-          )}
-
-          <DisclaimerBlock>
-            Ces montants sont des estimations indicatives arrondies, calculées sur
-            la base des règles fiscales en vigueur à la date de cette simulation
-            (version 2026). Ils ne constituent pas un résultat garanti, ni un
-            conseil fiscal ou patrimonial. Consultez un professionnel pour une
-            analyse personnalisée.
-          </DisclaimerBlock>
-
-          {pkg.benchmark && (pkg.gross_salary ?? 0) > 0 && (
-            <BenchmarkBar benchmark={pkg.benchmark} gross={pkg.gross_salary ?? 0} />
-          )}
-
+          {/* 6. EQUITY — scénarios */}
           {hasEquity && scenariosToShow.length > 0 && (
             <>
               <SectionTitle className="mt-8">Equity — scénarios de valorisation</SectionTitle>
@@ -665,39 +677,24 @@ function PackageView({
             </>
           )}
 
-          {hasSavings && (
+          {/* 7. POSITIONNEMENT MARCHÉ */}
+          {pkg.benchmark && (pkg.gross_salary ?? 0) > 0 && (
             <>
-              <SectionTitle className="mt-8">Épargne salariale</SectionTitle>
-              <div data-section="epargne" className="space-y-3 mb-4">
-                {peeDevice && (
-                  <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
-                    <div className="font-display text-aubergine" style={{ fontSize: 18 }}>🏦 Plan d'Épargne Entreprise (PEE)</div>
-                    <div className="text-[13px] text-aubergine-light mt-2">
-                      Abondement {org?.name} : <strong>{Math.round((peeDevice.matching_rate ?? 0) * 100)}%</strong>
-                    </div>
-                    <div className="text-[13px] text-aubergine-light mt-1">
-                      Si vous versez <strong>{formatEur(params.peeContribution)}</strong> → {org?.name} ajoute ~<strong>{formatEur(estimate.peeEst)}</strong>.
-                    </div>
-                    <div className="text-[11px] text-grey mt-3 leading-relaxed" style={{ background: "#F0EBE8", padding: 10, borderRadius: 8 }}>
-                      ℹ️ Les fonds sont bloqués 5 ans minimum. Cas de déblocage anticipé : achat de la résidence principale, mariage, naissance, invalidité, rupture de contrat.
-                    </div>
-                  </div>
-                )}
-                {interDevice && (
-                  <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
-                    <div className="font-display text-aubergine" style={{ fontSize: 18 }}>📈 Intéressement</div>
-                    <div className="text-[13px] text-aubergine-light mt-2">
-                      Montant moyen (3 dernières années) : ~<strong>{formatEur(interDevice.avg_3y ?? 0)}</strong>
-                    </div>
-                    <div className="text-[11px] mt-3 leading-relaxed" style={{ background: "#FCEEE6", color: "#7A3F0E", padding: 10, borderRadius: 8 }}>
-                      ⚠️ Moyenne historique. L'intéressement dépend des résultats de l'entreprise — il peut être nul certaines années.
-                    </div>
-                  </div>
-                )}
-              </div>
+              <SectionTitle className="mt-8">Positionnement marché</SectionTitle>
+              <BenchmarkBar benchmark={pkg.benchmark} gross={pkg.gross_salary ?? 0} />
             </>
           )}
 
+          {/* 8. DISCLAIMER global */}
+          <DisclaimerBlock>
+            Ces montants sont des estimations indicatives arrondies, calculées sur
+            la base des règles fiscales en vigueur à la date de cette simulation
+            (version 2026). Ils ne constituent pas un résultat garanti, ni un
+            conseil fiscal ou patrimonial. Consultez un professionnel pour une
+            analyse personnalisée.
+          </DisclaimerBlock>
+
+          {/* 9. FAQ */}
           <SectionTitle className="mt-8">Questions fréquentes</SectionTitle>
           <div data-section="faq">
             <FAQ hasEquity={hasEquity} hasPee={!!peeDevice} />

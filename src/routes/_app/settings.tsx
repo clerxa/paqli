@@ -38,13 +38,13 @@ export const Route = createFileRoute("/_app/settings")({
   }),
 });
 
-type TabKey = "company" | "users" | "benchmark" | "plan";
+type TabKey = "company" | "defaults" | "users" | "plan" | "benchmark";
 
 const TABS: { key: TabKey; label: string; icon: typeof Building2 }[] = [
   { key: "company", label: "Mon entreprise", icon: Building2 },
+  { key: "defaults", label: "Défauts package", icon: Sparkles },
   { key: "users", label: "Utilisateurs", icon: UsersIcon },
-  { key: "benchmark", label: "Benchmark", icon: Target },
-  { key: "plan", label: "Plan", icon: CreditCard },
+  { key: "plan", label: "Plan & facturation", icon: CreditCard },
 ];
 
 function SettingsPage() {

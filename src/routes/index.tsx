@@ -64,20 +64,27 @@ function useTilt<T extends HTMLElement>(intensity = 5) {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Paqli — L'espace candidat qui valorise toute votre offre" },
+      { title: "Paqli — Le package qui se comprend du premier coup." },
       {
         name: "description",
         content:
-          "Paqli crée un espace dédié à chaque candidat : l'offre, l'entreprise, l'équipe, les avantages et le package — interactifs. Augmentez votre taux de closing de 25%.",
+          "Simulateur fiscal, Total Compensation interactive, suivi IA candidat. Transformez chaque offre en conversation transparente — +25% de taux de closing.",
       },
-      { property: "og:title", content: "Paqli — L'espace candidat qui valorise toute votre offre" },
+      { property: "og:title", content: "Paqli — Le package qui se comprend du premier coup." },
       {
         property: "og:description",
         content:
-          "Bien plus qu'un package : un espace dédié avec l'offre, l'entreprise, l'équipe et les avantages. Utilisé par 50+ équipes RH tech.",
+          "Simulateur fiscal, Total Compensation interactive, suivi IA candidat. Utilisé par les équipes RH tech.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://paqli.fr" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Paqli — Le package qui se comprend du premier coup." },
+      {
+        name: "twitter:description",
+        content:
+          "Transformez chaque offre en conversation transparente. Simulateur fiscal, Total Compensation, suivi IA — +25% de taux de closing.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://paqli.fr" }],
   }),
@@ -177,15 +184,10 @@ function Navbar({ onDemo }: { onDemo: () => void }) {
 /* Hero mockup (right side)                           */
 /* -------------------------------------------------- */
 function HeroMockup() {
-  const { ref: inViewRef, inView } = useInView<HTMLDivElement>(0.3);
-  const tcValue = useCountUp(102000, 1600, inView);
-  const scoreValue = useCountUp(82, 1400, inView);
   const tiltRef = useTilt<HTMLDivElement>(4);
 
-  const formatted = tcValue.toLocaleString("fr-FR").replace(/,/g, " ");
-
   return (
-    <div ref={inViewRef} className="relative w-full max-w-md mx-auto animate-float">
+    <div className="relative w-full max-w-md mx-auto animate-float">
       <div
         ref={tiltRef}
         className="tilt rounded-2xl bg-white border border-[rgba(45,38,64,0.08)] overflow-hidden shadow-[0_30px_60px_-30px_rgba(45,38,64,0.35)] will-change-transform"
@@ -211,7 +213,7 @@ function HeroMockup() {
 
           <div className="mt-5 text-[11px] uppercase tracking-wider text-[#9B97A0]">Votre package vaut</div>
           <div className="font-display text-[44px] leading-none mt-1 text-aurora tabular-nums">
-            ~{formatted} €
+            ~102 000 €
           </div>
           <div className="text-[11px] text-[#9B97A0] mt-1">par an · hors equity</div>
 
@@ -224,12 +226,12 @@ function HeroMockup() {
           <div className="mt-4 p-3 rounded-xl bg-[#FAF8F5]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-[#524970]">Score engagement</span>
-              <span className="text-[12px] font-medium text-[#2D2640] tabular-nums">{scoreValue}/100 🔥</span>
+              <span className="text-[12px] font-medium text-[#2D2640] tabular-nums">82/100 🔥</span>
             </div>
             <div className="mt-2 h-1.5 bg-[#F0EBE8] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#8B7FA8] to-[#C4A882] rounded-full transition-[width] duration-[1400ms] ease-out"
-                style={{ width: `${scoreValue}%` }}
+                className="h-full bg-gradient-to-r from-[#8B7FA8] to-[#C4A882] rounded-full"
+                style={{ width: "82%" }}
               />
             </div>
           </div>
@@ -267,14 +269,14 @@ function Hero({ onDemo }: { onDemo: () => void }) {
       <div className="relative max-w-6xl mx-auto grid md:grid-cols-[55%_45%] gap-12 items-center">
         <div className="scroll-reveal revealed">
           <span className="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium text-[#8B7FA8] bg-[rgba(139,127,168,0.12)] border border-[rgba(139,127,168,0.2)] backdrop-blur-sm animate-paqli-slide-up" style={{ animationDelay: "0ms" }}>
-            ✨ Nouveau — L'espace candidat tout-en-un
+            ✨ Closing · Fiscalité 2026 · IA embarquée
           </span>
           <h1 className="mt-5 font-display text-[#2D2640] leading-[1.05] animate-paqli-slide-up" style={{ fontSize: "clamp(36px, 5vw, 62px)", animationDelay: "100ms" }}>
-            Bien plus qu'un package. <span className="text-aurora">Un espace dédié.</span>
+            Le package qui se comprend <span className="text-aurora">du premier coup.</span>
           </h1>
           <p className="mt-5 font-light text-[#524970] leading-relaxed animate-paqli-slide-up" style={{ fontSize: "clamp(16px, 1.5vw, 19px)", animationDelay: "200ms" }}>
-            Chaque candidat reçoit son espace personnalisé : l'offre, l'entreprise, l'équipe,
-            les avantages et le package — interactifs, transparents, à explorer à son rythme.
+            Transformez chaque offre en conversation transparente.
+            Simulateur fiscal, Total Compensation, suivi IA — +25% de taux de closing en moyenne.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3 animate-paqli-slide-up" style={{ animationDelay: "300ms" }}>
@@ -310,22 +312,25 @@ function Hero({ onDemo }: { onDemo: () => void }) {
 /* Logo bar                                           */
 /* -------------------------------------------------- */
 function LogoBar() {
-  const logos = ["Nexora", "Staveo", "Lumix", "Archon", "Pelios"];
+  const metrics = [
+    { value: "2026", label: "Règles fiscales à jour" },
+    { value: "5", label: "Régimes BSPCE couverts" },
+    { value: "30+", label: "Avantages catalogués" },
+    { value: "RGPD", label: "Hébergement EU" },
+  ];
   return (
-    <section className="py-6 bg-[#F0EBE8] overflow-hidden">
-      <div className="max-w-6xl mx-auto px-5 flex flex-col md:flex-row items-center gap-6">
-        <span className="text-[12px] text-[#524970] whitespace-nowrap">
-          Utilisé par les équipes talent de →
-        </span>
-        <div className="flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-          <div className="flex gap-16 animate-marquee whitespace-nowrap">
-            {[...logos, ...logos, ...logos].map((l, i) => (
-              <span key={i} className="font-display text-[22px] text-[#2D2640] opacity-40 hover:opacity-80 transition-opacity">
-                {l}
-              </span>
-            ))}
+    <section className="py-8 bg-[#F0EBE8]">
+      <div className="max-w-6xl mx-auto px-5 grid grid-cols-2 md:grid-cols-4 gap-5">
+        {metrics.map((m) => (
+          <div key={m.label} className="text-center md:text-left">
+            <div className="font-display text-[26px] md:text-[30px] text-[#2D2640] leading-none">
+              {m.value}
+            </div>
+            <div className="mt-1.5 text-[11px] md:text-[12px] text-[#524970] font-light">
+              {m.label}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </section>
   );
@@ -1047,16 +1052,16 @@ function ControlSection() {
 function TestimonialsSection() {
   const items = [
     {
-      quote: "Avant Paqli, j'envoyais un PDF et j'attendais. Maintenant je vois en temps réel si le candidat s'est intéressé à l'equity ou aux avantages. Notre taux d'acceptation a augmenté de 22%.",
-      name: "Sophie R.", role: "Head of People · Nexora (Série B)", color: "#8B7FA8",
+      quote: "Avant Paqli, j'envoyais un PDF et j'attendais. Maintenant je vois en temps réel si le candidat s'est intéressé à l'equity. Notre taux d'acceptation a augmenté de 22%.",
+      name: "Sophie R.", role: "Head of People · Scale-up Série B", color: "#8B7FA8",
     },
     {
       quote: "Le simulateur BSPCE a changé la donne. Les candidats comprennent enfin ce que leurs bons valent. On a closé 3 profils senior en 2 semaines.",
-      name: "Marc D.", role: "Talent Acquisition Lead · Staveo", color: "#C4A882",
+      name: "Marc D.", role: "Talent Acquisition Lead · Startup tech", color: "#C4A882",
     },
     {
-      quote: "La rémunération globale, c'est ce qui nous manquait. On avait des avantages formidables — GymLib, Moka.care, 3 000€ de formation — mais personne ne les calculait. Maintenant tout est visible.",
-      name: "Camille L.", role: "DRH · Archon (Série A)", color: "#3D3554",
+      quote: "On avait des avantages formidables — GymLib, Moka.care, 3 000€ de formation — mais personne ne les calculait. Maintenant tout est visible en un lien.",
+      name: "Camille L.", role: "DRH · ETI tech", color: "#3D3554",
     },
   ];
   return (
@@ -1092,6 +1097,9 @@ function TestimonialsSection() {
             </div>
           ))}
         </div>
+        <p className="mt-8 text-center text-[12px] text-[#9B97A0] italic">
+          Retours de nos premiers utilisateurs · Beta 2026
+        </p>
       </div>
     </section>
   );
@@ -1239,6 +1247,27 @@ function PricingSection({ onDemo }: { onDemo: () => void }) {
 /* -------------------------------------------------- */
 /* Final CTA + Footer                                 */
 /* -------------------------------------------------- */
+function MidCTA({ onDemo }: { onDemo: () => void }) {
+  return (
+    <section className="py-14 md:py-16 bg-[#FAF8F5] px-5 scroll-reveal">
+      <div className="max-w-3xl mx-auto text-center">
+        <h2 className="font-display text-[#2D2640]" style={{ fontSize: "clamp(24px, 3vw, 32px)", lineHeight: 1.2 }}>
+          Prêt à montrer la vraie valeur de votre package ?
+        </h2>
+        <button
+          onClick={onDemo}
+          className="mt-6 inline-flex items-center gap-2 px-8 py-3.5 bg-[#2D2640] text-white rounded-xl text-[14px] font-medium hover:bg-[#3D3554] transition-colors"
+        >
+          Demander une démo gratuite →
+        </button>
+        <p className="mt-4 text-[12px] text-[#9B97A0]">
+          20 minutes · Sans engagement · Réponse sous 24h
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function FinalCTA({ onDemo }: { onDemo: () => void }) {
   return (
     <section className="relative py-20 md:py-28 bg-[#2D2640] text-white px-5 scroll-reveal overflow-hidden">
@@ -1342,11 +1371,10 @@ function LandingPage() {
       <ProblemSection />
       <LastMileSection />
       <SolutionSection />
-      <ExperienceSection />
       <ProductSection />
       <TotalCompSection />
+      <MidCTA onDemo={openDemo} />
       <AISection />
-      <ControlSection />
       <TestimonialsSection />
       <PricingSection onDemo={openDemo} />
       <FinalCTA onDemo={openDemo} />

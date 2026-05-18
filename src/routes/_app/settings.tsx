@@ -597,6 +597,33 @@ function CompanyTab() {
         </div>
       </Card>
 
+    </div>
+  );
+}
+
+/* ============================================================
+ *  TAB 2 — Défauts package
+ * ============================================================ */
+
+function DefaultsTab() {
+  return (
+    <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-4">
+      <div className="rounded-xl border border-[rgba(45,38,64,0.08)] bg-[#FAF8F5] px-5 py-4">
+        <div className="flex items-start gap-3">
+          <span className="text-[20px]">📦</span>
+          <div>
+            <div className="text-[14px] font-medium text-aubergine">
+              Défauts pré-cochés à chaque création de package
+            </div>
+            <p className="text-[12px] text-grey font-light mt-1 leading-relaxed">
+              Définissez ici les avantages, dispositifs equity et épargne salariale
+              récurrents de votre entreprise. Ils seront proposés et pré-sélectionnés
+              automatiquement lors de la création de chaque nouveau package — vous
+              gagnez du temps tout en garantissant la cohérence des offres.
+            </p>
+          </div>
+        </div>
+      </div>
       <OrgCatalogSections />
     </div>
   );

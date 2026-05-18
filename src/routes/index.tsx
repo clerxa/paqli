@@ -184,15 +184,10 @@ function Navbar({ onDemo }: { onDemo: () => void }) {
 /* Hero mockup (right side)                           */
 /* -------------------------------------------------- */
 function HeroMockup() {
-  const { ref: inViewRef, inView } = useInView<HTMLDivElement>(0.3);
-  const tcValue = useCountUp(102000, 1600, inView);
-  const scoreValue = useCountUp(82, 1400, inView);
   const tiltRef = useTilt<HTMLDivElement>(4);
 
-  const formatted = tcValue.toLocaleString("fr-FR").replace(/,/g, " ");
-
   return (
-    <div ref={inViewRef} className="relative w-full max-w-md mx-auto animate-float">
+    <div className="relative w-full max-w-md mx-auto animate-float">
       <div
         ref={tiltRef}
         className="tilt rounded-2xl bg-white border border-[rgba(45,38,64,0.08)] overflow-hidden shadow-[0_30px_60px_-30px_rgba(45,38,64,0.35)] will-change-transform"
@@ -218,7 +213,7 @@ function HeroMockup() {
 
           <div className="mt-5 text-[11px] uppercase tracking-wider text-[#9B97A0]">Votre package vaut</div>
           <div className="font-display text-[44px] leading-none mt-1 text-aurora tabular-nums">
-            ~{formatted} €
+            ~102 000 €
           </div>
           <div className="text-[11px] text-[#9B97A0] mt-1">par an · hors equity</div>
 
@@ -231,12 +226,12 @@ function HeroMockup() {
           <div className="mt-4 p-3 rounded-xl bg-[#FAF8F5]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-[#524970]">Score engagement</span>
-              <span className="text-[12px] font-medium text-[#2D2640] tabular-nums">{scoreValue}/100 🔥</span>
+              <span className="text-[12px] font-medium text-[#2D2640] tabular-nums">82/100 🔥</span>
             </div>
             <div className="mt-2 h-1.5 bg-[#F0EBE8] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#8B7FA8] to-[#C4A882] rounded-full transition-[width] duration-[1400ms] ease-out"
-                style={{ width: `${scoreValue}%` }}
+                className="h-full bg-gradient-to-r from-[#8B7FA8] to-[#C4A882] rounded-full"
+                style={{ width: "82%" }}
               />
             </div>
           </div>

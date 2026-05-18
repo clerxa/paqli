@@ -280,6 +280,8 @@ function PackageDetail() {
               variableConfig={pkg.variableConfig}
             />
           </Card>
+
+          <EmployerBenchmarkCard packageId={id} />
         </div>
 
         <div className="col-span-12 lg:col-span-4 space-y-5">

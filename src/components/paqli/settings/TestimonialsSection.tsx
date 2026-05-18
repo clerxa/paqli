@@ -36,7 +36,7 @@ export function TestimonialsSection({
       .select("*")
       .eq("organization_id", organizationId)
       .order("display_order");
-    const list = (data ?? []) as EmployeeTestimonial[];
+    const list = (data ?? []) as unknown as EmployeeTestimonial[];
     setItems(list);
     setLoading(false);
     onCountChange?.(list.length);

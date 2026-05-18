@@ -35,6 +35,7 @@ import { CandidateHeroReveal } from "@/components/paqli/candidate/CandidateHeroR
 import { MobileFloatingCTA } from "@/components/paqli/candidate/MobileFloatingCTA";
 import { CurrentPackageComparator } from "@/components/paqli/candidate/CurrentPackageComparator";
 import { PackageCompositionView } from "@/components/paqli/candidate/PackageCompositionView";
+import { TestimonialsBlock } from "@/components/paqli/candidate/TestimonialsBlock";
 import {
   buildAssistantPlaceholder,
   buildAssistantWelcomeMessage,

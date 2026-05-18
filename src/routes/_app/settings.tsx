@@ -125,6 +125,13 @@ interface OrgProfile {
   address_zip: string;
   address_city: string;
   profile_generated_at: string | null;
+  tagline: string;
+  founded_year: number | null;
+  employee_count: string;
+  website_url: string;
+  linkedin_url: string;
+  wtj_url: string;
+  logo_url: string;
 }
 
 const empty: OrgProfile = {
@@ -140,6 +147,13 @@ const empty: OrgProfile = {
   address_zip: "",
   address_city: "",
   profile_generated_at: null,
+  tagline: "",
+  founded_year: null,
+  employee_count: "",
+  website_url: "",
+  linkedin_url: "",
+  wtj_url: "",
+  logo_url: "",
 };
 
 function CompanyTab() {

@@ -682,6 +682,20 @@ function PackageView({
           }, tab !== "next" ? 250 : 0);
         }}
       />
+      <TestimonialPopups testimonials={(data as any)?.package?.testimonials ?? []} />
+      <PaqFloatingChat>
+        <Assistant
+          token={data.token}
+          pkg={pkg}
+          params={params}
+          candidateName={data.candidate_name}
+          hasSimulated={!!data.simulated_at}
+          returnVisits={data.return_visits ?? 0}
+          proactiveSuggestion={proactiveSuggestion}
+          onClearProactiveSuggestion={() => setProactiveSuggestion(null)}
+          onAssistantUserMessage={() => setAssistantHasMessages(true)}
+        />
+      </PaqFloatingChat>
     </PageShell>
   );
 }

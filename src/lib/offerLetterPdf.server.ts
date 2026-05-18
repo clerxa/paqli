@@ -1,10 +1,17 @@
 // Real PDF generation for hiring promise documents — runs in Workers via pdf-lib.
 import { PDFDocument, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-// Bundle real TTFs so viewers don't substitute Standard14 fonts (which causes
-// visible character gaps in Chrome/poppler/PDFium). Vite inlines as ArrayBuffer.
-import interRegularUrl from "@/assets/fonts/Inter_400Regular.ttf?arraybuffer";
-import interBoldUrl from "@/assets/fonts/Inter_700Bold.ttf?arraybuffer";
+// Bundle real TTFs as base64 strings so viewers don't substitute Standard14
+// fonts (which causes visible character gaps in Chrome/poppler/PDFium).
+import interRegularB64 from "@/assets/fonts/Inter_400Regular.ttf.base64";
+import interBoldB64 from "@/assets/fonts/Inter_700Bold.ttf.base64";
+
+function b64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
 
 export interface OfferLetterSnapshot {
   candidateName: string;

@@ -30,6 +30,16 @@ import {
 } from "@/lib/competitorBenchmark.functions";
 import { inviteUserFn } from "@/lib/inviteUser.functions";
 import { OrgCatalogSections } from "@/components/paqli/settings/OrgCatalogSections";
+import { SettingsSection } from "@/components/paqli/settings/SettingsSection";
+import { ProfileCompletenessBar } from "@/components/paqli/settings/ProfileCompletenessBar";
+import { TestimonialsSection } from "@/components/paqli/settings/TestimonialsSection";
+import {
+  calcLegalCompleteness,
+  calcPresentationCompleteness,
+  calcKeyFiguresCompleteness,
+  calcValuesCompleteness,
+  calcTestimonialsCompleteness,
+} from "@/lib/organizationCompleteness";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -80,6 +90,7 @@ function SettingsPage() {
         </div>
       </div>
       {tab === "company" && <CompanyTab />}
+      {tab === "defaults" && <DefaultsTab />}
       {tab === "users" && <UsersTab />}
       {tab === "benchmark" && <BenchmarkTab />}
       {tab === "plan" && <PlanTab />}
@@ -114,6 +125,13 @@ interface OrgProfile {
   address_zip: string;
   address_city: string;
   profile_generated_at: string | null;
+  tagline: string;
+  founded_year: number | null;
+  employee_count: string;
+  website_url: string;
+  linkedin_url: string;
+  wtj_url: string;
+  logo_url: string;
 }
 
 const empty: OrgProfile = {
@@ -129,6 +147,13 @@ const empty: OrgProfile = {
   address_zip: "",
   address_city: "",
   profile_generated_at: null,
+  tagline: "",
+  founded_year: null,
+  employee_count: "",
+  website_url: "",
+  linkedin_url: "",
+  wtj_url: "",
+  logo_url: "",
 };
 
 function CompanyTab() {
@@ -146,7 +171,7 @@ function CompanyTab() {
       const { data } = await supabase
         .from("organizations")
         .select(
-          "name, description, key_figures, values, culture_note, links, source_urls, siret, address_street, address_zip, address_city, profile_generated_at",
+          "name, description, key_figures, values, culture_note, links, source_urls, siret, address_street, address_zip, address_city, profile_generated_at, tagline, founded_year, employee_count, website_url, linkedin_url, wtj_url, logo_url",
         )
         .eq("id", organization.id)
         .maybeSingle();
@@ -165,6 +190,13 @@ function CompanyTab() {
           address_zip: d.address_zip ?? "",
           address_city: d.address_city ?? "",
           profile_generated_at: d.profile_generated_at ?? null,
+          tagline: d.tagline ?? "",
+          founded_year: d.founded_year ?? null,
+          employee_count: d.employee_count ?? "",
+          website_url: d.website_url ?? "",
+          linkedin_url: d.linkedin_url ?? "",
+          wtj_url: d.wtj_url ?? "",
+          logo_url: d.logo_url ?? "",
         });
       }
       setLoading(false);
@@ -192,7 +224,14 @@ function CompanyTab() {
         address_street: profile.address_street || null,
         address_zip: profile.address_zip || null,
         address_city: profile.address_city || null,
-      })
+        tagline: profile.tagline || null,
+        founded_year: profile.founded_year,
+        employee_count: profile.employee_count || null,
+        website_url: profile.website_url || null,
+        linkedin_url: profile.linkedin_url || null,
+        wtj_url: profile.wtj_url || null,
+        logo_url: profile.logo_url || null,
+      } as any)
       .eq("id", organization.id);
     setSaving(false);
     if (error) toast.error("Erreur d'enregistrement");
@@ -249,6 +288,21 @@ function CompanyTab() {
     setNewUrl("");
   }
 
+  const [testimonialsCount, setTestimonialsCount] = useState(0);
+  const legalScore = calcLegalCompleteness(profile);
+  const presentationScore = calcPresentationCompleteness(profile);
+  const keyFiguresScore = calcKeyFiguresCompleteness(profile);
+  const valuesScore = calcValuesCompleteness(profile);
+  const testimonialsScore = calcTestimonialsCompleteness(testimonialsCount);
+  const globalScore = useMemo(
+    () =>
+      Math.round(
+        (legalScore + presentationScore + keyFiguresScore + valuesScore + testimonialsScore) /
+          5,
+      ),
+    [legalScore, presentationScore, keyFiguresScore, valuesScore, testimonialsScore],
+  );
+
   if (loading) {
     return (
       <div className="px-7 py-12 flex items-center gap-2 text-grey">
@@ -260,12 +314,128 @@ function CompanyTab() {
   const aiUsed = !!profile.profile_generated_at;
 
   return (
-    <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-6">
-      <div className="flex justify-end">
+    <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-4">
+      <div className="flex items-center justify-between gap-3 sticky top-0 z-10 bg-lin/95 backdrop-blur-sm py-2 -mx-4 sm:-mx-7 px-4 sm:px-7 border-b border-[rgba(45,38,64,0.06)]">
+        <p className="text-[12px] text-grey">
+          Profil affiché aux candidats sur leur lien personnalisé.
+        </p>
         <Button onClick={save} disabled={saving}>
           {saving ? "Enregistrement…" : "Enregistrer"}
         </Button>
       </div>
+
+      <ProfileCompletenessBar
+        score={globalScore}
+        sections={{
+          legal: legalScore,
+          presentation: presentationScore,
+          keyFigures: keyFiguresScore,
+          values: valuesScore,
+          testimonials: testimonialsScore,
+        }}
+      />
+
+      <SettingsSection
+        title="Présentation & marque"
+        icon="✨"
+        description="Tagline, logo, site web — première impression candidat"
+        score={presentationScore}
+        defaultOpen
+      >
+        <div className="space-y-4">
+          <Field label="Tagline (phrase d'accroche)">
+            <input
+              value={profile.tagline}
+              onChange={(e) => setProfile((p) => ({ ...p, tagline: e.target.value }))}
+              placeholder="La fintech qui réinvente la trésorerie B2B"
+              maxLength={120}
+              className={inputCls}
+            />
+            <p className="text-[10px] text-grey mt-1">{profile.tagline.length}/120</p>
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Site web">
+              <input
+                value={profile.website_url}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, website_url: e.target.value }))
+                }
+                placeholder="https://entreprise.com"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="LinkedIn">
+              <input
+                value={profile.linkedin_url}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, linkedin_url: e.target.value }))
+                }
+                placeholder="https://linkedin.com/company/…"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Welcome to the Jungle">
+              <input
+                value={profile.wtj_url}
+                onChange={(e) => setProfile((p) => ({ ...p, wtj_url: e.target.value }))}
+                placeholder="https://welcometothejungle.com/…"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="URL du logo">
+              <input
+                value={profile.logo_url}
+                onChange={(e) => setProfile((p) => ({ ...p, logo_url: e.target.value }))}
+                placeholder="https://…/logo.png"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Année de création">
+              <input
+                type="number"
+                value={profile.founded_year ?? ""}
+                onChange={(e) =>
+                  setProfile((p) => ({
+                    ...p,
+                    founded_year: e.target.value ? Number(e.target.value) : null,
+                  }))
+                }
+                placeholder="2020"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Effectif">
+              <input
+                value={profile.employee_count}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, employee_count: e.target.value }))
+                }
+                placeholder="ex : 45, 100-200…"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+        </div>
+      </SettingsSection>
+
+      <SettingsSection
+        title="Citations collaborateurs"
+        icon="💬"
+        description="Témoignages d'employés affichés sur la page candidat (max 5)"
+        score={testimonialsScore}
+        badge="Nouveau"
+      >
+        {organization?.id && (
+          <TestimonialsSection
+            organizationId={organization.id}
+            onCountChange={setTestimonialsCount}
+          />
+        )}
+      </SettingsSection>
 
       <Card>
         <div className="flex items-center justify-between mb-1">
@@ -586,6 +756,33 @@ function CompanyTab() {
         </div>
       </Card>
 
+    </div>
+  );
+}
+
+/* ============================================================
+ *  TAB 2 — Défauts package
+ * ============================================================ */
+
+function DefaultsTab() {
+  return (
+    <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-4">
+      <div className="rounded-xl border border-[rgba(45,38,64,0.08)] bg-[#FAF8F5] px-5 py-4">
+        <div className="flex items-start gap-3">
+          <span className="text-[20px]">📦</span>
+          <div>
+            <div className="text-[14px] font-medium text-aubergine">
+              Défauts pré-cochés à chaque création de package
+            </div>
+            <p className="text-[12px] text-grey font-light mt-1 leading-relaxed">
+              Définissez ici les avantages, dispositifs equity et épargne salariale
+              récurrents de votre entreprise. Ils seront proposés et pré-sélectionnés
+              automatiquement lors de la création de chaque nouveau package — vous
+              gagnez du temps tout en garantissant la cohérence des offres.
+            </p>
+          </div>
+        </div>
+      </div>
       <OrgCatalogSections />
     </div>
   );

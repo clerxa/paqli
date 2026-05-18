@@ -288,6 +288,21 @@ function CompanyTab() {
     setNewUrl("");
   }
 
+  const [testimonialsCount, setTestimonialsCount] = useState(0);
+  const legalScore = calcLegalCompleteness(profile);
+  const presentationScore = calcPresentationCompleteness(profile);
+  const keyFiguresScore = calcKeyFiguresCompleteness(profile);
+  const valuesScore = calcValuesCompleteness(profile);
+  const testimonialsScore = calcTestimonialsCompleteness(testimonialsCount);
+  const globalScore = useMemo(
+    () =>
+      Math.round(
+        (legalScore + presentationScore + keyFiguresScore + valuesScore + testimonialsScore) /
+          5,
+      ),
+    [legalScore, presentationScore, keyFiguresScore, valuesScore, testimonialsScore],
+  );
+
   if (loading) {
     return (
       <div className="px-7 py-12 flex items-center gap-2 text-grey">
@@ -299,12 +314,128 @@ function CompanyTab() {
   const aiUsed = !!profile.profile_generated_at;
 
   return (
-    <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-6">
-      <div className="flex justify-end">
+    <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-4">
+      <div className="flex items-center justify-between gap-3 sticky top-0 z-10 bg-lin/95 backdrop-blur-sm py-2 -mx-4 sm:-mx-7 px-4 sm:px-7 border-b border-[rgba(45,38,64,0.06)]">
+        <p className="text-[12px] text-grey">
+          Profil affiché aux candidats sur leur lien personnalisé.
+        </p>
         <Button onClick={save} disabled={saving}>
           {saving ? "Enregistrement…" : "Enregistrer"}
         </Button>
       </div>
+
+      <ProfileCompletenessBar
+        score={globalScore}
+        sections={{
+          legal: legalScore,
+          presentation: presentationScore,
+          keyFigures: keyFiguresScore,
+          values: valuesScore,
+          testimonials: testimonialsScore,
+        }}
+      />
+
+      <SettingsSection
+        title="Présentation & marque"
+        icon="✨"
+        description="Tagline, logo, site web — première impression candidat"
+        score={presentationScore}
+        defaultOpen
+      >
+        <div className="space-y-4">
+          <Field label="Tagline (phrase d'accroche)">
+            <input
+              value={profile.tagline}
+              onChange={(e) => setProfile((p) => ({ ...p, tagline: e.target.value }))}
+              placeholder="La fintech qui réinvente la trésorerie B2B"
+              maxLength={120}
+              className={inputCls}
+            />
+            <p className="text-[10px] text-grey mt-1">{profile.tagline.length}/120</p>
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Site web">
+              <input
+                value={profile.website_url}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, website_url: e.target.value }))
+                }
+                placeholder="https://entreprise.com"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="LinkedIn">
+              <input
+                value={profile.linkedin_url}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, linkedin_url: e.target.value }))
+                }
+                placeholder="https://linkedin.com/company/…"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Welcome to the Jungle">
+              <input
+                value={profile.wtj_url}
+                onChange={(e) => setProfile((p) => ({ ...p, wtj_url: e.target.value }))}
+                placeholder="https://welcometothejungle.com/…"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="URL du logo">
+              <input
+                value={profile.logo_url}
+                onChange={(e) => setProfile((p) => ({ ...p, logo_url: e.target.value }))}
+                placeholder="https://…/logo.png"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Année de création">
+              <input
+                type="number"
+                value={profile.founded_year ?? ""}
+                onChange={(e) =>
+                  setProfile((p) => ({
+                    ...p,
+                    founded_year: e.target.value ? Number(e.target.value) : null,
+                  }))
+                }
+                placeholder="2020"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Effectif">
+              <input
+                value={profile.employee_count}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, employee_count: e.target.value }))
+                }
+                placeholder="ex : 45, 100-200…"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+        </div>
+      </SettingsSection>
+
+      <SettingsSection
+        title="Citations collaborateurs"
+        icon="💬"
+        description="Témoignages d'employés affichés sur la page candidat (max 5)"
+        score={testimonialsScore}
+        badge="Nouveau"
+      >
+        {organization?.id && (
+          <TestimonialsSection
+            organizationId={organization.id}
+            onCountChange={setTestimonialsCount}
+          />
+        )}
+      </SettingsSection>
 
       <Card>
         <div className="flex items-center justify-between mb-1">

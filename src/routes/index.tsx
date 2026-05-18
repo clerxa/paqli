@@ -1052,16 +1052,16 @@ function ControlSection() {
 function TestimonialsSection() {
   const items = [
     {
-      quote: "Avant Paqli, j'envoyais un PDF et j'attendais. Maintenant je vois en temps réel si le candidat s'est intéressé à l'equity ou aux avantages. Notre taux d'acceptation a augmenté de 22%.",
-      name: "Sophie R.", role: "Head of People · Nexora (Série B)", color: "#8B7FA8",
+      quote: "Avant Paqli, j'envoyais un PDF et j'attendais. Maintenant je vois en temps réel si le candidat s'est intéressé à l'equity. Notre taux d'acceptation a augmenté de 22%.",
+      name: "Sophie R.", role: "Head of People · Scale-up Série B", color: "#8B7FA8",
     },
     {
       quote: "Le simulateur BSPCE a changé la donne. Les candidats comprennent enfin ce que leurs bons valent. On a closé 3 profils senior en 2 semaines.",
-      name: "Marc D.", role: "Talent Acquisition Lead · Staveo", color: "#C4A882",
+      name: "Marc D.", role: "Talent Acquisition Lead · Startup tech", color: "#C4A882",
     },
     {
-      quote: "La rémunération globale, c'est ce qui nous manquait. On avait des avantages formidables — GymLib, Moka.care, 3 000€ de formation — mais personne ne les calculait. Maintenant tout est visible.",
-      name: "Camille L.", role: "DRH · Archon (Série A)", color: "#3D3554",
+      quote: "On avait des avantages formidables — GymLib, Moka.care, 3 000€ de formation — mais personne ne les calculait. Maintenant tout est visible en un lien.",
+      name: "Camille L.", role: "DRH · ETI tech", color: "#3D3554",
     },
   ];
   return (

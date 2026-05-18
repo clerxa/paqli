@@ -1001,7 +1001,7 @@ function FlexibilityTab({ pkg }: { pkg: Pkg }) {
   );
 }
 
-function TeamCultureTab({ pkg, onExternalLink }: { pkg: Pkg; onExternalLink: (url: string) => void }) {
+function TeamCultureTab({ pkg, org, testimonials, onExternalLink }: { pkg: Pkg; org?: Org; testimonials?: Array<{ first_name: string; job_title: string; seniority_years: number | null; quote: string; quote_context: string | null; avatar_url: string | null }>; onExternalLink: (url: string) => void }) {
   const values = pkg.company_values ?? [];
   const growth = pkg.growth_paths ?? [];
   const hasTeam =

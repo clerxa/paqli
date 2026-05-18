@@ -13,7 +13,9 @@ import {
  * d'un coup d'œil, on déplie ce qui intrigue.
  */
 
-const DEVICE_EXPLANATIONS: Record<string, { title: string; body: string }> = {
+type DeviceExplanation = { title: string; body: string; extra?: ReactNode };
+
+const DEVICE_EXPLANATIONS: Record<string, DeviceExplanation> = {
   bspce: {
     title: "BSPCE — Bons de souscription de parts de créateur d'entreprise",
     body:

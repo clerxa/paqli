@@ -40,6 +40,7 @@ import {
   calcValuesCompleteness,
   calcTestimonialsCompleteness,
 } from "@/lib/organizationCompleteness";
+import { LogoUploader } from "@/components/paqli/settings/LogoUploader";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,

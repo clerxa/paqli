@@ -13,7 +13,9 @@ import {
  * d'un coup d'œil, on déplie ce qui intrigue.
  */
 
-const DEVICE_EXPLANATIONS: Record<string, { title: string; body: string }> = {
+type DeviceExplanation = { title: string; body: string; extra?: ReactNode };
+
+const DEVICE_EXPLANATIONS: Record<string, DeviceExplanation> = {
   bspce: {
     title: "BSPCE — Bons de souscription de parts de créateur d'entreprise",
     body:
@@ -227,33 +229,62 @@ export function PackageCompositionView({
       {hasSavings && (
         <Group label="Épargne salariale">
           {pkg.savings_devices.map((dev) => {
-            const expl = DEVICE_EXPLANATIONS[dev.type] ?? {
+            const baseExpl = DEVICE_EXPLANATIONS[dev.type] ?? {
               title: dev.type,
               body: "Dispositif d'épargne salariale.",
             };
             let valueStr = "—";
+            let explanation = baseExpl;
+
             if (dev.type === "interessement" || dev.type === "participation") {
               valueStr =
                 (dev.avg_3y ?? 0) > 0
                   ? `~${formatEur(dev.avg_3y ?? 0)}`
                   : "variable selon résultats";
+              explanation = {
+                ...baseExpl,
+                extra:
+                  (dev.avg_3y ?? 0) > 0 ? (
+                    <div
+                      className="mt-3 rounded-md p-3 text-[11px] leading-relaxed"
+                      style={{ background: "#F0EBE8" }}
+                    >
+                      Sur les <strong>3 dernières années</strong>, la prime
+                      moyenne versée par {orgName} a été de{" "}
+                      <strong>~{formatEur(dev.avg_3y ?? 0)}</strong>. Si vous
+                      la placez sur un PEE/PERCO, elle est{" "}
+                      <strong>exonérée d'impôt sur le revenu</strong> (hors
+                      prélèvements sociaux de 9,7%).
+                    </div>
+                  ) : undefined,
+              };
             } else if (dev.type === "pee" || dev.type === "perco") {
-              const rate = Math.round((dev.matching_rate ?? 0) * 100);
+              const rate = dev.matching_rate ?? 0;
+              const ratePct = Math.round(rate * 100);
               const cap = dev.cap_amount ?? 0;
-              if (rate > 0 && cap > 0) {
-                valueStr = `Abondé ${rate}%, jusqu'à ${formatEur(cap)}`;
+
+              if (ratePct > 0 && cap > 0) {
+                valueStr = `Abondé ${ratePct}%, jusqu'à ${formatEur(cap)}`;
               } else if (cap > 0) {
                 valueStr = `Plafond ${formatEur(cap)}`;
+              } else if (ratePct > 0) {
+                valueStr = `Abondé ${ratePct}%`;
               } else {
                 valueStr = "Disponible";
               }
+
+              explanation = {
+                ...baseExpl,
+                extra: buildAbondementExtra(dev.type, orgName, rate, cap),
+              };
             }
+
             return (
               <Row
                 key={dev.id}
                 label={(DEVICE_LABELS[dev.type] ?? dev.type).toUpperCase()}
                 value={valueStr}
-                explanation={expl}
+                explanation={explanation}
               />
             );
           })}
@@ -438,6 +469,113 @@ function Row({
           {explanation.extra}
         </div>
       )}
+    </div>
+  );
+}
+
+/* -------------------- Abondement explanation -------------------- */
+
+// Plafonds légaux annuels d'abondement employeur (réf. PASS 2025 ≈ 47 100 €).
+// Réévalués chaque année — valeurs indicatives.
+const LEGAL_CAP_PEE = 3_768; // 8% du PASS
+const LEGAL_CAP_PERCO = 7_536; // 16% du PASS (pour PERCO / PER-COL)
+
+function buildAbondementExtra(
+  type: "pee" | "perco",
+  orgName: string,
+  rate: number,
+  cap: number,
+): ReactNode {
+  if (rate <= 0 && cap <= 0) return null;
+
+  const legalCap = type === "pee" ? LEGAL_CAP_PEE : LEGAL_CAP_PERCO;
+  const ratePct = Math.round(rate * 100);
+
+  // Si on a un taux et un plafond : on calcule le versement candidat nécessaire
+  // pour atteindre l'abondement max, et le total capitalisé.
+  if (rate > 0 && cap > 0) {
+    // L'abondement = rate × versement_candidat, plafonné à `cap`.
+    // Donc pour toucher cap : versement_candidat = cap / rate.
+    const requiredContribution = Math.round(cap / rate);
+    const totalCapitalized = requiredContribution + cap;
+    const effectiveCap = Math.min(cap, legalCap);
+    const overLegal = cap > legalCap;
+
+    return (
+      <div className="mt-3 space-y-3">
+        <div
+          className="rounded-md p-3 text-[12px] leading-relaxed"
+          style={{ background: "#F0EBE8", color: "#2D2640" }}
+        >
+          <div className="font-medium mb-1.5">
+            Concrètement, avec les chiffres de {orgName}
+          </div>
+          <ul className="space-y-1.5 list-disc pl-4 marker:text-grey">
+            <li>
+              Taux d'abondement : <strong>{ratePct}%</strong> de chaque euro
+              que vous versez.
+            </li>
+            <li>
+              Plafond annuel d'abondement employeur :{" "}
+              <strong>{formatEur(cap)}</strong>.
+            </li>
+            <li>
+              Pour toucher le plafond, vous versez{" "}
+              <strong>{formatEur(requiredContribution)}</strong> / an
+              {" → "}
+              {orgName} ajoute <strong>{formatEur(cap)}</strong>
+              {" → "}
+              capitalisé sur votre plan :{" "}
+              <strong>{formatEur(totalCapitalized)}</strong> / an.
+            </li>
+            <li>
+              Soit un gain net immédiat de{" "}
+              <strong>+{ratePct}%</strong> sur votre épargne, sans aucun risque
+              de marché.
+            </li>
+          </ul>
+        </div>
+        <div
+          className="rounded-md p-3 text-[11px] leading-relaxed"
+          style={{ background: "#E8E0F0", color: "#3D3554" }}
+        >
+          <strong>Plafond légal {type === "pee" ? "PEE" : "PERCO/PER-COL"} :</strong>{" "}
+          l'abondement employeur est limité par la loi à{" "}
+          {type === "pee" ? "8%" : "16%"} du PASS, soit environ{" "}
+          <strong>{formatEur(legalCap)}</strong> / an (réf. 2025).{" "}
+          {overLegal
+            ? `Le plafond annoncé (${formatEur(cap)}) dépasse ce maximum légal — l'abondement réellement versé sera limité à ${formatEur(effectiveCap)}.`
+            : `Le plafond proposé par ${orgName} est ${cap === legalCap ? "au maximum légal" : "dans la limite légale"}.`}
+        </div>
+      </div>
+    );
+  }
+
+  // Plafond sans taux explicite
+  if (cap > 0) {
+    return (
+      <div
+        className="mt-3 rounded-md p-3 text-[12px] leading-relaxed"
+        style={{ background: "#F0EBE8" }}
+      >
+        Plafond annuel d'abondement employeur :{" "}
+        <strong>{formatEur(cap)}</strong>. Plafond légal{" "}
+        {type === "pee" ? "PEE" : "PERCO/PER-COL"} :{" "}
+        <strong>~{formatEur(legalCap)}</strong> / an.
+      </div>
+    );
+  }
+
+  // Taux sans plafond explicite
+  return (
+    <div
+      className="mt-3 rounded-md p-3 text-[12px] leading-relaxed"
+      style={{ background: "#F0EBE8" }}
+    >
+      Chaque euro que vous versez est abondé à{" "}
+      <strong>{ratePct}%</strong> par {orgName}, dans la limite légale de{" "}
+      <strong>~{formatEur(legalCap)}</strong> / an
+      {" "}({type === "pee" ? "8%" : "16%"} du PASS).
     </div>
   );
 }

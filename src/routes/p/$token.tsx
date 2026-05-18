@@ -488,9 +488,9 @@ function PackageView({
 
       {tab === "package" && (
         <>
-          {/* 1. VUE GLOBALE — Estimation totale tout compris (le plus large) */}
+          {/* 1. VUE GLOBALE — Estimation totale tout compris */}
           <SectionTitle>Estimation totale du package</SectionTitle>
-          <div className="rounded-2xl p-7 mb-3" style={{ background: "#2D2640" }}>
+          <div className="rounded-2xl p-7 mb-5" style={{ background: "#2D2640" }}>
             <div className="text-[10px] uppercase tracking-[0.15em]" style={{ color: "#B8AECF" }}>
               Tout compris · rémunération + equity + épargne + avantages
             </div>
@@ -513,171 +513,23 @@ function PackageView({
             </div>
           </div>
 
-          {/* 2. RÉMUNÉRATION BRUTE — fixe + variable */}
-          <SectionTitle className="mt-8">Rémunération brute annuelle</SectionTitle>
-          {(() => {
-            const fixe = pkg.gross_salary ?? 0;
-            const variableCible = pkg.variable_target ?? 0;
-            const brutTotal = fixe + variableCible;
-            return (
-              <div className="rounded-2xl p-6 mb-3" style={{ background: "#FAF8F5", border: "0.5px solid rgba(45,38,64,0.08)" }}>
-                <div className="text-[10px] uppercase tracking-[0.15em] text-grey">
-                  Package brut {variableCible > 0 ? "(fixe + variable cible)" : "(fixe)"}
-                </div>
-                <div className="font-display text-aubergine mt-2" style={{ fontSize: 36, lineHeight: 1.05 }}>
-                  {formatEur(brutTotal)}
-                </div>
-                <div className="text-[12px] mt-3 leading-relaxed flex flex-wrap gap-x-5 gap-y-1 text-aubergine-light">
-                  <span>Fixe : <strong className="text-aubergine">{formatEur(fixe)}</strong> / an</span>
-                  {variableCible > 0 && (
-                    <span>Variable cible : <strong className="text-aubergine">{formatEur(variableCible)}</strong> / an</span>
-                  )}
-                  <span>soit ~{formatEur(Math.round(brutTotal / 12))} / mois brut</span>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* 3. DÉTAIL net après impôts (zoom sur le salaire) */}
-          <SectionTitle className="mt-8">Détail net après impôts</SectionTitle>
-          <div className="mb-6">
-            <SalaryBreakdown
-              grossAnnual={pkg.gross_salary ?? 0}
-              pasRate={pasRate}
-              pasAuto={pasAuto}
-              onPasRateChange={(v) => {
-                pasTouched.current = true;
-                setPasAuto(false);
-                setPasRate(v);
-              }}
-              variableTarget={pkg.variable_target ?? 0}
+          {/* 2. COMPOSITION SYNTHÉTIQUE — vue type tableau, lignes dépliables */}
+          <div data-section="package_composition" className="mb-5">
+            <PackageCompositionView
+              pkg={pkg}
+              estimate={estimate}
+              orgName={org?.name ?? "L'entreprise"}
               achievementPct={achievementPct}
-              onAchievementPctChange={setAchievementPct}
-              variableConfig={pkg.variable_config ?? null}
+              onAchievementPctChange={(v) => {
+                setAchievementPct(v);
+                behavior.trackSimulationChange("variable_achievement", v);
+              }}
+              scenariosToShow={scenariosToShow}
+              netAnnualEstimate={estimate.salaryEst + estimate.variableEst}
             />
           </div>
 
-          {/* 4. AVANTAGES */}
-          {estimate.benefitsBreakdown.length > 0 ? (
-            <>
-              <SectionTitle className="mt-8">Avantages</SectionTitle>
-              <TotalCompensationBlock
-                breakdown={estimate.benefitsBreakdown}
-                totalAnnual={estimate.benefitsEst}
-                isReturnVisit={!!data.opened_at && (data.return_visits ?? 0) > 0}
-                hasSimulated={!!data.simulated_at}
-              />
-            </>
-          ) : (
-            estimate.benefitsEst > 0 && (
-              <>
-                <SectionTitle className="mt-8">Avantages</SectionTitle>
-                <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5 mb-4">
-                  <DetailLine label="Avantages valorisés" value={estimate.benefitsEst} info="Mutuelle, tickets restaurant, véhicule, formation — valeur annuelle estimée." />
-                </div>
-              </>
-            )
-          )}
-
-          {/* 5. ÉPARGNE SALARIALE — avec le simulateur PEE intégré */}
-          {hasSavings && (
-            <>
-              <SectionTitle className="mt-8">Épargne salariale</SectionTitle>
-              <div data-section="epargne" className="space-y-3 mb-4">
-                {peeDevice && (
-                  <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
-                    <div className="font-display text-aubergine" style={{ fontSize: 18 }}>🏦 Plan d'Épargne Entreprise (PEE)</div>
-                    <div className="text-[13px] text-aubergine-light mt-2">
-                      Abondement {org?.name} : <strong>{Math.round((peeDevice.matching_rate ?? 0) * 100)}%</strong>
-                    </div>
-                    {(peeDevice.cap_amount ?? 0) > 0 && (
-                      <div data-section="simulation" className="mt-4">
-                        <Field
-                          label="Votre mise PEE annuelle envisagée"
-                          info={`Plus vous versez, plus l'abondement de ${org?.name} est élevé. Les fonds sont bloqués 5 ans (sauf cas légaux de déblocage).`}
-                        >
-                          <input
-                            type="range"
-                            min={0}
-                            max={peeDevice.cap_amount ?? 0}
-                            step={100}
-                            value={params.peeContribution}
-                            onChange={(e) => update("peeContribution", Number(e.target.value))}
-                            className="w-full accent-[#2D2640]"
-                          />
-                          <div className="text-[13px] text-aubergine mt-1">
-                            Mise : <strong>{formatEur(params.peeContribution)}</strong> / an
-                            {" → "}
-                            {org?.name} ajoute ~<strong>{formatEur(estimate.peeEst)}</strong>
-                          </div>
-                        </Field>
-                      </div>
-                    )}
-                    <div className="text-[11px] text-grey mt-3 leading-relaxed" style={{ background: "#F0EBE8", padding: 10, borderRadius: 8 }}>
-                      ℹ️ Les fonds sont bloqués 5 ans minimum. Cas de déblocage anticipé : achat de la résidence principale, mariage, naissance, invalidité, rupture de contrat.
-                    </div>
-                  </div>
-                )}
-                {interDevice && (
-                  <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
-                    <div className="font-display text-aubergine" style={{ fontSize: 18 }}>📈 Intéressement</div>
-                    <div className="text-[13px] text-aubergine-light mt-2">
-                      Montant moyen (3 dernières années) : ~<strong>{formatEur(interDevice.avg_3y ?? 0)}</strong>
-                    </div>
-                    <div className="text-[11px] mt-3 leading-relaxed" style={{ background: "#FCEEE6", color: "#7A3F0E", padding: 10, borderRadius: 8 }}>
-                      ⚠️ Moyenne historique. L'intéressement dépend des résultats de l'entreprise — il peut être nul certaines années.
-                    </div>
-                  </div>
-                )}
-                {estimate.participationEst > 0 && (
-                  <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-5">
-                    <div className="font-display text-aubergine" style={{ fontSize: 18 }}>💼 Participation</div>
-                    <div className="text-[13px] text-aubergine-light mt-2">
-                      Montant moyen (3 dernières années) : ~<strong>{formatEur(estimate.participationEst)}</strong>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {/* 6. EQUITY — scénarios */}
-          {hasEquity && scenariosToShow.length > 0 && (
-            <>
-              <SectionTitle className="mt-8">Equity — scénarios de valorisation</SectionTitle>
-              <div data-section="equity_scenarios" className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-                {scenariosToShow.map((s) => (
-                  <ScenarioCard key={s.label} scenario={s} onView={() => behavior.trackScenarioView(s.label)} />
-                ))}
-              </div>
-              {estimate.hasBspce && (
-                <div className="mb-4 flex items-start gap-2 rounded-xl px-4 py-3" style={{ background: "#F0EBE8" }}>
-                  <span className="text-[13px] flex-shrink-0">💡</span>
-                  <p className="text-[11px] text-aubergine-light font-light leading-relaxed">
-                    Pour les BSPCE, le taux d'imposition dépend de votre ancienneté
-                    dans l'entreprise au moment de la vente. Après 3 ans, le taux
-                    global passe de <strong>48,6%</strong> à <strong>31,4%</strong> —
-                    une différence significative sur les gains importants. Ces règles
-                    s'appliquent au moment de la <strong>cession</strong>, pas de l'exercice.
-                  </p>
-                </div>
-              )}
-              {pkg.scenario_message && (
-                <div className="bg-white rounded-[12px] border-[0.5px] border-[rgba(45,38,64,0.08)] p-4 mb-4">
-                  <p className="text-[13px] text-aubergine-light leading-relaxed italic">« {pkg.scenario_message} »</p>
-                  <div className="text-[11px] text-grey mt-2 text-right">— {org?.name}</div>
-                </div>
-              )}
-              <DisclaimerBlock>
-                Les estimations equity reposent sur des hypothèses de valorisation
-                future non garanties. La perte totale est possible. Les BSPCE ne
-                sont réalisables que lors d'un événement de liquidité (acquisition,
-                IPO, secondaire).
-              </DisclaimerBlock>
-            </>
-          )}
-
-          {/* 7. POSITIONNEMENT MARCHÉ */}
+          {/* 3. POSITIONNEMENT MARCHÉ */}
           {pkg.benchmark && (pkg.gross_salary ?? 0) > 0 && (
             <>
               <SectionTitle className="mt-8">Positionnement marché</SectionTitle>
@@ -685,7 +537,7 @@ function PackageView({
             </>
           )}
 
-          {/* 8. DISCLAIMER global */}
+          {/* 4. DISCLAIMER global */}
           <DisclaimerBlock>
             Ces montants sont des estimations indicatives arrondies, calculées sur
             la base des règles fiscales en vigueur à la date de cette simulation
@@ -694,7 +546,7 @@ function PackageView({
             analyse personnalisée.
           </DisclaimerBlock>
 
-          {/* 9. FAQ */}
+          {/* 5. FAQ */}
           <SectionTitle className="mt-8">Questions fréquentes</SectionTitle>
           <div data-section="faq">
             <FAQ hasEquity={hasEquity} hasPee={!!peeDevice} />

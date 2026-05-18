@@ -348,6 +348,9 @@ function CandidateDetail() {
           <LinkActivityPanel linkId={link.id} candidateName={name} />
         </Card>
 
+        {/* Promesses d'embauche générées */}
+        <OfferLettersCard linkId={link.id} refreshKey={showOffer ? 0 : 1} />
+
 
         {/* Résumé package */}
         {pkg && (

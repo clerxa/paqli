@@ -227,33 +227,62 @@ export function PackageCompositionView({
       {hasSavings && (
         <Group label="Épargne salariale">
           {pkg.savings_devices.map((dev) => {
-            const expl = DEVICE_EXPLANATIONS[dev.type] ?? {
+            const baseExpl = DEVICE_EXPLANATIONS[dev.type] ?? {
               title: dev.type,
               body: "Dispositif d'épargne salariale.",
             };
             let valueStr = "—";
+            let explanation = baseExpl;
+
             if (dev.type === "interessement" || dev.type === "participation") {
               valueStr =
                 (dev.avg_3y ?? 0) > 0
                   ? `~${formatEur(dev.avg_3y ?? 0)}`
                   : "variable selon résultats";
+              explanation = {
+                ...baseExpl,
+                extra:
+                  (dev.avg_3y ?? 0) > 0 ? (
+                    <div
+                      className="mt-3 rounded-md p-3 text-[11px] leading-relaxed"
+                      style={{ background: "#F0EBE8" }}
+                    >
+                      Sur les <strong>3 dernières années</strong>, la prime
+                      moyenne versée par {orgName} a été de{" "}
+                      <strong>~{formatEur(dev.avg_3y ?? 0)}</strong>. Si vous
+                      la placez sur un PEE/PERCO, elle est{" "}
+                      <strong>exonérée d'impôt sur le revenu</strong> (hors
+                      prélèvements sociaux de 9,7%).
+                    </div>
+                  ) : undefined,
+              };
             } else if (dev.type === "pee" || dev.type === "perco") {
-              const rate = Math.round((dev.matching_rate ?? 0) * 100);
+              const rate = dev.matching_rate ?? 0;
+              const ratePct = Math.round(rate * 100);
               const cap = dev.cap_amount ?? 0;
-              if (rate > 0 && cap > 0) {
-                valueStr = `Abondé ${rate}%, jusqu'à ${formatEur(cap)}`;
+
+              if (ratePct > 0 && cap > 0) {
+                valueStr = `Abondé ${ratePct}%, jusqu'à ${formatEur(cap)}`;
               } else if (cap > 0) {
                 valueStr = `Plafond ${formatEur(cap)}`;
+              } else if (ratePct > 0) {
+                valueStr = `Abondé ${ratePct}%`;
               } else {
                 valueStr = "Disponible";
               }
+
+              explanation = {
+                ...baseExpl,
+                extra: buildAbondementExtra(dev.type, orgName, rate, cap),
+              };
             }
+
             return (
               <Row
                 key={dev.id}
                 label={(DEVICE_LABELS[dev.type] ?? dev.type).toUpperCase()}
                 value={valueStr}
-                explanation={expl}
+                explanation={explanation}
               />
             );
           })}

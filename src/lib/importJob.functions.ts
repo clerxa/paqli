@@ -384,9 +384,18 @@ export const importJobPostingFn = createServerFn({ method: "POST" })
       return { success: true, data: extracted };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
+      const code = (e as { code?: string })?.code;
+      const isOverloaded =
+        code === "OVERLOADED" ||
+        code === "RATE_LIMITED" ||
+        code === "TIMEOUT" ||
+        /529|overloaded|rate.?limit|timeout/i.test(msg);
       return fail({
         code: "EXTRACTION_FAILED",
-        message: msg || "L'analyse n'a pas pu extraire les informations.",
+        message: isOverloaded
+          ? "Le service d'analyse IA est temporairement surchargé. " +
+            "Réessayez dans une minute, ou utilisez « Coller le texte » pour saisir l'annonce manuellement."
+          : msg || "L'analyse n'a pas pu extraire les informations.",
         alternatives: [ALT_TEXT],
       });
     }

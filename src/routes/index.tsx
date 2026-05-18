@@ -269,14 +269,14 @@ function Hero({ onDemo }: { onDemo: () => void }) {
       <div className="relative max-w-6xl mx-auto grid md:grid-cols-[55%_45%] gap-12 items-center">
         <div className="scroll-reveal revealed">
           <span className="inline-block px-3 py-1.5 rounded-full text-[12px] font-medium text-[#8B7FA8] bg-[rgba(139,127,168,0.12)] border border-[rgba(139,127,168,0.2)] backdrop-blur-sm animate-paqli-slide-up" style={{ animationDelay: "0ms" }}>
-            ✨ Nouveau — L'espace candidat tout-en-un
+            ✨ Closing · Fiscalité 2026 · IA embarquée
           </span>
           <h1 className="mt-5 font-display text-[#2D2640] leading-[1.05] animate-paqli-slide-up" style={{ fontSize: "clamp(36px, 5vw, 62px)", animationDelay: "100ms" }}>
-            Bien plus qu'un package. <span className="text-aurora">Un espace dédié.</span>
+            Le package qui se comprend <span className="text-aurora">du premier coup.</span>
           </h1>
           <p className="mt-5 font-light text-[#524970] leading-relaxed animate-paqli-slide-up" style={{ fontSize: "clamp(16px, 1.5vw, 19px)", animationDelay: "200ms" }}>
-            Chaque candidat reçoit son espace personnalisé : l'offre, l'entreprise, l'équipe,
-            les avantages et le package — interactifs, transparents, à explorer à son rythme.
+            Transformez chaque offre en conversation transparente.
+            Simulateur fiscal, Total Compensation, suivi IA — +25% de taux de closing en moyenne.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3 animate-paqli-slide-up" style={{ animationDelay: "300ms" }}>

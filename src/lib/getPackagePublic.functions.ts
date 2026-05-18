@@ -99,11 +99,11 @@ export const getPackagePublic = createServerFn({ method: "POST" })
     const { data: testimonialsRaw } = await supabaseAdmin
       .from("employee_testimonials" as any)
       .select("first_name, job_title, seniority_years, quote, quote_context, avatar_url")
-      .eq("organization_id", (pkg.organizations as any)?.id ?? "")
+      .eq("organization_id", (link as any).organization_id)
       .eq("is_active", true)
       .order("display_order")
       .limit(5);
-    const testimonials = (testimonialsRaw ?? []) as Array<{
+    const testimonials = ((testimonialsRaw ?? []) as unknown) as Array<{
       first_name: string;
       job_title: string;
       seniority_years: number | null;
@@ -111,6 +111,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       quote_context: string | null;
       avatar_url: string | null;
     }>;
+
 
     const scenarios = (pkg.scenarios ?? []).slice().sort(
       (a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0),

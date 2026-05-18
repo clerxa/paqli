@@ -36,6 +36,7 @@ import { MobileFloatingCTA } from "@/components/paqli/candidate/MobileFloatingCT
 import { CurrentPackageComparator } from "@/components/paqli/candidate/CurrentPackageComparator";
 import { PackageCompositionView } from "@/components/paqli/candidate/PackageCompositionView";
 import { TestimonialsBlock } from "@/components/paqli/candidate/TestimonialsBlock";
+import { BenchmarkAnalysisCard } from "@/components/paqli/candidate/BenchmarkAnalysisCard";
 import { TestimonialPopups } from "@/components/paqli/candidate/TestimonialPopups";
 import { PaqFloatingChat } from "@/components/paqli/candidate/PaqFloatingChat";
 import {
@@ -548,6 +549,12 @@ function PackageView({
               <BenchmarkBar benchmark={pkg.benchmark} gross={pkg.gross_salary ?? 0} />
             </>
           )}
+
+          {/* 3.b ANALYSE IA DU BENCHMARK */}
+          {(pkg.gross_salary ?? 0) > 0 && (
+            <BenchmarkAnalysisCard token={data.token} />
+          )}
+
 
           {/* 4. DISCLAIMER global */}
           <DisclaimerBlock>

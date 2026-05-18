@@ -1147,6 +1147,8 @@ export type Database = {
         Row: {
           attractiveness_computed: string | null
           attractiveness_score: number | null
+          benchmark_analysis: Json | null
+          benchmark_analyzed_at: string | null
           benefits: Json | null
           company_values: string[] | null
           contract_type: string | null
@@ -1191,6 +1193,8 @@ export type Database = {
         Insert: {
           attractiveness_computed?: string | null
           attractiveness_score?: number | null
+          benchmark_analysis?: Json | null
+          benchmark_analyzed_at?: string | null
           benefits?: Json | null
           company_values?: string[] | null
           contract_type?: string | null
@@ -1235,6 +1239,8 @@ export type Database = {
         Update: {
           attractiveness_computed?: string | null
           attractiveness_score?: number | null
+          benchmark_analysis?: Json | null
+          benchmark_analyzed_at?: string | null
           benefits?: Json | null
           company_values?: string[] | null
           contract_type?: string | null

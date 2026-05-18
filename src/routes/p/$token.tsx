@@ -36,6 +36,8 @@ import { MobileFloatingCTA } from "@/components/paqli/candidate/MobileFloatingCT
 import { CurrentPackageComparator } from "@/components/paqli/candidate/CurrentPackageComparator";
 import { PackageCompositionView } from "@/components/paqli/candidate/PackageCompositionView";
 import { TestimonialsBlock } from "@/components/paqli/candidate/TestimonialsBlock";
+import { TestimonialPopups } from "@/components/paqli/candidate/TestimonialPopups";
+import { PaqFloatingChat } from "@/components/paqli/candidate/PaqFloatingChat";
 import {
   buildAssistantPlaceholder,
   buildAssistantWelcomeMessage,

@@ -12,6 +12,8 @@ import { AiConversationPanel } from "@/components/paqli/AiConversationPanel";
 import { CandidateAlertsCard } from "@/components/paqli/CandidateAlertsCard";
 import { CounterOfferModal, type CounterOfferOriginal } from "@/components/paqli/CounterOfferModal";
 import { OfferLetterModal } from "@/components/paqli/OfferLetterModal";
+import { useServerFn } from "@tanstack/react-start";
+import { listOfferLettersForLink } from "@/lib/offerLetter.functions";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 import { supabase } from "@/integrations/supabase/client";

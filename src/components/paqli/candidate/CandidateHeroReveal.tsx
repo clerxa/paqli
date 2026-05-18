@@ -39,13 +39,15 @@ export function CandidateHeroReveal({
 }: CandidateHeroRevealProps) {
   const estimate = calcPackageEstimate(pkg, DEFAULT_PARAMS);
 
+  // Affichage attractif : on montre le BRUT annuel (avant impôts/charges)
+  const interDevice = pkg.savings_devices?.find((d) => d.type === "interessement");
+  const partDevice = pkg.savings_devices?.find((d) => d.type === "participation");
   const totalTC =
-    (estimate.salaryEst ?? 0) +
-    (estimate.variableEst ?? 0) +
+    (pkg.gross_salary ?? 0) +
+    (pkg.variable_target ?? 0) +
     (estimate.benefitsEst ?? 0) +
-    (estimate.peeEst ?? 0) +
-    (estimate.interEst ?? 0) +
-    (estimate.participationEst ?? 0);
+    (interDevice?.avg_3y ?? 0) +
+    (partDevice?.avg_3y ?? 0);
 
   const hasEquity = (pkg.equity_devices ?? []).length > 0;
   const realisteEquity =

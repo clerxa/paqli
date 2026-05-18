@@ -12,6 +12,8 @@ import { AiConversationPanel } from "@/components/paqli/AiConversationPanel";
 import { CandidateAlertsCard } from "@/components/paqli/CandidateAlertsCard";
 import { CounterOfferModal, type CounterOfferOriginal } from "@/components/paqli/CounterOfferModal";
 import { OfferLetterModal } from "@/components/paqli/OfferLetterModal";
+import { useServerFn } from "@tanstack/react-start";
+import { listOfferLettersForLink } from "@/lib/offerLetter.functions";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
 import { DECLINE_LABELS } from "@/hooks/useLinkActivity";
 import { supabase } from "@/integrations/supabase/client";
@@ -346,6 +348,9 @@ function CandidateDetail() {
           <LinkActivityPanel linkId={link.id} candidateName={name} />
         </Card>
 
+        {/* Promesses d'embauche générées */}
+        <OfferLettersCard linkId={link.id} refreshKey={showOffer ? 0 : 1} />
+
 
         {/* Résumé package */}
         {pkg && (
@@ -508,5 +513,82 @@ function CurrentPackageRecap({
         </div>
       )}
     </div>
+  );
+}
+
+function OfferLettersCard({ linkId, refreshKey }: { linkId: string; refreshKey: number }) {
+  const list = useServerFn(listOfferLettersForLink);
+  const [letters, setLetters] = useState<
+    Array<{ id: string; status: string; createdAt: string; updatedAt: string; sentAt: string | null; previewUrl: string | null }>
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    list({ data: { linkId } })
+      .then((res) => {
+        if (!cancelled) setLetters(res.letters);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [linkId, refreshKey, list]);
+
+  if (loading) return null;
+  if (letters.length === 0) return null;
+
+  return (
+    <Card>
+      <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 18 }}>
+        Promesses d'embauche
+      </h2>
+      <ul className="space-y-2">
+        {letters.map((l) => {
+          const date = new Date(l.updatedAt || l.createdAt).toLocaleDateString("fr-FR", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          const isSent = l.status === "sent";
+          return (
+            <li
+              key={l.id}
+              className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"
+              style={{ background: "#FAF8F5" }}
+            >
+              <div className="min-w-0">
+                <div className="text-[13px] text-aubergine font-medium">
+                  {isSent ? "Envoyée" : "Brouillon"} — {date}
+                </div>
+                {isSent && l.sentAt && (
+                  <div className="text-[11px] text-grey">
+                    Envoyée le {new Date(l.sentAt).toLocaleDateString("fr-FR")}
+                  </div>
+                )}
+              </div>
+              {l.previewUrl ? (
+                <a
+                  href={l.previewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[12px] text-aubergine-light hover:text-aubergine underline whitespace-nowrap"
+                >
+                  Ouvrir le PDF →
+                </a>
+              ) : (
+                <span className="text-[12px] text-grey">PDF indisponible</span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
   );
 }

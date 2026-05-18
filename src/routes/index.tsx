@@ -64,20 +64,27 @@ function useTilt<T extends HTMLElement>(intensity = 5) {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Paqli — L'espace candidat qui valorise toute votre offre" },
+      { title: "Paqli — Le package qui se comprend du premier coup." },
       {
         name: "description",
         content:
-          "Paqli crée un espace dédié à chaque candidat : l'offre, l'entreprise, l'équipe, les avantages et le package — interactifs. Augmentez votre taux de closing de 25%.",
+          "Simulateur fiscal, Total Compensation interactive, suivi IA candidat. Transformez chaque offre en conversation transparente — +25% de taux de closing.",
       },
-      { property: "og:title", content: "Paqli — L'espace candidat qui valorise toute votre offre" },
+      { property: "og:title", content: "Paqli — Le package qui se comprend du premier coup." },
       {
         property: "og:description",
         content:
-          "Bien plus qu'un package : un espace dédié avec l'offre, l'entreprise, l'équipe et les avantages. Utilisé par 50+ équipes RH tech.",
+          "Simulateur fiscal, Total Compensation interactive, suivi IA candidat. Utilisé par les équipes RH tech.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://paqli.fr" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Paqli — Le package qui se comprend du premier coup." },
+      {
+        name: "twitter:description",
+        content:
+          "Transformez chaque offre en conversation transparente. Simulateur fiscal, Total Compensation, suivi IA — +25% de taux de closing.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://paqli.fr" }],
   }),

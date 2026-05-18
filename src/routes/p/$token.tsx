@@ -35,6 +35,7 @@ import { CandidateHeroReveal } from "@/components/paqli/candidate/CandidateHeroR
 import { MobileFloatingCTA } from "@/components/paqli/candidate/MobileFloatingCTA";
 import { CurrentPackageComparator } from "@/components/paqli/candidate/CurrentPackageComparator";
 import { PackageCompositionView } from "@/components/paqli/candidate/PackageCompositionView";
+import { TestimonialsBlock } from "@/components/paqli/candidate/TestimonialsBlock";
 import {
   buildAssistantPlaceholder,
   buildAssistantWelcomeMessage,
@@ -484,7 +485,7 @@ function PackageView({
       )}
 
       {tab === "team" && (
-        <TeamCultureTab pkg={pkg} onExternalLink={behavior.trackExternalLink} />
+        <TeamCultureTab pkg={pkg} org={org} testimonials={(data as any)?.package?.testimonials ?? []} onExternalLink={behavior.trackExternalLink} />
       )}
 
       {tab === "package" && (
@@ -1001,7 +1002,7 @@ function FlexibilityTab({ pkg }: { pkg: Pkg }) {
   );
 }
 
-function TeamCultureTab({ pkg, onExternalLink }: { pkg: Pkg; onExternalLink: (url: string) => void }) {
+function TeamCultureTab({ pkg, org, testimonials, onExternalLink }: { pkg: Pkg; org?: Org; testimonials?: Array<{ first_name: string; job_title: string; seniority_years: number | null; quote: string; quote_context: string | null; avatar_url: string | null }>; onExternalLink: (url: string) => void }) {
   const values = pkg.company_values ?? [];
   const growth = pkg.growth_paths ?? [];
   const hasTeam =
@@ -1061,6 +1062,8 @@ function TeamCultureTab({ pkg, onExternalLink }: { pkg: Pkg; onExternalLink: (ur
           </div>
         </>
       )}
+
+      <TestimonialsBlock testimonials={testimonials} orgName={org?.name ?? null} />
 
       {hasGrowth && (
         <>

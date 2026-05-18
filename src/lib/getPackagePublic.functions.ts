@@ -20,7 +20,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
     const { data: link, error } = await supabaseAdmin
       .from("candidate_links")
       .select(
-        `id, token, candidate_name, candidate_email, expires_at, opened_at,
+        `id, token, organization_id, candidate_name, candidate_email, expires_at, opened_at,
          simulated_at, return_visits,
          status, status_updated_at, decision_deadline,
          thinking_note, thinking_at,
@@ -94,6 +94,25 @@ export const getPackagePublic = createServerFn({ method: "POST" })
     }
 
     const pkg = link.packages as any;
+
+    // Citations actives de collaborateurs (max 5)
+    const { data: testimonialsRaw } = await supabaseAdmin
+      .from("employee_testimonials" as any)
+      .select("first_name, job_title, seniority_years, quote, quote_context, avatar_url")
+      .eq("organization_id", (link as any).organization_id)
+      .eq("is_active", true)
+      .order("display_order")
+      .limit(5);
+    const testimonials = ((testimonialsRaw ?? []) as unknown) as Array<{
+      first_name: string;
+      job_title: string;
+      seniority_years: number | null;
+      quote: string;
+      quote_context: string | null;
+      avatar_url: string | null;
+    }>;
+
+
     const scenarios = (pkg.scenarios ?? []).slice().sort(
       (a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0),
     );
@@ -211,6 +230,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
                 : [],
             }
           : null,
+        testimonials,
         equity_devices: pkg.equity_devices ?? [],
         savings_devices: pkg.savings_devices ?? [],
         scenarios,

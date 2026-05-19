@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { Step5Preview } from "./Step5Preview";
+import { SalaryWidget } from "@/components/recruiter/SalaryWidget";
 
 interface CP {
   meal_voucher_enabled: boolean | null;
   meal_voucher_daily_amount: number | null;
   meal_voucher_employer_rate: number | null;
+  meal_voucher_provider: string | null;
   health_insurance_employer_rate: number | null;
   incentive_enabled: boolean | null;
   incentive_average_amount: number | null;
@@ -14,6 +16,8 @@ interface CP {
   pee_enabled: boolean | null;
   perco_enabled: boolean | null;
   employer_match_rate: number | null;
+  remote_work_policy: string | null;
+  remote_work_days_per_week: number | null;
 }
 
 function fmt(n: number) {

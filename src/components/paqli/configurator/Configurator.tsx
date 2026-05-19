@@ -42,15 +42,8 @@ export function Configurator() {
       toast.error(err);
       return;
     }
-    if (config.currentStep === 5 && config.equityDevices.length > 0) {
-      const sErr = validateScenarios(config.scenarios);
-      if (sErr) {
-        toast.error(sErr);
-        return;
-      }
-    }
     await saveDraft();
-    if (config.currentStep < 7) {
+    if (config.currentStep < 4) {
       const next = config.currentStep + 1;
       setStep(next);
       setMaxReached((m) => Math.max(m, next));
@@ -65,21 +58,15 @@ export function Configurator() {
   const stepNode = useMemo(() => {
     switch (config.currentStep) {
       case 0:
-        return <StepCompany />;
+        return <StepNewJob />;
       case 1:
-        return <Step0Job />;
+        return <StepNewComp />;
       case 2:
-        return <Step1Fixed />;
+        return <StepNewEquity />;
       case 3:
-        return <StepBenefits />;
+        return <StepNewExtras />;
       case 4:
-        return <Step2Equity />;
-      case 5:
-        return <Step4Scenarios />;
-      case 6:
-        return <Step3Savings />;
-      case 7:
-        return <Step5Preview />;
+        return <StepNewReview />;
       default:
         return null;
     }

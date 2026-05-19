@@ -229,6 +229,8 @@ export const getPackagePublic = createServerFn({ method: "POST" })
         job_title: pkg.job_title ?? null,
         seniority: pkg.seniority ?? null,
         hiring_manager: pkg.hiring_manager ?? null,
+        hiring_manager_email: (pkg as any).hiring_manager_email ?? null,
+        hiring_manager_linkedin: (pkg as any).hiring_manager_linkedin ?? null,
         career_path: pkg.career_path ?? null,
         non_compete_enabled: pkg.non_compete_enabled ?? null,
         probation_months: pkg.probation_months ?? null,

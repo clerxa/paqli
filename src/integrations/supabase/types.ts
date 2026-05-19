@@ -1363,6 +1363,8 @@ export type Database = {
           gross_salary: number | null
           growth_paths: Json | null
           hiring_manager: string | null
+          hiring_manager_email: string | null
+          hiring_manager_linkedin: string | null
           id: string
           interview_notes: string | null
           job_family: string | null
@@ -1452,6 +1454,8 @@ export type Database = {
           gross_salary?: number | null
           growth_paths?: Json | null
           hiring_manager?: string | null
+          hiring_manager_email?: string | null
+          hiring_manager_linkedin?: string | null
           id?: string
           interview_notes?: string | null
           job_family?: string | null
@@ -1541,6 +1545,8 @@ export type Database = {
           gross_salary?: number | null
           growth_paths?: Json | null
           hiring_manager?: string | null
+          hiring_manager_email?: string | null
+          hiring_manager_linkedin?: string | null
           id?: string
           interview_notes?: string | null
           job_family?: string | null

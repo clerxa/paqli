@@ -364,6 +364,8 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
     trainingBudgetSpecific: Number((pkg as Record<string, unknown>).training_budget_specific) || 0,
     trainingDetails: (pkg as Record<string, unknown>).training_details as string ?? "",
     probationMonths: Number((pkg as Record<string, unknown>).probation_months ?? 3),
+    probationRenewable: !!(pkg as Record<string, unknown>).probation_renewable,
+    probationRenewalMaxMonths: Number((pkg as Record<string, unknown>).probation_renewal_max_months) || 0,
     probationObjectives: (pkg as Record<string, unknown>).probation_objectives as string ?? "",
     careerPath: (pkg as Record<string, unknown>).career_path as string ?? "",
     nonCompeteEnabled: !!(pkg as Record<string, unknown>).non_compete_enabled,

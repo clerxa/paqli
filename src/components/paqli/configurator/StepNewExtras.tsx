@@ -106,6 +106,28 @@ export function StepNewExtras() {
             options={PROBATIONS}
           />
         </div>
+        <Toggle
+          label="Période d'essai reconductible"
+          value={config.probationRenewable}
+          onChange={(v) =>
+            patch({
+              probationRenewable: v,
+              probationRenewalMaxMonths: v ? config.probationRenewalMaxMonths || 3 : 0,
+            })
+          }
+        />
+        {config.probationRenewable && (
+          <div className="grid grid-cols-2 gap-4 pl-2">
+            <SelectField
+              label="Durée max de reconduction"
+              value={String(config.probationRenewalMaxMonths || 3)}
+              onChange={(v) =>
+                patch({ probationRenewalMaxMonths: Number(v) || 0 })
+              }
+              options={PROBATIONS}
+            />
+          </div>
+        )}
         <TextArea
           label="Objectifs de la période d'essai"
           value={config.probationObjectives}

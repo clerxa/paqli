@@ -136,7 +136,7 @@ export function StepNewReview() {
       <div className="border-t border-[rgba(45,38,64,0.06)] pt-6">
         <SalaryWidget
           pkg={{
-            job_title: config.jobTitle || config.poste || null,
+            job_title: config.jobTitle || null,
             seniority: config.seniority || null,
             location: config.location || null,
             fixed_salary: config.fixedSalary || config.grossSalary || null,

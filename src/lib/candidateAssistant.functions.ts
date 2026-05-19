@@ -114,6 +114,78 @@ function buildPaqSystemPrompt(args: {
 - Analyse : ${val(benchmark.ai_analysis, "")}`
     : "- Données de marché non disponibles pour ce profil";
 
+  const keyFigures = Array.isArray(org?.key_figures) ? org!.key_figures : [];
+  const values = Array.isArray(org?.values) ? org!.values : [];
+  const links = Array.isArray(org?.links) ? org!.links : [];
+  const sourceUrls = Array.isArray(org?.source_urls) ? org!.source_urls : [];
+
+  const cultureBlock = org
+    ? `- Tagline : ${val(org.tagline)}
+- Description : ${val(org.description ?? company.description)}
+- Note culture : ${val(org.culture_note)}
+- Valeurs : ${values.length ? values.join(", ") : "non précisées"}
+- Chiffres clés : ${
+        keyFigures.length
+          ? keyFigures
+              .map((kf: any) => `${val(kf.label)} = ${val(kf.value)}`)
+              .join(" | ")
+          : "non précisés"
+      }
+- Année de création : ${val(org.founded_year ?? company.founding_year)}
+- Effectif : ${val(org.employee_count ?? company.size_range)}
+- Site web : ${val(org.website_url ?? company.website)}
+- LinkedIn : ${val(org.linkedin_url)}
+- Welcome to the Jungle : ${val(org.wtj_url)}
+- Liens utiles : ${
+        links.length
+          ? links.map((l: any) => `${val(l.label)} (${val(l.url)})`).join(" | ")
+          : "aucun"
+      }
+- Sources publiques de référence : ${sourceUrls.length ? sourceUrls.join(", ") : "aucune"}`
+    : "- Données entreprise non renseignées";
+
+  const testimonialsBlock = testimonials.length
+    ? testimonials
+        .map(
+          (t) =>
+            `- ${val(t.first_name)} (${val(t.job_title)}${
+              t.seniority_years ? `, ${t.seniority_years} ans` : ""
+            }) : « ${val(t.quote)} »${
+              t.quote_context ? ` — contexte : ${val(t.quote_context)}` : ""
+            }`,
+        )
+        .join("\n")
+    : "- Aucun témoignage collaborateur publié";
+
+  const equityCatalogBlock = equityCatalog.length
+    ? equityCatalog
+        .map(
+          (e) =>
+            `- ${val(e.type).toUpperCase()} — vesting ${val(e.vesting_years, "4")} ans, cliff ${val(
+              e.cliff_months,
+              "6",
+            )} mois, valo de référence ${
+              e.default_valuation_m ? e.default_valuation_m + "M€" : "?"
+            }${e.special_conditions ? ` — ${val(e.special_conditions)}` : ""}`,
+        )
+        .join("\n")
+    : "- Aucun dispositif d'equity standard côté entreprise";
+
+  const savingsCatalogBlock = savingsCatalog.length
+    ? savingsCatalog
+        .map(
+          (s) =>
+            `- ${val(s.type).toUpperCase()} — abondement ${val(
+              s.default_matching_rate,
+              "0",
+            )}%${s.default_cap_amount ? `, plafond ${s.default_cap_amount}€` : ""}${
+              s.default_avg_3y ? `, moy. 3 ans : ${s.default_avg_3y}€` : ""
+            }`,
+        )
+        .join("\n")
+    : "- Aucun dispositif d'épargne salariale standard côté entreprise";
+
+
   return `Tu es Paq, l'assistant IA de Paqli. Tu aides ${who} à comprendre et évaluer l'offre de package que ${brand} lui propose pour le poste de ${jobTitle}.
 
 ## TON RÔLE

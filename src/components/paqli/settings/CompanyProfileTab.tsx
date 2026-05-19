@@ -442,6 +442,18 @@ export function CompanyProfileTab() {
         completion_score: completeness,
       };
       const client = supabase as any;
+      // Synchronise le nom affiché de l'organisation depuis la marque / le nom légal
+      // pour éviter les doublons entre les onglets « Mon entreprise » et « Marque & témoignages ».
+      const syncedOrgName =
+        (profile.brand_name && profile.brand_name.trim()) ||
+        (profile.legal_name && profile.legal_name.trim()) ||
+        null;
+      if (syncedOrgName) {
+        await client
+          .from("organizations")
+          .update({ name: syncedOrgName })
+          .eq("id", organization.id);
+      }
       if (rowId) {
         const { error } = await client
           .from("company_profile")

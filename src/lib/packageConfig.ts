@@ -203,6 +203,7 @@ export interface PackageConfig {
   salaryNegotiable: boolean;
   variableEnabled: boolean;
   variableMax: number;
+  variableUncapped: boolean;
   variableCriteria: string;
   variableFrequency: string;
   variableGuaranteedMonths: number;
@@ -223,6 +224,8 @@ export interface PackageConfig {
   trainingBudgetSpecific: number;
   trainingDetails: string;
   probationMonths: number;
+  probationRenewable: boolean;
+  probationRenewalMaxMonths: number;
   probationObjectives: string;
   careerPath: string;
   nonCompeteEnabled: boolean;
@@ -304,6 +307,7 @@ export const emptyConfig: PackageConfig = {
   salaryNegotiable: true,
   variableEnabled: false,
   variableMax: 0,
+  variableUncapped: false,
   variableCriteria: "",
   variableFrequency: "",
   variableGuaranteedMonths: 0,
@@ -324,6 +328,8 @@ export const emptyConfig: PackageConfig = {
   trainingBudgetSpecific: 0,
   trainingDetails: "",
   probationMonths: 3,
+  probationRenewable: false,
+  probationRenewalMaxMonths: 0,
   probationObjectives: "",
   careerPath: "",
   nonCompeteEnabled: false,

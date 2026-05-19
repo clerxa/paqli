@@ -1,11 +1,17 @@
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
-import { NumberField, TextArea, EduBanner } from "./fields";
+import { NumberField, TextArea, EduBanner, TextField } from "./fields";
 import { SelectField, Toggle } from "./fields-v2";
 import { BenchmarkBadge } from "./BenchmarkBadge";
+import {
+  makeVariableComponent,
+  FREQUENCY_LABELS_FR,
+  type VariablePayoutFrequency,
+} from "@/lib/packageConfig";
 
 const FREQUENCIES = [
   { value: "mensuel", label: "Mensuel" },
   { value: "trimestriel", label: "Trimestriel" },
+  { value: "semestriel", label: "Semestriel" },
   { value: "annuel", label: "Annuel" },
 ];
 
@@ -93,19 +99,27 @@ export function StepNewComp() {
         />
         {config.variableEnabled && (
           <div className="space-y-3 pl-2">
-            <div className="grid grid-cols-2 gap-4">
+            <Toggle
+              label="Variable déplafonnée"
+              value={config.variableUncapped}
+              onChange={(v) => patch({ variableUncapped: v, variableMax: v ? 0 : config.variableMax })}
+              hint="Si activé, le maximum atteignable n'est pas affiché."
+            />
+            <div className={`grid ${config.variableUncapped ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
               <NumberField
                 label="Objectif (cible)"
                 value={config.variableTarget}
                 onChange={(v) => patch({ variableTarget: v })}
                 suffix="€/an"
               />
-              <NumberField
-                label="Maximum atteignable"
-                value={config.variableMax}
-                onChange={(v) => patch({ variableMax: v })}
-                suffix="€/an"
-              />
+              {!config.variableUncapped && (
+                <NumberField
+                  label="Maximum atteignable"
+                  value={config.variableMax}
+                  onChange={(v) => patch({ variableMax: v })}
+                  suffix="€/an"
+                />
+              )}
             </div>
             <TextArea
               label="Critères"
@@ -115,7 +129,7 @@ export function StepNewComp() {
             />
             <div className="grid grid-cols-2 gap-4">
               <SelectField
-                label="Fréquence"
+                label="Fréquence principale"
                 value={config.variableFrequency}
                 onChange={(v) => patch({ variableFrequency: v })}
                 options={FREQUENCIES}
@@ -128,6 +142,111 @@ export function StepNewComp() {
                 }
                 options={GUARANTEED}
               />
+            </div>
+
+            {/* Composantes additionnelles (fréquences multiples) */}
+            <div className="space-y-3 border-t border-[rgba(45,38,64,0.06)] pt-3">
+              <div className="flex items-center justify-between">
+                <div className="text-[12px] font-medium text-aubergine">
+                  Autres composantes variables
+                </div>
+                <button
+                  type="button"
+                  className="text-[12px] text-aubergine underline"
+                  onClick={() => {
+                    const next = [...(config.variableConfig?.components ?? [])];
+                    next.push(makeVariableComponent("quarterly", 0));
+                    patch({
+                      variableConfig: {
+                        ...(config.variableConfig ?? { components: [] }),
+                        components: next,
+                      },
+                    });
+                  }}
+                >
+                  + Ajouter une composante
+                </button>
+              </div>
+              {(config.variableConfig?.components ?? []).map((comp, i) => (
+                <div
+                  key={comp.id}
+                  className="space-y-2 rounded border border-[rgba(45,38,64,0.08)] p-3"
+                >
+                  <div className="grid grid-cols-2 gap-3">
+                    <TextField
+                      label="Libellé"
+                      value={comp.label}
+                      onChange={(v) => {
+                        const next = [...config.variableConfig.components];
+                        next[i] = { ...comp, label: v };
+                        patch({
+                          variableConfig: {
+                            ...config.variableConfig,
+                            components: next,
+                          },
+                        });
+                      }}
+                      placeholder="ex : Prime trimestrielle équipe"
+                    />
+                    <SelectField
+                      label="Fréquence"
+                      value={comp.frequency}
+                      onChange={(v) => {
+                        const next = [...config.variableConfig.components];
+                        next[i] = {
+                          ...comp,
+                          frequency: v as VariablePayoutFrequency,
+                        };
+                        patch({
+                          variableConfig: {
+                            ...config.variableConfig,
+                            components: next,
+                          },
+                        });
+                      }}
+                      options={Object.entries(FREQUENCY_LABELS_FR).map(
+                        ([value, label]) => ({ value, label }),
+                      )}
+                    />
+                  </div>
+                  <div className="flex items-end gap-3">
+                    <div className="flex-1">
+                      <NumberField
+                        label="Montant annuel cible"
+                        value={comp.amount}
+                        onChange={(v) => {
+                          const next = [...config.variableConfig.components];
+                          next[i] = { ...comp, amount: v };
+                          patch({
+                            variableConfig: {
+                              ...config.variableConfig,
+                              components: next,
+                            },
+                          });
+                        }}
+                        suffix="€/an"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="text-[12px] text-danger underline pb-2"
+                      onClick={() => {
+                        const next = config.variableConfig.components.filter(
+                          (_, j) => j !== i,
+                        );
+                        patch({
+                          variableConfig: {
+                            ...config.variableConfig,
+                            components: next,
+                          },
+                        });
+                      }}
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

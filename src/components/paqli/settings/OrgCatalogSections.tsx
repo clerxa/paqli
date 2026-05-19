@@ -648,9 +648,12 @@ function NumField({
 }
 
 export function OrgCatalogSections() {
+  // Les avantages (TR, mutuelle, transport, formation, télétravail…) sont
+  // gérés dans l'onglet « Mon entreprise » pour éviter les doublons.
+  // Ce catalogue ne contient plus que les modèles equity & épargne salariale
+  // qui servent à pré-remplir un nouveau package.
   return (
     <>
-      <BenefitsCatalogCard />
       <EquityCatalogCard />
       <SavingsCatalogCard />
     </>

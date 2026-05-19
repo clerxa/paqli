@@ -340,10 +340,24 @@ function CompanyTab() {
         }}
       />
 
+      <div className="rounded-xl border border-[rgba(45,38,64,0.08)] bg-[#FAF8F5] px-5 py-4 text-[12px] text-grey leading-relaxed">
+        <span className="text-aubergine font-medium">À noter — </span>
+        nom de l'entreprise, site web, LinkedIn, WTJ, année de création, effectif,
+        secteur et description sont gérés dans l'onglet{" "}
+        <button
+          type="button"
+          onClick={() => setTab("company")}
+          className="underline text-aubergine"
+        >
+          « Mon entreprise »
+        </button>{" "}
+        pour rester la seule source de vérité.
+      </div>
+
       <SettingsSection
-        title="Présentation & marque"
+        title="Identité de marque"
         icon="✨"
-        description="Tagline, logo, site web — première impression candidat"
+        description="Tagline et logo affichés aux candidats"
         score={presentationScore}
         defaultOpen
       >
@@ -358,73 +372,15 @@ function CompanyTab() {
             />
             <p className="text-[10px] text-grey mt-1">{profile.tagline.length}/120</p>
           </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Site web">
-              <input
-                value={profile.website_url}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, website_url: e.target.value }))
-                }
-                placeholder="https://entreprise.com"
-                className={inputCls}
+          <Field label="Logo de l'entreprise">
+            {organization?.id ? (
+              <LogoUploader
+                organizationId={organization.id}
+                value={profile.logo_url}
+                onChange={(url) => setProfile((p) => ({ ...p, logo_url: url }))}
               />
-            </Field>
-            <Field label="LinkedIn">
-              <input
-                value={profile.linkedin_url}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, linkedin_url: e.target.value }))
-                }
-                placeholder="https://linkedin.com/company/…"
-                className={inputCls}
-              />
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Welcome to the Jungle">
-              <input
-                value={profile.wtj_url}
-                onChange={(e) => setProfile((p) => ({ ...p, wtj_url: e.target.value }))}
-                placeholder="https://welcometothejungle.com/…"
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Logo de l'entreprise">
-              {organization?.id ? (
-                <LogoUploader
-                  organizationId={organization.id}
-                  value={profile.logo_url}
-                  onChange={(url) => setProfile((p) => ({ ...p, logo_url: url }))}
-                />
-              ) : null}
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Année de création">
-              <input
-                type="number"
-                value={profile.founded_year ?? ""}
-                onChange={(e) =>
-                  setProfile((p) => ({
-                    ...p,
-                    founded_year: e.target.value ? Number(e.target.value) : null,
-                  }))
-                }
-                placeholder="2020"
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Effectif">
-              <input
-                value={profile.employee_count}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, employee_count: e.target.value }))
-                }
-                placeholder="ex : 45, 100-200…"
-                className={inputCls}
-              />
-            </Field>
-          </div>
+            ) : null}
+          </Field>
         </div>
       </SettingsSection>
 

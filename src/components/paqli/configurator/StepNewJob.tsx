@@ -140,14 +140,12 @@ export function StepNewJob() {
             value={config.hiringManagerEmail}
             onChange={(v) => patch({ hiringManagerEmail: v.slice(0, 255) })}
             placeholder="prenom.nom@entreprise.com"
-            type="email"
           />
           <TextField
             label="LinkedIn du manager"
             value={config.hiringManagerLinkedin}
             onChange={(v) => patch({ hiringManagerLinkedin: v.slice(0, 500) })}
             placeholder="https://linkedin.com/in/…"
-            type="url"
           />
         </div>
         <p className="text-[11px] text-grey">

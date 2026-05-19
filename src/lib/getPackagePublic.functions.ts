@@ -35,6 +35,11 @@ export const getPackagePublic = createServerFn({ method: "POST" })
            glassdoor_url, wtj_url,
            growth_paths, training_budget, onboarding_note,
            process_steps, process_duration, start_date,
+           fixed_salary, salary_range_min, salary_range_max,
+           variable_enabled, variable_criteria, equity_type,
+           job_title, seniority, hiring_manager, career_path,
+           non_compete_enabled, probation_months, probation_objectives,
+           training_budget_specific,
            organizations ( name, logo_url, description, key_figures, values, culture_note, links ),
            equity_devices (
              id, type, quantity, strike_price,

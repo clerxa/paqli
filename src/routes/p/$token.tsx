@@ -39,6 +39,7 @@ import { TestimonialsBlock } from "@/components/paqli/candidate/TestimonialsBloc
 import { BenchmarkAnalysisCard } from "@/components/paqli/candidate/BenchmarkAnalysisCard";
 import { TestimonialPopups } from "@/components/paqli/candidate/TestimonialPopups";
 import { PaqFloatingChat } from "@/components/paqli/candidate/PaqFloatingChat";
+import { TransparencyScore } from "@/components/candidate/TransparencyScore";
 import {
   buildAssistantPlaceholder,
   buildAssistantWelcomeMessage,

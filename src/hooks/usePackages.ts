@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { computeRichnessFromRow } from "@/lib/packageConfig";
+import type { TransparencyCompany, TransparencyPackage } from "@/lib/transparencyScore";
 import { useAuth } from "./useAuth";
 
 export type PackageFilter = "all" | "active" | "draft" | "archived";
@@ -20,6 +21,7 @@ export interface PackageWithStats {
   openRate: number;
   richness: number;
   attractivenessScore: number | null;
+  transparencyPkg: TransparencyPackage;
 }
 
 export function usePackages(filter: PackageFilter = "all") {

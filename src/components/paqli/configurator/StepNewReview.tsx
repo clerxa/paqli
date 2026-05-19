@@ -117,6 +117,14 @@ export function StepNewReview() {
         </p>
       </div>
 
+      <TransparencyMissingFields
+        pkg={transparencyPkg}
+        company={transparencyCompany}
+        onGoToSettings={() => navigate({ to: "/settings" })}
+      />
+
+
+
       <div
         className="rounded-lg p-5"
         style={{ background: "#FAF8F5" }}

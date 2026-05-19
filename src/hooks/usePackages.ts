@@ -113,6 +113,25 @@ function enrich(pkg: any): PackageWithStats {
       typeof pkg.attractiveness_score === "number"
         ? pkg.attractiveness_score
         : null,
+    transparencyPkg: {
+      fixed_salary: pkg.fixed_salary ?? null,
+      gross_salary: pkg.gross_salary ?? null,
+      salary_range_min: pkg.salary_range_min ?? null,
+      salary_range_max: pkg.salary_range_max ?? null,
+      variable_enabled: pkg.variable_enabled ?? null,
+      variable_criteria: pkg.variable_criteria ?? null,
+      equity_type: pkg.equity_type ?? null,
+      title: pkg.title ?? null,
+      job_title: pkg.job_title ?? null,
+      seniority: pkg.seniority ?? null,
+      hiring_manager: pkg.hiring_manager ?? null,
+      team_description: pkg.team_description ?? null,
+      career_path: pkg.career_path ?? null,
+      non_compete_enabled: pkg.non_compete_enabled ?? null,
+      probation_months: pkg.probation_months ?? null,
+      probation_objectives: pkg.probation_objectives ?? null,
+      training_budget_specific: pkg.training_budget_specific ?? null,
+    },
   };
 }
 

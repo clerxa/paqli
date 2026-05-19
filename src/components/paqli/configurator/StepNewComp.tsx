@@ -1,7 +1,12 @@
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
-import { NumberField, TextArea, EduBanner } from "./fields";
+import { NumberField, TextArea, EduBanner, TextField } from "./fields";
 import { SelectField, Toggle } from "./fields-v2";
 import { BenchmarkBadge } from "./BenchmarkBadge";
+import {
+  makeVariableComponent,
+  FREQUENCY_LABELS_FR,
+  type VariablePayoutFrequency,
+} from "@/lib/packageConfig";
 
 const FREQUENCIES = [
   { value: "mensuel", label: "Mensuel" },

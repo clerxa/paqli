@@ -34,6 +34,18 @@ const filters: { value: PackageFilter; label: string }[] = [
 function PackagesPage() {
   const [filter, setFilter] = useState<PackageFilter>("all");
   const { packages, loading, reload } = usePackages(filter);
+  const [companyProfile, setCompanyProfile] =
+    useState<TransparencyCompany | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("company_profile")
+      .select(
+        "health_insurance_employer_rate, meal_voucher_enabled, remote_work_policy, profit_sharing_enabled, incentive_enabled, training_budget_per_person",
+      )
+      .maybeSingle()
+      .then(({ data }) => setCompanyProfile((data as TransparencyCompany) ?? null));
+  }, []);
   const [confirm, setConfirm] = useState<{
     type: "archive" | "delete";
     id: string;

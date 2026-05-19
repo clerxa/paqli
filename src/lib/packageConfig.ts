@@ -301,6 +301,8 @@ export const emptyConfig: PackageConfig = {
   seniority: "",
   location: "",
   hiringManager: "",
+  hiringManagerEmail: "",
+  hiringManagerLinkedin: "",
   whyOpen: "",
   fixedSalary: 0,
   salaryRangeMin: 0,

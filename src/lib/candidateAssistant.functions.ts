@@ -42,12 +42,27 @@ function val(v: unknown, fallback = "non précisé"): string {
 function buildPaqSystemPrompt(args: {
   pkg: Record<string, any>;
   company: Record<string, any>;
+  org: Record<string, any> | null;
+  testimonials: Array<Record<string, any>>;
+  equityCatalog: Array<Record<string, any>>;
+  savingsCatalog: Array<Record<string, any>>;
   orgName: string;
   candidateName: string | null;
   candidateContext: string;
   benchmark: Record<string, any> | null;
 }): string {
-  const { pkg, company, orgName, candidateName, candidateContext, benchmark } = args;
+  const {
+    pkg,
+    company,
+    org,
+    testimonials,
+    equityCatalog,
+    savingsCatalog,
+    orgName,
+    candidateName,
+    candidateContext,
+    benchmark,
+  } = args;
   const who = candidateName ?? "le candidat";
   const brand = company.brand_name ?? company.legal_name ?? orgName ?? "l'entreprise";
   const jobTitle = pkg.job_title ?? pkg.title ?? "ce poste";

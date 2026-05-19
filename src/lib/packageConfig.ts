@@ -188,6 +188,47 @@ export interface PackageConfig {
   scenarios: ScenarioForm[];
   scenarioMessage: string;
   scenarioDisplay: "all" | "realistic_only" | "realistic_optimistic";
+
+  // --- Refonte v2 : champs spécifiques au poste ---
+  jobTitle: string;
+  jobFamily: string;
+  seniority: string;
+  location: string;
+  hiringManager: string;
+  whyOpen: string;
+  fixedSalary: number;
+  salaryRangeMin: number;
+  salaryRangeMax: number;
+  salaryShowRange: boolean;
+  salaryNegotiable: boolean;
+  variableEnabled: boolean;
+  variableMax: number;
+  variableCriteria: string;
+  variableFrequency: string;
+  variableGuaranteedMonths: number;
+  signingBonusAmount: number;
+  signingBonusClawbackMonths: number;
+  equityType: string;
+  equityQuantity: number;
+  equityStrikePrice: number;
+  equityVestingYears: number;
+  equityCliffMonths: number;
+  equityAcceleration: boolean;
+  equityValuation: number;
+  equityNotes: string;
+  remoteWorkOverride: boolean;
+  remoteWorkDaysSpecific: number;
+  equipmentLaptop: string;
+  equipmentBudget: number;
+  trainingBudgetSpecific: number;
+  trainingDetails: string;
+  probationMonths: number;
+  probationObjectives: string;
+  careerPath: string;
+  nonCompeteEnabled: boolean;
+  nonCompeteMonths: number;
+  nonCompeteCompensationPct: number;
+  mobilityClause: boolean;
 }
 
 export type ScenarioLabel = "pessimiste" | "realiste" | "optimiste";

@@ -470,36 +470,27 @@ function CompanyTab() {
 
       <Card>
         <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 20 }}>
-          Identité
+          Données administratives
         </h2>
-        <Field label="Nom de l'entreprise">
+        <Field label="SIRET (requis pour la promesse d'embauche)">
           <input
-            value={profile.name}
-            onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
+            value={profile.siret}
+            onChange={(e) =>
+              setProfile((p) => ({
+                ...p,
+                siret: e.target.value.replace(/\s/g, ""),
+              }))
+            }
+            placeholder="12345678900012"
+            maxLength={14}
             className={inputCls}
           />
+          {profile.siret && profile.siret.length !== 14 && (
+            <p className="text-[11px] text-danger mt-1">
+              Le SIRET doit contenir 14 chiffres
+            </p>
+          )}
         </Field>
-        <div className="mt-4">
-          <Field label="SIRET (requis pour la promesse d'embauche)">
-            <input
-              value={profile.siret}
-              onChange={(e) =>
-                setProfile((p) => ({
-                  ...p,
-                  siret: e.target.value.replace(/\s/g, ""),
-                }))
-              }
-              placeholder="12345678900012"
-              maxLength={14}
-              className={inputCls}
-            />
-            {profile.siret && profile.siret.length !== 14 && (
-              <p className="text-[11px] text-danger mt-1">
-                Le SIRET doit contenir 14 chiffres
-              </p>
-            )}
-          </Field>
-        </div>
         <div className="mt-4">
           <Field label="Adresse du siège social (rue)">
             <input
@@ -535,19 +526,6 @@ function CompanyTab() {
             />
           </Field>
         </div>
-      </Card>
-
-      <Card>
-        <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 20 }}>
-          Présentation & produit
-        </h2>
-        <textarea
-          value={profile.description}
-          onChange={(e) => setProfile((p) => ({ ...p, description: e.target.value }))}
-          rows={5}
-          placeholder="Pitch, mission, produit, marché…"
-          className={`${inputCls} resize-none leading-relaxed`}
-        />
       </Card>
 
       <Card>

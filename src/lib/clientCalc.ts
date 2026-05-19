@@ -198,6 +198,30 @@ export interface PackageData {
   equity_devices: EquityDeviceRow[];
   savings_devices: SavingsDeviceRow[];
   scenarios: ScenarioRow[];
+
+  // Transparency score inputs
+  fixed_salary?: number | null;
+  salary_range_min?: number | null;
+  salary_range_max?: number | null;
+  variable_enabled?: boolean | null;
+  variable_criteria?: string | null;
+  equity_type?: string | null;
+  job_title?: string | null;
+  seniority?: string | null;
+  hiring_manager?: string | null;
+  career_path?: string | null;
+  non_compete_enabled?: boolean | null;
+  probation_months?: number | null;
+  probation_objectives?: string | null;
+  training_budget_specific?: number | null;
+  company_profile?: {
+    health_insurance_employer_rate: number | null;
+    meal_voucher_enabled: boolean | null;
+    remote_work_policy: string | null;
+    profit_sharing_enabled: boolean | null;
+    incentive_enabled: boolean | null;
+    training_budget_per_person: number | null;
+  } | null;
 }
 
 export interface ScenarioEstimate {

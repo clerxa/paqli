@@ -1382,6 +1382,8 @@ export type Database = {
           organization_id: string
           probation_months: number | null
           probation_objectives: string | null
+          probation_renewable: boolean
+          probation_renewal_max_months: number | null
           process_duration: string | null
           process_steps: Json | null
           remote_days: number | null
@@ -1418,6 +1420,7 @@ export type Database = {
           variable_guaranteed_months: number | null
           variable_max: number | null
           variable_target: number | null
+          variable_uncapped: boolean
           why_open: string | null
           wtj_url: string | null
         }
@@ -1468,6 +1471,8 @@ export type Database = {
           organization_id: string
           probation_months?: number | null
           probation_objectives?: string | null
+          probation_renewable?: boolean
+          probation_renewal_max_months?: number | null
           process_duration?: string | null
           process_steps?: Json | null
           remote_days?: number | null
@@ -1504,6 +1509,7 @@ export type Database = {
           variable_guaranteed_months?: number | null
           variable_max?: number | null
           variable_target?: number | null
+          variable_uncapped?: boolean
           why_open?: string | null
           wtj_url?: string | null
         }
@@ -1554,6 +1560,8 @@ export type Database = {
           organization_id?: string
           probation_months?: number | null
           probation_objectives?: string | null
+          probation_renewable?: boolean
+          probation_renewal_max_months?: number | null
           process_duration?: string | null
           process_steps?: Json | null
           remote_days?: number | null
@@ -1590,6 +1598,7 @@ export type Database = {
           variable_guaranteed_months?: number | null
           variable_max?: number | null
           variable_target?: number | null
+          variable_uncapped?: boolean
           why_open?: string | null
           wtj_url?: string | null
         }

@@ -343,6 +343,7 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
     salaryNegotiable: ((pkg as Record<string, unknown>).salary_negotiable ?? true) as boolean,
     variableEnabled: !!(pkg as Record<string, unknown>).variable_enabled,
     variableMax: Number((pkg as Record<string, unknown>).variable_max) || 0,
+    variableUncapped: !!(pkg as Record<string, unknown>).variable_uncapped,
     variableCriteria: (pkg as Record<string, unknown>).variable_criteria as string ?? "",
     variableFrequency: (pkg as Record<string, unknown>).variable_frequency as string ?? "",
     variableGuaranteedMonths: Number((pkg as Record<string, unknown>).variable_guaranteed_months) || 0,

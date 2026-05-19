@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { callClaude } from "./claudeApi.server";
+import { callClaude, ClaudeError } from "./claudeApi.server";
 import { inferJobFamily, inferSeniority } from "./jobBenchmark";
 
 // ─────────────────────────────────────────────────────────────────
@@ -101,15 +101,41 @@ Produis un JSON avec exactement cette structure :
   "computed_at": "${new Date().toISOString()}"
 }`;
 
-    const raw = await callClaude({
-      systemPrompt,
-      userPrompt,
-      maxTokens: 600,
-      jsonMode: true,
-      caller: "scoreAttractiveness",
-    });
-
-    const parsed = JSON.parse(raw) as AttractivenessResult;
+    let parsed: AttractivenessResult;
+    try {
+      const raw = await callClaude({
+        systemPrompt,
+        userPrompt,
+        maxTokens: 600,
+        jsonMode: true,
+        caller: "scoreAttractiveness",
+      });
+      parsed = JSON.parse(raw) as AttractivenessResult;
+    } catch (err) {
+      const code = err instanceof ClaudeError ? err.code : "UNKNOWN";
+      const unavailable =
+        code === "OVERLOADED" ||
+        code === "RATE_LIMITED" ||
+        code === "TIMEOUT" ||
+        code === "MAX_RETRIES_EXCEEDED" ||
+        code === "NETWORK_ERROR";
+      console.warn(
+        `[scoreAttractiveness] fallback (${code}):`,
+        err instanceof Error ? err.message : String(err),
+      );
+      return {
+        score: 0,
+        label: unavailable
+          ? "Analyse temporairement indisponible"
+          : "Analyse indisponible",
+        positives: [],
+        warnings: [],
+        suggestion: unavailable
+          ? "Le service IA est momentanément surchargé. Réessayez dans quelques instants."
+          : "Impossible de calculer le score pour le moment.",
+        computed_at: new Date().toISOString(),
+      } satisfies AttractivenessResult;
+    }
 
     // Persist
     await supabase

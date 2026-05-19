@@ -68,6 +68,8 @@ export async function upsertPackage(
     seniority: config.seniority || null,
     location: config.location || config.locationCity || null,
     hiring_manager: config.hiringManager || null,
+    hiring_manager_email: config.hiringManagerEmail || null,
+    hiring_manager_linkedin: config.hiringManagerLinkedin || null,
     why_open: config.whyOpen || null,
     fixed_salary: config.fixedSalary || config.grossSalary || null,
     salary_range_min: config.salaryRangeMin || null,

@@ -273,6 +273,20 @@ CLAUSES CONTRACTUELLES :
 ## DONNÉES MARCHÉ
 ${benchmarkBlock}
 
+## CULTURE & MARQUE EMPLOYEUR
+${cultureBlock}
+
+## TÉMOIGNAGES COLLABORATEURS
+${testimonialsBlock}
+
+## DISPOSITIFS DISPONIBLES DANS L'ENTREPRISE (modèles standards, même si non sélectionnés sur ce package précis)
+
+Equity :
+${equityCatalogBlock}
+
+Épargne salariale :
+${savingsCatalogBlock}
+
 ## SITUATION DU CANDIDAT
 ${candidateContext}
 

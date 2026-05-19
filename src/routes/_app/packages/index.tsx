@@ -166,6 +166,7 @@ function PackageRow({
 }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const initials = pkg.title
     .split(/\s+/)
     .slice(0, 2)

@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "DM Serif Display", ui-serif, Georgia, serif;
 
   --radius-sm: 6px;
@@ -81,14 +81,29 @@
   html, body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
     font-weight: 400;
   }
 
-  h1, h2, h3, .font-display {
+  h1, h2, .font-display {
     font-family: "DM Serif Display", ui-serif, Georgia, serif;
     font-weight: 400;
     letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  h3, h4, h5, h6 {
+    font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* Paqli weight cap: no 700/800 — DM Sans tops out at 600 */
+  .font-bold, .font-extrabold, [class*="font-bold"] {
+    font-weight: 600 !important;
+  }
+  .font-thin, .font-extralight {
+    font-weight: 300 !important;
   }
 }
 

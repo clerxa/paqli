@@ -215,11 +215,12 @@ function CompanyTab() {
       return;
     }
     setSaving(true);
+    // Champs identité / présentation (name, description, founded_year, employee_count,
+    // website_url, linkedin_url, wtj_url) sont gérés dans l'onglet « Mon entreprise »
+    // pour éviter les doublons — on n'écrit ici que les données spécifiquement branding.
     const { error } = await supabase
       .from("organizations")
       .update({
-        name: profile.name,
-        description: profile.description || null,
         key_figures: profile.key_figures as any,
         values: profile.values,
         culture_note: profile.culture_note || null,
@@ -230,11 +231,6 @@ function CompanyTab() {
         address_zip: profile.address_zip || null,
         address_city: profile.address_city || null,
         tagline: profile.tagline || null,
-        founded_year: profile.founded_year,
-        employee_count: profile.employee_count || null,
-        website_url: profile.website_url || null,
-        linkedin_url: profile.linkedin_url || null,
-        wtj_url: profile.wtj_url || null,
         logo_url: profile.logo_url || null,
       } as any)
       .eq("id", organization.id);

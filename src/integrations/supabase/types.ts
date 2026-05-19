@@ -299,6 +299,197 @@ export type Database = {
           },
         ]
       }
+      company_profile: {
+        Row: {
+          bonus_days_off: string | null
+          brand_name: string | null
+          certifications_covered: boolean | null
+          collective_agreement: string | null
+          company_car_policy: string | null
+          completion_score: number | null
+          conferences_covered: boolean | null
+          created_at: string
+          culture_vouchers_amount: number | null
+          description: string | null
+          employer_match_rate: number | null
+          extra_leave_details: string | null
+          extra_leave_seniority: boolean | null
+          family_events_leave: string | null
+          founding_year: number | null
+          health_insurance_employer_rate: number | null
+          health_insurance_family: boolean | null
+          health_insurance_level: string | null
+          health_insurance_provider: string | null
+          holiday_vouchers_amount: number | null
+          id: string
+          incentive_average_amount: number | null
+          incentive_enabled: boolean | null
+          industry: string | null
+          legal_name: string | null
+          mandatory_per_details: string | null
+          mandatory_per_enabled: boolean | null
+          meal_voucher_daily_amount: number | null
+          meal_voucher_employer_rate: number | null
+          meal_voucher_enabled: boolean | null
+          meal_voucher_provider: string | null
+          mobility_package_amount: number | null
+          organization_id: string
+          pee_enabled: boolean | null
+          perco_enabled: boolean | null
+          profit_sharing_enabled: boolean | null
+          provident_fund_details: string | null
+          provident_fund_enabled: boolean | null
+          referral_bonus_amount: number | null
+          referral_program_enabled: boolean | null
+          remote_work_days_per_week: number | null
+          remote_work_equipment: Json | null
+          remote_work_policy: string | null
+          rtt_days_per_year: number | null
+          salary_freeze_months: number | null
+          salary_review_criteria: string | null
+          salary_review_frequency: string | null
+          size_range: string | null
+          stage: string | null
+          training_budget_per_person: number | null
+          training_policy: string | null
+          transport_reimbursement_rate: number | null
+          updated_at: string
+          website: string | null
+          weekly_hours: number | null
+          working_time_regime: string | null
+          works_council_benefits: string | null
+          works_council_enabled: boolean | null
+        }
+        Insert: {
+          bonus_days_off?: string | null
+          brand_name?: string | null
+          certifications_covered?: boolean | null
+          collective_agreement?: string | null
+          company_car_policy?: string | null
+          completion_score?: number | null
+          conferences_covered?: boolean | null
+          created_at?: string
+          culture_vouchers_amount?: number | null
+          description?: string | null
+          employer_match_rate?: number | null
+          extra_leave_details?: string | null
+          extra_leave_seniority?: boolean | null
+          family_events_leave?: string | null
+          founding_year?: number | null
+          health_insurance_employer_rate?: number | null
+          health_insurance_family?: boolean | null
+          health_insurance_level?: string | null
+          health_insurance_provider?: string | null
+          holiday_vouchers_amount?: number | null
+          id?: string
+          incentive_average_amount?: number | null
+          incentive_enabled?: boolean | null
+          industry?: string | null
+          legal_name?: string | null
+          mandatory_per_details?: string | null
+          mandatory_per_enabled?: boolean | null
+          meal_voucher_daily_amount?: number | null
+          meal_voucher_employer_rate?: number | null
+          meal_voucher_enabled?: boolean | null
+          meal_voucher_provider?: string | null
+          mobility_package_amount?: number | null
+          organization_id: string
+          pee_enabled?: boolean | null
+          perco_enabled?: boolean | null
+          profit_sharing_enabled?: boolean | null
+          provident_fund_details?: string | null
+          provident_fund_enabled?: boolean | null
+          referral_bonus_amount?: number | null
+          referral_program_enabled?: boolean | null
+          remote_work_days_per_week?: number | null
+          remote_work_equipment?: Json | null
+          remote_work_policy?: string | null
+          rtt_days_per_year?: number | null
+          salary_freeze_months?: number | null
+          salary_review_criteria?: string | null
+          salary_review_frequency?: string | null
+          size_range?: string | null
+          stage?: string | null
+          training_budget_per_person?: number | null
+          training_policy?: string | null
+          transport_reimbursement_rate?: number | null
+          updated_at?: string
+          website?: string | null
+          weekly_hours?: number | null
+          working_time_regime?: string | null
+          works_council_benefits?: string | null
+          works_council_enabled?: boolean | null
+        }
+        Update: {
+          bonus_days_off?: string | null
+          brand_name?: string | null
+          certifications_covered?: boolean | null
+          collective_agreement?: string | null
+          company_car_policy?: string | null
+          completion_score?: number | null
+          conferences_covered?: boolean | null
+          created_at?: string
+          culture_vouchers_amount?: number | null
+          description?: string | null
+          employer_match_rate?: number | null
+          extra_leave_details?: string | null
+          extra_leave_seniority?: boolean | null
+          family_events_leave?: string | null
+          founding_year?: number | null
+          health_insurance_employer_rate?: number | null
+          health_insurance_family?: boolean | null
+          health_insurance_level?: string | null
+          health_insurance_provider?: string | null
+          holiday_vouchers_amount?: number | null
+          id?: string
+          incentive_average_amount?: number | null
+          incentive_enabled?: boolean | null
+          industry?: string | null
+          legal_name?: string | null
+          mandatory_per_details?: string | null
+          mandatory_per_enabled?: boolean | null
+          meal_voucher_daily_amount?: number | null
+          meal_voucher_employer_rate?: number | null
+          meal_voucher_enabled?: boolean | null
+          meal_voucher_provider?: string | null
+          mobility_package_amount?: number | null
+          organization_id?: string
+          pee_enabled?: boolean | null
+          perco_enabled?: boolean | null
+          profit_sharing_enabled?: boolean | null
+          provident_fund_details?: string | null
+          provident_fund_enabled?: boolean | null
+          referral_bonus_amount?: number | null
+          referral_program_enabled?: boolean | null
+          remote_work_days_per_week?: number | null
+          remote_work_equipment?: Json | null
+          remote_work_policy?: string | null
+          rtt_days_per_year?: number | null
+          salary_freeze_months?: number | null
+          salary_review_criteria?: string | null
+          salary_review_frequency?: string | null
+          size_range?: string | null
+          stage?: string | null
+          training_budget_per_person?: number | null
+          training_policy?: string | null
+          transport_reimbursement_rate?: number | null
+          updated_at?: string
+          website?: string | null
+          weekly_hours?: number | null
+          working_time_regime?: string | null
+          works_council_benefits?: string | null
+          works_council_enabled?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_profile_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitors: {
         Row: {
           created_at: string

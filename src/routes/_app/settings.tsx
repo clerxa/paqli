@@ -93,7 +93,8 @@ function SettingsPage() {
           })}
         </div>
       </div>
-      {tab === "company" && <CompanyTab />}
+      {tab === "company" && <CompanyProfileTab />}
+      {tab === "branding" && <CompanyTab />}
       {tab === "defaults" && <DefaultsTab />}
       {tab === "users" && <UsersTab />}
       {tab === "benchmark" && <BenchmarkTab />}

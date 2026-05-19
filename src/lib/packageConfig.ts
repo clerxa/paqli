@@ -188,6 +188,47 @@ export interface PackageConfig {
   scenarios: ScenarioForm[];
   scenarioMessage: string;
   scenarioDisplay: "all" | "realistic_only" | "realistic_optimistic";
+
+  // --- Refonte v2 : champs spécifiques au poste ---
+  jobTitle: string;
+  jobFamily: string;
+  seniority: string;
+  location: string;
+  hiringManager: string;
+  whyOpen: string;
+  fixedSalary: number;
+  salaryRangeMin: number;
+  salaryRangeMax: number;
+  salaryShowRange: boolean;
+  salaryNegotiable: boolean;
+  variableEnabled: boolean;
+  variableMax: number;
+  variableCriteria: string;
+  variableFrequency: string;
+  variableGuaranteedMonths: number;
+  signingBonusAmount: number;
+  signingBonusClawbackMonths: number;
+  equityType: string;
+  equityQuantity: number;
+  equityStrikePrice: number;
+  equityVestingYears: number;
+  equityCliffMonths: number;
+  equityAcceleration: boolean;
+  equityValuation: number;
+  equityNotes: string;
+  remoteWorkOverride: boolean;
+  remoteWorkDaysSpecific: number;
+  equipmentLaptop: string;
+  equipmentBudget: number;
+  trainingBudgetSpecific: number;
+  trainingDetails: string;
+  probationMonths: number;
+  probationObjectives: string;
+  careerPath: string;
+  nonCompeteEnabled: boolean;
+  nonCompeteMonths: number;
+  nonCompeteCompensationPct: number;
+  mobilityClause: boolean;
 }
 
 export type ScenarioLabel = "pessimiste" | "realiste" | "optimiste";
@@ -248,6 +289,47 @@ export const emptyConfig: PackageConfig = {
   scenarios: defaultScenarios,
   scenarioMessage: "",
   scenarioDisplay: "all",
+
+  // Refonte v2
+  jobTitle: "",
+  jobFamily: "",
+  seniority: "",
+  location: "",
+  hiringManager: "",
+  whyOpen: "",
+  fixedSalary: 0,
+  salaryRangeMin: 0,
+  salaryRangeMax: 0,
+  salaryShowRange: false,
+  salaryNegotiable: true,
+  variableEnabled: false,
+  variableMax: 0,
+  variableCriteria: "",
+  variableFrequency: "",
+  variableGuaranteedMonths: 0,
+  signingBonusAmount: 0,
+  signingBonusClawbackMonths: 0,
+  equityType: "",
+  equityQuantity: 0,
+  equityStrikePrice: 0,
+  equityVestingYears: 4,
+  equityCliffMonths: 12,
+  equityAcceleration: false,
+  equityValuation: 0,
+  equityNotes: "",
+  remoteWorkOverride: false,
+  remoteWorkDaysSpecific: 0,
+  equipmentLaptop: "",
+  equipmentBudget: 0,
+  trainingBudgetSpecific: 0,
+  trainingDetails: "",
+  probationMonths: 3,
+  probationObjectives: "",
+  careerPath: "",
+  nonCompeteEnabled: false,
+  nonCompeteMonths: 0,
+  nonCompeteCompensationPct: 0,
+  mobilityClause: false,
 };
 
 export function roundForDisplay(value: number): number {

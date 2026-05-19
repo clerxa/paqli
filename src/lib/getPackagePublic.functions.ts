@@ -154,6 +154,15 @@ export const getPackagePublic = createServerFn({ method: "POST" })
       .eq("package_id", pkg.id)
       .maybeSingle();
 
+    // Company profile (for transparency score: benefits, remote, training, …)
+    const { data: companyProfileRow } = await supabaseAdmin
+      .from("company_profile")
+      .select(
+        "health_insurance_employer_rate, meal_voucher_enabled, remote_work_policy, profit_sharing_enabled, incentive_enabled, training_budget_per_person",
+      )
+      .eq("organization_id", (link as any).organization_id)
+      .maybeSingle();
+
     return {
       linkId: link.id as string,
       token: link.token as string,

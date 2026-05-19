@@ -478,9 +478,65 @@ export function CompanyProfileTab() {
     );
   }
 
+  // EU 2026 compliance score
+  const complianceScore =
+    (profile.collective_agreement ? 20 : 0) +
+    (profile.salary_review_criteria ? 20 : 0) +
+    (profile.working_time_regime ? 20 : 0) +
+    40; // assume salary ranges in packages — front-end only display
+
   return (
     <div className="px-4 sm:px-7 py-4 sm:py-6 max-w-3xl space-y-3">
       <CompletenessBar score={globalScore} />
+
+      <div
+        className="rounded-lg p-5"
+        style={{
+          background: "#FAF8F5",
+          border: "1px solid rgba(45,95,110,0.2)",
+          borderLeft: "3px solid #2D5F6E",
+        }}
+      >
+        <div
+          className="font-display text-aubergine flex items-center gap-2"
+          style={{ fontSize: 16 }}
+        >
+          ⚖️ Directive EU Transparence Salariale 2026
+        </div>
+        <p className="text-[12px] text-aubergine-light mt-2">
+          En vigueur le 7 juin 2026, cette directive impose :
+        </p>
+        <ul className="text-[12px] text-aubergine-light mt-1 space-y-0.5">
+          <li>✓ Afficher une fourchette dans chaque offre d'emploi</li>
+          <li>✓ Ne plus demander l'historique salarial</li>
+          <li>✓ Communiquer les critères de rémunération</li>
+        </ul>
+        <p className="text-[12px] text-aubergine-light mt-3">
+          Paqli vous aide à respecter ces obligations automatiquement pour
+          chaque package créé.
+        </p>
+        <div className="mt-4">
+          <div className="flex items-center justify-between text-[11px] text-grey mb-1">
+            <span>Votre complétude conformité</span>
+            <span className="font-medium" style={{ color: "#2D2640" }}>
+              {complianceScore}%
+            </span>
+          </div>
+          <div
+            className="h-2 rounded-full overflow-hidden"
+            style={{ background: "#F0EBE8" }}
+          >
+            <div
+              className="h-2 rounded-full transition-all"
+              style={{
+                width: `${complianceScore}%`,
+                background: complianceScore >= 80 ? "#3B6D11" : "#2D5F6E",
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
 
       {/* ---------- 1. Identité ---------- */}
       <SettingsSection title="Identité de l'entreprise" icon="📋" defaultOpen>

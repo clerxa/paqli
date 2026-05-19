@@ -132,6 +132,32 @@ export function StepNewReview() {
       <div className="border-t border-[rgba(45,38,64,0.06)] pt-6">
         <Step5Preview />
       </div>
+
+      <div className="border-t border-[rgba(45,38,64,0.06)] pt-6">
+        <SalaryWidget
+          pkg={{
+            job_title: config.jobTitle || config.poste || null,
+            seniority: config.seniority || null,
+            location: config.location || null,
+            fixed_salary: config.fixedSalary || config.grossSalary || null,
+            salary_range_min: config.salaryRangeMin || null,
+            salary_range_max: config.salaryRangeMax || null,
+            salary_negotiable: config.salaryNegotiable ?? null,
+            variable_enabled: config.variableEnabled ?? null,
+            variable_target: config.variableTarget || null,
+            variable_max: config.variableMax || null,
+            variable_frequency: config.variableFrequency || null,
+            signing_bonus_amount: config.signingBonusAmount || null,
+            equity_type: config.equityType || null,
+            remote_work_policy: cp?.remote_work_policy ?? null,
+            remote_work_days_per_week: cp?.remote_work_days_per_week ?? null,
+            remote_work_days_specific: config.remoteWorkDaysSpecific || null,
+            meal_voucher_enabled: cp?.meal_voucher_enabled ?? null,
+            meal_voucher_daily_amount: cp?.meal_voucher_daily_amount ?? null,
+            meal_voucher_provider: cp?.meal_voucher_provider ?? null,
+          }}
+        />
+      </div>
     </div>
   );
 }

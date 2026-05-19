@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { Step5Preview } from "./Step5Preview";
 import { SalaryWidget } from "@/components/recruiter/SalaryWidget";
+import { TransparencyMissingFields } from "@/components/recruiter/TransparencyMissingFields";
+import type {
+  TransparencyCompany,
+  TransparencyPackage,
+} from "@/lib/transparencyScore";
 
 interface CP {
   meal_voucher_enabled: boolean | null;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { computeRichnessFromRow } from "@/lib/packageConfig";
+import type { TransparencyCompany, TransparencyPackage } from "@/lib/transparencyScore";
 import { useAuth } from "./useAuth";
 
 export type PackageFilter = "all" | "active" | "draft" | "archived";
@@ -20,6 +21,7 @@ export interface PackageWithStats {
   openRate: number;
   richness: number;
   attractivenessScore: number | null;
+  transparencyPkg: TransparencyPackage;
 }
 
 export function usePackages(filter: PackageFilter = "all") {
@@ -37,6 +39,11 @@ export function usePackages(filter: PackageFilter = "all") {
            job_summary, missions, stack, remote_policy, location_city,
            team_description, company_values, growth_paths, process_steps,
            attractiveness_score,
+           fixed_salary, salary_range_min, salary_range_max,
+           variable_enabled, variable_criteria, equity_type,
+           job_title, seniority, hiring_manager, career_path,
+           non_compete_enabled, probation_months, probation_objectives,
+           training_budget_specific,
            equity_devices (type),
            savings_devices (type),
            candidate_links (id, opened_at, simulated_at)`,
@@ -106,6 +113,25 @@ function enrich(pkg: any): PackageWithStats {
       typeof pkg.attractiveness_score === "number"
         ? pkg.attractiveness_score
         : null,
+    transparencyPkg: {
+      fixed_salary: pkg.fixed_salary ?? null,
+      gross_salary: pkg.gross_salary ?? null,
+      salary_range_min: pkg.salary_range_min ?? null,
+      salary_range_max: pkg.salary_range_max ?? null,
+      variable_enabled: pkg.variable_enabled ?? null,
+      variable_criteria: pkg.variable_criteria ?? null,
+      equity_type: pkg.equity_type ?? null,
+      title: pkg.title ?? null,
+      job_title: pkg.job_title ?? null,
+      seniority: pkg.seniority ?? null,
+      hiring_manager: pkg.hiring_manager ?? null,
+      team_description: pkg.team_description ?? null,
+      career_path: pkg.career_path ?? null,
+      non_compete_enabled: pkg.non_compete_enabled ?? null,
+      probation_months: pkg.probation_months ?? null,
+      probation_objectives: pkg.probation_objectives ?? null,
+      training_budget_specific: pkg.training_budget_specific ?? null,
+    },
   };
 }
 

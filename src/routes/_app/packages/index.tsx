@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+import type { TransparencyCompany } from "@/lib/transparencyScore";
 import { toast } from "sonner";
 import { Topbar } from "@/components/paqli/Topbar";
 import { Card } from "@/components/paqli/Card";
@@ -8,6 +10,7 @@ import { Button } from "@/components/paqli/Button";
 import { Skeleton } from "@/components/paqli/Skeleton";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
 import { SalaryWidgetModal } from "@/components/recruiter/SalaryWidgetModal";
+import { TransparencyScoreCompact } from "@/components/recruiter/TransparencyScoreCompact";
 import {
   archivePackage,
   deletePackage,
@@ -31,6 +34,18 @@ const filters: { value: PackageFilter; label: string }[] = [
 function PackagesPage() {
   const [filter, setFilter] = useState<PackageFilter>("all");
   const { packages, loading, reload } = usePackages(filter);
+  const [companyProfile, setCompanyProfile] =
+    useState<TransparencyCompany | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("company_profile")
+      .select(
+        "health_insurance_employer_rate, meal_voucher_enabled, remote_work_policy, profit_sharing_enabled, incentive_enabled, training_budget_per_person",
+      )
+      .maybeSingle()
+      .then(({ data }) => setCompanyProfile((data as TransparencyCompany) ?? null));
+  }, []);
   const [confirm, setConfirm] = useState<{
     type: "archive" | "delete";
     id: string;
@@ -117,6 +132,7 @@ function PackagesPage() {
                 <PackageRow
                   key={p.id}
                   pkg={p}
+                  companyProfile={companyProfile}
                   onDuplicate={() => handleDuplicate(p.id)}
                   onArchive={() =>
                     setConfirm({ type: "archive", id: p.id, title: p.title })
@@ -155,11 +171,13 @@ function PackagesPage() {
 
 function PackageRow({
   pkg,
+  companyProfile,
   onDuplicate,
   onArchive,
   onDelete,
 }: {
   pkg: PackageWithStats;
+  companyProfile: TransparencyCompany | null;
   onDuplicate: () => void;
   onArchive: () => void;
   onDelete: () => void;
@@ -195,6 +213,15 @@ function PackageRow({
           ))}
           <span className="text-[11px] text-grey ml-1">
             Mis à jour {timeAgo(pkg.updated_at)}
+          </span>
+          <span className="ml-2">
+            <TransparencyScoreCompact
+              pkg={pkg.transparencyPkg}
+              company={companyProfile}
+              onComplete={() =>
+                navigate({ to: "/packages/$id/edit", params: { id: pkg.id } })
+              }
+            />
           </span>
         </div>
       </div>

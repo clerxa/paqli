@@ -11,6 +11,7 @@ import {
 const FREQUENCIES = [
   { value: "mensuel", label: "Mensuel" },
   { value: "trimestriel", label: "Trimestriel" },
+  { value: "semestriel", label: "Semestriel" },
   { value: "annuel", label: "Annuel" },
 ];
 

@@ -1371,13 +1371,18 @@ function LandingPage() {
       <LogoBar />
       <ProblemSection />
       <LastMileSection />
+      <WaveDivider fromColor="#F0EBE8" toColor="#2D2640" variant="B" flip />
       <SolutionSection />
+      <WaveDivider fromColor="#2D2640" toColor="#FAF8F5" variant="A" />
       <ProductSection />
+      <WaveDivider fromColor="#FAF8F5" toColor="#2D2640" variant="C" flip />
       <TotalCompSection />
+      <WaveDivider fromColor="#2D2640" toColor="#FAF8F5" variant="A" flip />
       <MidCTA onDemo={openDemo} />
       <AISection />
       <TestimonialsSection />
       <PricingSection onDemo={openDemo} />
+      <WaveDivider fromColor="#FAF8F5" toColor="#2D2640" variant="B" />
       <FinalCTA onDemo={openDemo} />
       <Footer />
       {demoOpen && <DemoModal onClose={() => setDemoOpen(false)} />}

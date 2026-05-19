@@ -177,21 +177,24 @@ function scoreIdentity(p: CompanyProfile): number {
   return pct(filled, fields.length);
 }
 function scoreHealth(p: CompanyProfile): number {
+  // Une mutuelle est obligatoire en France — on crédite la complétion des champs
   const fields = [
-    p.health_insurance_provider,
-    p.health_insurance_employer_rate != null ? "x" : "",
-    p.health_insurance_level,
-    p.provident_fund_enabled ? "x" : "",
+    !!p.health_insurance_provider,
+    p.health_insurance_employer_rate != null,
+    !!p.health_insurance_level,
+    // Prévoyance : la question est "répondue" si elle est activée OU si des détails sont fournis
+    p.provident_fund_enabled || !!p.provident_fund_details,
   ];
   return pct(fields.filter(Boolean).length, fields.length);
 }
 function scoreDaily(p: CompanyProfile): number {
+  // 5 thématiques — chacune compte si l'utilisateur a renseigné quelque chose (peu importe la valeur)
   const fields = [
-    p.meal_voucher_enabled ? "x" : "",
-    p.transport_reimbursement_rate >= 50 ? "x" : "",
-    p.mobility_package_amount != null ? "x" : "",
-    p.company_car_policy,
-    p.works_council_enabled ? "x" : "",
+    p.meal_voucher_enabled || (p.meal_voucher_daily_amount ?? 0) > 0,
+    p.transport_reimbursement_rate > 0,
+    (p.mobility_package_amount ?? 0) > 0 || !!p.company_car_policy,
+    p.works_council_enabled || !!p.works_council_benefits,
+    (p.holiday_vouchers_amount ?? 0) > 0 || (p.culture_vouchers_amount ?? 0) > 0,
   ];
   return pct(fields.filter(Boolean).length, fields.length);
 }
@@ -199,46 +202,52 @@ function scoreRemote(p: CompanyProfile): number {
   const eq = p.remote_work_equipment ?? {};
   const eqCount = Object.values(eq).filter((v) => v === true).length;
   const fields = [
-    p.remote_work_policy,
-    p.remote_work_days_per_week > 0 || p.remote_work_policy === "aucun" ? "x" : "",
-    eqCount > 0 ? "x" : "",
-    eq.amount && Number(eq.amount) > 0 ? "x" : "",
+    !!p.remote_work_policy,
+    p.remote_work_days_per_week > 0 || p.remote_work_policy === "aucun",
+    eqCount > 0 || (eq.amount && Number(eq.amount) > 0),
   ];
   return pct(fields.filter(Boolean).length, fields.length);
 }
 function scoreSavings(p: CompanyProfile): number {
+  // Beaucoup d'entreprises n'ont pas tous ces dispositifs.
+  // On considère la section comme "remplie" dès qu'au moins une réponse est donnée.
   const fields = [
-    p.profit_sharing_enabled ? "x" : "",
-    p.incentive_enabled ? "x" : "",
-    p.pee_enabled ? "x" : "",
-    p.perco_enabled ? "x" : "",
-    p.employer_match_rate != null ? "x" : "",
+    // Bloc intéressement/participation
+    p.profit_sharing_enabled ||
+      p.incentive_enabled ||
+      (p.incentive_average_amount ?? 0) > 0,
+    // Bloc PEE/PERCO
+    p.pee_enabled || p.perco_enabled,
+    // Abondement
+    (p.employer_match_rate ?? 0) > 0,
+    // PER obligatoire
+    p.mandatory_per_enabled || !!p.mandatory_per_details,
   ];
   return pct(fields.filter(Boolean).length, fields.length);
 }
 function scoreTraining(p: CompanyProfile): number {
   const fields = [
-    p.training_budget_per_person != null ? "x" : "",
-    p.training_policy,
-    p.certifications_covered ? "x" : "",
-    p.conferences_covered ? "x" : "",
+    (p.training_budget_per_person ?? 0) > 0,
+    !!p.training_policy,
+    p.certifications_covered || p.conferences_covered,
   ];
   return pct(fields.filter(Boolean).length, fields.length);
 }
 
 function scoreLeaves(p: CompanyProfile): number {
   const fields = [
-    p.rtt_days_per_year > 0 ? "x" : "",
-    p.extra_leave_seniority ? "x" : "",
-    p.family_events_leave,
+    p.rtt_days_per_year > 0,
+    p.extra_leave_seniority || !!p.extra_leave_details,
+    !!p.family_events_leave,
+    !!p.bonus_days_off,
   ];
   return pct(fields.filter(Boolean).length, fields.length);
 }
 function scoreComp(p: CompanyProfile): number {
   const fields = [
-    p.salary_review_frequency,
-    p.salary_review_criteria,
-    p.referral_program_enabled ? "x" : "",
+    !!p.salary_review_frequency,
+    !!p.salary_review_criteria,
+    p.referral_program_enabled || (p.referral_bonus_amount ?? 0) > 0,
   ];
   return pct(fields.filter(Boolean).length, fields.length);
 }

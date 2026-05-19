@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { Step5Preview } from "./Step5Preview";
+import { SalaryWidget } from "@/components/recruiter/SalaryWidget";
 
 interface CP {
   meal_voucher_enabled: boolean | null;
   meal_voucher_daily_amount: number | null;
   meal_voucher_employer_rate: number | null;
+  meal_voucher_provider: string | null;
   health_insurance_employer_rate: number | null;
   incentive_enabled: boolean | null;
   incentive_average_amount: number | null;
@@ -14,6 +16,8 @@ interface CP {
   pee_enabled: boolean | null;
   perco_enabled: boolean | null;
   employer_match_rate: number | null;
+  remote_work_policy: string | null;
+  remote_work_days_per_week: number | null;
 }
 
 function fmt(n: number) {
@@ -39,7 +43,7 @@ export function StepNewReview() {
       const { data } = await supabase
         .from("company_profile")
         .select(
-          "meal_voucher_enabled,meal_voucher_daily_amount,meal_voucher_employer_rate,health_insurance_employer_rate,incentive_enabled,incentive_average_amount,profit_sharing_enabled,pee_enabled,perco_enabled,employer_match_rate",
+          "meal_voucher_enabled,meal_voucher_daily_amount,meal_voucher_employer_rate,meal_voucher_provider,health_insurance_employer_rate,incentive_enabled,incentive_average_amount,profit_sharing_enabled,pee_enabled,perco_enabled,employer_match_rate,remote_work_policy,remote_work_days_per_week",
         )
         .maybeSingle();
       if (data) setCp(data as CP);
@@ -127,6 +131,32 @@ export function StepNewReview() {
 
       <div className="border-t border-[rgba(45,38,64,0.06)] pt-6">
         <Step5Preview />
+      </div>
+
+      <div className="border-t border-[rgba(45,38,64,0.06)] pt-6">
+        <SalaryWidget
+          pkg={{
+            job_title: config.jobTitle || null,
+            seniority: config.seniority || null,
+            location: config.location || null,
+            fixed_salary: config.fixedSalary || config.grossSalary || null,
+            salary_range_min: config.salaryRangeMin || null,
+            salary_range_max: config.salaryRangeMax || null,
+            salary_negotiable: config.salaryNegotiable ?? null,
+            variable_enabled: config.variableEnabled ?? null,
+            variable_target: config.variableTarget || null,
+            variable_max: config.variableMax || null,
+            variable_frequency: config.variableFrequency || null,
+            signing_bonus_amount: config.signingBonusAmount || null,
+            equity_type: config.equityType || null,
+            remote_work_policy: cp?.remote_work_policy ?? null,
+            remote_work_days_per_week: cp?.remote_work_days_per_week ?? null,
+            remote_work_days_specific: config.remoteWorkDaysSpecific || null,
+            meal_voucher_enabled: cp?.meal_voucher_enabled ?? null,
+            meal_voucher_daily_amount: cp?.meal_voucher_daily_amount ?? null,
+            meal_voucher_provider: cp?.meal_voucher_provider ?? null,
+          }}
+        />
       </div>
     </div>
   );

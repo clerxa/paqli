@@ -7,6 +7,7 @@ import { StatusPill } from "@/components/paqli/StatusPill";
 import { Button } from "@/components/paqli/Button";
 import { Skeleton } from "@/components/paqli/Skeleton";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
+import { SalaryWidgetModal } from "@/components/recruiter/SalaryWidgetModal";
 import {
   archivePackage,
   deletePackage,
@@ -165,6 +166,7 @@ function PackageRow({
 }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const initials = pkg.title
     .split(/\s+/)
     .slice(0, 2)
@@ -277,6 +279,14 @@ function PackageRow({
             >
               Dupliquer
             </MenuItem>
+            <MenuItem
+              onClick={() => {
+                setMenuOpen(false);
+                setShareOpen(true);
+              }}
+            >
+              📋 Copier pour diffusion
+            </MenuItem>
             {pkg.status !== "archived" && (
               <MenuItem
                 onClick={() => {
@@ -299,6 +309,14 @@ function PackageRow({
           </div>
         )}
       </div>
+      {shareOpen && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <SalaryWidgetModal
+            packageId={pkg.id}
+            onClose={() => setShareOpen(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }

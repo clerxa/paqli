@@ -43,7 +43,7 @@ export function StepNewReview() {
       const { data } = await supabase
         .from("company_profile")
         .select(
-          "meal_voucher_enabled,meal_voucher_daily_amount,meal_voucher_employer_rate,health_insurance_employer_rate,incentive_enabled,incentive_average_amount,profit_sharing_enabled,pee_enabled,perco_enabled,employer_match_rate",
+          "meal_voucher_enabled,meal_voucher_daily_amount,meal_voucher_employer_rate,meal_voucher_provider,health_insurance_employer_rate,incentive_enabled,incentive_average_amount,profit_sharing_enabled,pee_enabled,perco_enabled,employer_match_rate,remote_work_policy,remote_work_days_per_week",
         )
         .maybeSingle();
       if (data) setCp(data as CP);

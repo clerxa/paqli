@@ -132,6 +132,7 @@ function PackagesPage() {
                 <PackageRow
                   key={p.id}
                   pkg={p}
+                  companyProfile={companyProfile}
                   onDuplicate={() => handleDuplicate(p.id)}
                   onArchive={() =>
                     setConfirm({ type: "archive", id: p.id, title: p.title })

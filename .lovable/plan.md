@@ -1,56 +1,41 @@
-# Refonte page Paramètres — 4 onglets + Citations collaborateurs
+La migration SQL est appliquée (≈40 nouvelles colonnes sur `packages`). Avant de réécrire ~4 500 lignes de code, je veux confirmer le scope car le configurateur actuel a 8 étapes et plusieurs tables liées (`equity_devices`, `savings_devices`, `scenarios`, `package_benefits`) qui ne sont pas mentionnées dans le prompt #20.
 
-## Vue d'ensemble
+## Choix d'architecture à valider
 
-Restructurer `/settings` en 4 onglets distincts, ajouter une barre de complétude par section, et introduire la nouvelle fonctionnalité "Paroles de collaborateurs" (citations affichées côté candidat).
+**Option A — Remplacement complet (recommandé si tu veux vraiment la refonte)**
+- Supprimer les 8 step components actuels
+- Réécrire `PackageConfigContext` autour des nouveaux champs `packages.*`
+- 5 nouvelles étapes : Le poste / Rémunération / Equity / Extras / Aperçu
+- L'equity n'utilise plus `equity_devices` mais les colonnes `equity_*` sur `packages` (1 seul plan d'equity au lieu de N)
+- On perd : scénarios de valorisation multi-horizons, dispositifs d'épargne séparés (PEE/PERCO), catalogue benefits par package (déjà couvert par `company_profile`)
+- ⚠️ Les packages existants en BDD continueront de fonctionner en lecture mais seront édités via la nouvelle UI
 
-## Structure cible
+**Option B — Refonte progressive**
+- Garder le contexte et les tables liées
+- Refactorer uniquement la séquence d'étapes et leur contenu
+- Mapper les nouveaux champs UI vers les colonnes (`packages.fixed_salary` ⇄ `gross_salary`, etc.)
+- Conserve les fonctionnalités existantes (scénarios, multi-equity)
 
-```
-Paramètres
-├── [1] Mon entreprise     ← identité, présentation, chiffres, valeurs, citations, liens
-├── [2] Défauts package    ← avantages, equity, épargne (OrgCatalogSections existant)
-├── [3] Utilisateurs       ← équipe RH, rôles, invitations (existant)
-└── [4] Plan & facturation ← abonnement, crédits (existant)
-```
+## Plan technique (Option A)
 
-## Étape 1 — Migrations DB
+1. **Nouveau contexte** `PackageConfiguratorContext` typé sur les colonnes ajoutées
+2. **5 step components** :
+   - `StepJob.tsx` — identité poste + contexte recrutement
+   - `StepCompensation.tsx` — fixe + fourchette + `BenchmarkBadge` (live `salary_benchmarks`) + variable + signing bonus
+   - `StepEquity.tsx` — type/quantité/strike/vesting/cliff/accélération/valorisation
+   - `StepExtras.tsx` — télétravail override + équipement + formation + période d'essai + carrière + clauses
+   - `StepReview.tsx` — récap + Total Compensation calculé (fixe + variable + valorisation `company_profile` TR/mutuelle/participation/PEE) + bouton génération lien
+3. **Composant `BenchmarkBadge`** — query `salary_benchmarks` par `(job_family, seniority, location)`
+4. **Helper `computeTotalCompensation`** — utilise `company_profile` pour valoriser TR, mutuelle, intéressement, PEE
+5. **Stepper horizontal** au lieu du vertical actuel
+6. **Sidebar aperçu temps réel** (fond Lin `#FAF8F5`)
+7. **Suppression** des fichiers obsolètes : `Step0Job/Step1Fixed/StepBenefits/Step2Equity/Step3Savings/Step4Scenarios/Step5Preview/StepCompany`
+8. **Save** : autosave debounce 800 ms sur `packages` directement (pas de `package_benefits`/`equity_devices`)
 
-1. **Table `employee_testimonials`** (id, organization_id, first_name, job_title, seniority_years, quote (max 280), quote_context, avatar_url, display_order, is_active, timestamps) + RLS "RH manage own org" + index.
-2. **Bucket Storage `testimonial-avatars`** public + policies (upload authenticated, select public).
-3. **Enrichir `organizations`** : `tagline`, `founded_year`, `employee_count`, `website_url`, `linkedin_url`, `wtj_url`.
+## Risques
 
-## Étape 2 — Backend
+- Les pages `/packages/$id` (détail, lettre d'offre, candidats) lisent peut-être `package_benefits`/`equity_devices`/`scenarios` — il faudra vérifier et adapter les lectures (sinon UI candidat cassée)
+- `BenchmarkAnalysisCard` côté employeur référence déjà `gross_salary` — devra basculer sur `fixed_salary`
+- Migration des packages existants : pas de backfill prévu (`gross_salary` → `fixed_salary`)
 
-- Étendre `getPackagePublic` pour retourner `testimonials` (citations actives, max 5, ordonnées).
-- Module `src/lib/organizationCompleteness.ts` (calc par section : legal, presentation, keyFigures, values, testimonials).
-
-## Étape 3 — Refonte UI Paramètres
-
-- **`src/routes/_app/settings.tsx`** : refondre avec 4 onglets (Tabs shadcn ou nav custom alignée au design Paqli).
-- **`src/components/paqli/settings/CompanySettingsTab.tsx`** (nouveau) : orchestre les sous-sections.
-- **`src/components/paqli/settings/ProfileCompletenessBar.tsx`** (nouveau) : barre globale + 5 mini-barres.
-- **`src/components/paqli/settings/SettingsSection.tsx`** (nouveau) : accordéon générique avec badge complétude.
-- **Sous-sections** (composants internes ou dédiés) : LegalSection, PresentationSection, KeyFiguresSection, ValuesSection, SourcesSection — extraites du settings.tsx actuel.
-- **`TestimonialsSection.tsx`** + `TestimonialCard.tsx` + `TestimonialForm.tsx` (nouveaux) avec upload Storage, validation, réordre, toggle, edit/delete, max 5.
-- **`DefaultsTab.tsx`** (nouveau, wrap léger sur `OrgCatalogSections` existant) avec bandeau explicatif.
-
-## Étape 4 — UI Candidat
-
-- **`src/components/paqli/candidate/TestimonialsBlock.tsx`** (nouveau) : section "Ils travaillent chez {orgName}".
-- Intégrer dans `src/routes/p/$token.tsx` au sein de la section culture/équipe (visible si ≥1 citation).
-
-## Étape 5 — QA
-
-- Type-check, smoke nav 4 onglets, ajout/edit/suppression citation, affichage côté candidat avec `is_active` true/false.
-
-## Notes techniques
-
-- Garder le design système Paqli existant (couleurs, typo serif, classes `field-input-c`, etc.).
-- Pas de policy SELECT publique sur `employee_testimonials` — exposition via `getPackagePublic` (admin client serveur).
-- L'upload avatar utilise le client browser Supabase + bucket public ; chemin `${organizationId}/${uuid}.${ext}`.
-- Les sections existantes (legal/presentation/key figures/values/sources) sont extraites du fichier settings.tsx actuel sans en altérer la logique de save — juste réorganisées dans des accordéons.
-
-## Confirmation requise
-
-Migration DB à appliquer (création table + bucket + colonnes). Je lance la migration puis enchaîne avec le code une fois approuvée.
+**Quelle option je pars ?** Si A, je confirme aussi : on garde un fallback pour afficher les anciens packages (lecture des colonnes legacy) ou on backfill ?

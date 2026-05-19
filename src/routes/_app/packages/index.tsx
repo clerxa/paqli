@@ -171,11 +171,13 @@ function PackagesPage() {
 
 function PackageRow({
   pkg,
+  companyProfile,
   onDuplicate,
   onArchive,
   onDelete,
 }: {
   pkg: PackageWithStats;
+  companyProfile: TransparencyCompany | null;
   onDuplicate: () => void;
   onArchive: () => void;
   onDelete: () => void;

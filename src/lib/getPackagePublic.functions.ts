@@ -220,6 +220,36 @@ export const getPackagePublic = createServerFn({ method: "POST" })
         process_steps: Array.isArray(pkg.process_steps) ? pkg.process_steps : [],
         process_duration: pkg.process_duration ?? null,
         start_date: pkg.start_date ?? null,
+        fixed_salary: pkg.fixed_salary ?? null,
+        salary_range_min: pkg.salary_range_min ?? null,
+        salary_range_max: pkg.salary_range_max ?? null,
+        variable_enabled: pkg.variable_enabled ?? null,
+        variable_criteria: pkg.variable_criteria ?? null,
+        equity_type: pkg.equity_type ?? null,
+        job_title: pkg.job_title ?? null,
+        seniority: pkg.seniority ?? null,
+        hiring_manager: pkg.hiring_manager ?? null,
+        career_path: pkg.career_path ?? null,
+        non_compete_enabled: pkg.non_compete_enabled ?? null,
+        probation_months: pkg.probation_months ?? null,
+        probation_objectives: pkg.probation_objectives ?? null,
+        training_budget_specific: pkg.training_budget_specific ?? null,
+        company_profile: companyProfileRow
+          ? {
+              health_insurance_employer_rate:
+                (companyProfileRow as any).health_insurance_employer_rate ?? null,
+              meal_voucher_enabled:
+                (companyProfileRow as any).meal_voucher_enabled ?? null,
+              remote_work_policy:
+                (companyProfileRow as any).remote_work_policy ?? null,
+              profit_sharing_enabled:
+                (companyProfileRow as any).profit_sharing_enabled ?? null,
+              incentive_enabled:
+                (companyProfileRow as any).incentive_enabled ?? null,
+              training_budget_per_person:
+                (companyProfileRow as any).training_budget_per_person ?? null,
+            }
+          : null,
         benchmark,
         competitor_benchmark: competitorBench
           ? {

@@ -344,13 +344,7 @@ function CompanyTab() {
         <span className="text-aubergine font-medium">À noter — </span>
         nom de l'entreprise, site web, LinkedIn, WTJ, année de création, effectif,
         secteur et description sont gérés dans l'onglet{" "}
-        <button
-          type="button"
-          onClick={() => setTab("company")}
-          className="underline text-aubergine"
-        >
-          « Mon entreprise »
-        </button>{" "}
+        <span className="text-aubergine font-medium">« Mon entreprise »</span>{" "}
         pour rester la seule source de vérité.
       </div>
 

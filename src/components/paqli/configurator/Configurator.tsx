@@ -14,7 +14,7 @@ import { StepNewEquity } from "./StepNewEquity";
 import { StepNewExtras } from "./StepNewExtras";
 import { StepNewReview } from "./StepNewReview";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
-import { validateScenarios, validateStep } from "@/lib/packageConfig";
+import { validateStep } from "@/lib/packageConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { ConfiguratorPreviewPanel } from "./ConfiguratorPreviewPanel";
 import { Eye } from "lucide-react";
@@ -104,7 +104,7 @@ export function Configurator() {
               Enregistrer
             </Button>
             <Button onClick={goNext}>
-              {config.currentStep === 7 ? "Terminer" : "Suivant →"}
+              {config.currentStep === 4 ? "Terminer" : "Suivant →"}
             </Button>
           </div>
         }
@@ -133,7 +133,7 @@ export function Configurator() {
                 ← Précédent
               </Button>
               <Button onClick={goNext}>
-                {config.currentStep === 7 ? "Terminer" : "Suivant →"}
+                {config.currentStep === 4 ? "Terminer" : "Suivant →"}
               </Button>
             </div>
           </Card>

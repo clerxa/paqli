@@ -8,6 +8,7 @@ import { Button } from "@/components/paqli/Button";
 import { Skeleton } from "@/components/paqli/Skeleton";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
 import { SalaryWidgetModal } from "@/components/recruiter/SalaryWidgetModal";
+import { TransparencyScoreCompact } from "@/components/recruiter/TransparencyScoreCompact";
 import {
   archivePackage,
   deletePackage,

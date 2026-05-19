@@ -24,6 +24,7 @@ interface CP {
   employer_match_rate: number | null;
   remote_work_policy: string | null;
   remote_work_days_per_week: number | null;
+  training_budget_per_person: number | null;
 }
 
 function fmt(n: number) {

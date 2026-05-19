@@ -7,6 +7,7 @@ import { StatusPill } from "@/components/paqli/StatusPill";
 import { Button } from "@/components/paqli/Button";
 import { Skeleton } from "@/components/paqli/Skeleton";
 import { ConfirmModal } from "@/components/paqli/ConfirmModal";
+import { SalaryWidgetModal } from "@/components/recruiter/SalaryWidgetModal";
 import {
   archivePackage,
   deletePackage,

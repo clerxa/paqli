@@ -443,6 +443,12 @@ function PackageView({
             </div>
           </section>
 
+          {/* Indice de transparence */}
+          <TransparencyScore
+            pkg={{ ...pkg, title: pkg.title }}
+            company={pkg.company_profile ?? null}
+          />
+
           {/* Mot personnel de l'équipe */}
           {pkg.interview_notes && pkg.interview_notes.trim().length > 0 && (
             <section

@@ -214,6 +214,15 @@ function PackageRow({
           <span className="text-[11px] text-grey ml-1">
             Mis à jour {timeAgo(pkg.updated_at)}
           </span>
+          <span className="ml-2">
+            <TransparencyScoreCompact
+              pkg={pkg.transparencyPkg}
+              company={companyProfile}
+              onComplete={() =>
+                navigate({ to: "/packages/$id/edit", params: { id: pkg.id } })
+              }
+            />
+          </span>
         </div>
       </div>
       <div className="hidden sm:block text-right text-[12px] text-aubergine-light w-24 shrink-0">

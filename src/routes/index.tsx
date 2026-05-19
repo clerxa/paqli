@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { DemoModal } from "@/components/landing/DemoModal";
+import { WaveDivider } from "@/components/ui/WaveDivider";
 
 /* Animated number counter (eased) */
 function useCountUp(target: number, duration = 1400, start = false) {

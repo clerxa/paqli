@@ -42,12 +42,27 @@ function val(v: unknown, fallback = "non précisé"): string {
 function buildPaqSystemPrompt(args: {
   pkg: Record<string, any>;
   company: Record<string, any>;
+  org: Record<string, any> | null;
+  testimonials: Array<Record<string, any>>;
+  equityCatalog: Array<Record<string, any>>;
+  savingsCatalog: Array<Record<string, any>>;
   orgName: string;
   candidateName: string | null;
   candidateContext: string;
   benchmark: Record<string, any> | null;
 }): string {
-  const { pkg, company, orgName, candidateName, candidateContext, benchmark } = args;
+  const {
+    pkg,
+    company,
+    org,
+    testimonials,
+    equityCatalog,
+    savingsCatalog,
+    orgName,
+    candidateName,
+    candidateContext,
+    benchmark,
+  } = args;
   const who = candidateName ?? "le candidat";
   const brand = company.brand_name ?? company.legal_name ?? orgName ?? "l'entreprise";
   const jobTitle = pkg.job_title ?? pkg.title ?? "ce poste";
@@ -98,6 +113,78 @@ function buildPaqSystemPrompt(args: {
 - Fourchette : ${benchmark.p25 ? fmt(benchmark.p25) : "?"} – ${benchmark.p75 ? fmt(benchmark.p75) : "?"}
 - Analyse : ${val(benchmark.ai_analysis, "")}`
     : "- Données de marché non disponibles pour ce profil";
+
+  const keyFigures = Array.isArray(org?.key_figures) ? org!.key_figures : [];
+  const values = Array.isArray(org?.values) ? org!.values : [];
+  const links = Array.isArray(org?.links) ? org!.links : [];
+  const sourceUrls = Array.isArray(org?.source_urls) ? org!.source_urls : [];
+
+  const cultureBlock = org
+    ? `- Tagline : ${val(org.tagline)}
+- Description : ${val(org.description ?? company.description)}
+- Note culture : ${val(org.culture_note)}
+- Valeurs : ${values.length ? values.join(", ") : "non précisées"}
+- Chiffres clés : ${
+        keyFigures.length
+          ? keyFigures
+              .map((kf: any) => `${val(kf.label)} = ${val(kf.value)}`)
+              .join(" | ")
+          : "non précisés"
+      }
+- Année de création : ${val(org.founded_year ?? company.founding_year)}
+- Effectif : ${val(org.employee_count ?? company.size_range)}
+- Site web : ${val(org.website_url ?? company.website)}
+- LinkedIn : ${val(org.linkedin_url)}
+- Welcome to the Jungle : ${val(org.wtj_url)}
+- Liens utiles : ${
+        links.length
+          ? links.map((l: any) => `${val(l.label)} (${val(l.url)})`).join(" | ")
+          : "aucun"
+      }
+- Sources publiques de référence : ${sourceUrls.length ? sourceUrls.join(", ") : "aucune"}`
+    : "- Données entreprise non renseignées";
+
+  const testimonialsBlock = testimonials.length
+    ? testimonials
+        .map(
+          (t) =>
+            `- ${val(t.first_name)} (${val(t.job_title)}${
+              t.seniority_years ? `, ${t.seniority_years} ans` : ""
+            }) : « ${val(t.quote)} »${
+              t.quote_context ? ` — contexte : ${val(t.quote_context)}` : ""
+            }`,
+        )
+        .join("\n")
+    : "- Aucun témoignage collaborateur publié";
+
+  const equityCatalogBlock = equityCatalog.length
+    ? equityCatalog
+        .map(
+          (e) =>
+            `- ${val(e.type).toUpperCase()} — vesting ${val(e.vesting_years, "4")} ans, cliff ${val(
+              e.cliff_months,
+              "6",
+            )} mois, valo de référence ${
+              e.default_valuation_m ? e.default_valuation_m + "M€" : "?"
+            }${e.special_conditions ? ` — ${val(e.special_conditions)}` : ""}`,
+        )
+        .join("\n")
+    : "- Aucun dispositif d'equity standard côté entreprise";
+
+  const savingsCatalogBlock = savingsCatalog.length
+    ? savingsCatalog
+        .map(
+          (s) =>
+            `- ${val(s.type).toUpperCase()} — abondement ${val(
+              s.default_matching_rate,
+              "0",
+            )}%${s.default_cap_amount ? `, plafond ${s.default_cap_amount}€` : ""}${
+              s.default_avg_3y ? `, moy. 3 ans : ${s.default_avg_3y}€` : ""
+            }`,
+        )
+        .join("\n")
+    : "- Aucun dispositif d'épargne salariale standard côté entreprise";
+
 
   return `Tu es Paq, l'assistant IA de Paqli. Tu aides ${who} à comprendre et évaluer l'offre de package que ${brand} lui propose pour le poste de ${jobTitle}.
 
@@ -185,6 +272,20 @@ CLAUSES CONTRACTUELLES :
 
 ## DONNÉES MARCHÉ
 ${benchmarkBlock}
+
+## CULTURE & MARQUE EMPLOYEUR
+${cultureBlock}
+
+## TÉMOIGNAGES COLLABORATEURS
+${testimonialsBlock}
+
+## DISPOSITIFS DISPONIBLES DANS L'ENTREPRISE (modèles standards, même si non sélectionnés sur ce package précis)
+
+Equity :
+${equityCatalogBlock}
+
+Épargne salariale :
+${savingsCatalogBlock}
 
 ## SITUATION DU CANDIDAT
 ${candidateContext}
@@ -324,10 +425,49 @@ export const askCandidateAssistant = createServerFn({ method: "POST" })
       .maybeSingle();
     if (companyRow) companyData = companyRow as Record<string, any>;
 
+    // Charger en parallèle : organisation (branding/culture), témoignages, catalogues equity & épargne
+    const [orgRes, testimonialsRes, equityCatalogRes, savingsCatalogRes] =
+      await Promise.all([
+        supabaseAdmin
+          .from("organizations")
+          .select("*")
+          .eq("id", link.organization_id)
+          .maybeSingle(),
+        supabaseAdmin
+          .from("employee_testimonials")
+          .select("first_name, job_title, seniority_years, quote, quote_context")
+          .eq("organization_id", link.organization_id)
+          .eq("is_active", true)
+          .order("display_order")
+          .limit(5),
+        supabaseAdmin
+          .from("org_equity_catalog")
+          .select("*")
+          .eq("organization_id", link.organization_id)
+          .order("display_order"),
+        supabaseAdmin
+          .from("org_savings_catalog")
+          .select("*")
+          .eq("organization_id", link.organization_id)
+          .order("display_order"),
+      ]);
+
+    const orgData = (orgRes.data as Record<string, any> | null) ?? null;
+    const testimonialsData =
+      (testimonialsRes.data as Array<Record<string, any>> | null) ?? [];
+    const equityCatalogData =
+      (equityCatalogRes.data as Array<Record<string, any>> | null) ?? [];
+    const savingsCatalogData =
+      (savingsCatalogRes.data as Array<Record<string, any>> | null) ?? [];
+
     // Étape 5 : construire le prompt système Paq
     const system = buildPaqSystemPrompt({
       pkg: pkgData,
       company: companyData,
+      org: orgData,
+      testimonials: testimonialsData,
+      equityCatalog: equityCatalogData,
+      savingsCatalog: savingsCatalogData,
       orgName: data.orgName,
       candidateName: link.candidate_name,
       candidateContext: data.candidateContext,

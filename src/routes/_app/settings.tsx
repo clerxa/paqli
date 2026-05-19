@@ -215,11 +215,12 @@ function CompanyTab() {
       return;
     }
     setSaving(true);
+    // Champs identité / présentation (name, description, founded_year, employee_count,
+    // website_url, linkedin_url, wtj_url) sont gérés dans l'onglet « Mon entreprise »
+    // pour éviter les doublons — on n'écrit ici que les données spécifiquement branding.
     const { error } = await supabase
       .from("organizations")
       .update({
-        name: profile.name,
-        description: profile.description || null,
         key_figures: profile.key_figures as any,
         values: profile.values,
         culture_note: profile.culture_note || null,
@@ -230,11 +231,6 @@ function CompanyTab() {
         address_zip: profile.address_zip || null,
         address_city: profile.address_city || null,
         tagline: profile.tagline || null,
-        founded_year: profile.founded_year,
-        employee_count: profile.employee_count || null,
-        website_url: profile.website_url || null,
-        linkedin_url: profile.linkedin_url || null,
-        wtj_url: profile.wtj_url || null,
         logo_url: profile.logo_url || null,
       } as any)
       .eq("id", organization.id);
@@ -340,10 +336,18 @@ function CompanyTab() {
         }}
       />
 
+      <div className="rounded-xl border border-[rgba(45,38,64,0.08)] bg-[#FAF8F5] px-5 py-4 text-[12px] text-grey leading-relaxed">
+        <span className="text-aubergine font-medium">À noter — </span>
+        nom de l'entreprise, site web, LinkedIn, WTJ, année de création, effectif,
+        secteur et description sont gérés dans l'onglet{" "}
+        <span className="text-aubergine font-medium">« Mon entreprise »</span>{" "}
+        pour rester la seule source de vérité.
+      </div>
+
       <SettingsSection
-        title="Présentation & marque"
+        title="Identité de marque"
         icon="✨"
-        description="Tagline, logo, site web — première impression candidat"
+        description="Tagline et logo affichés aux candidats"
         score={presentationScore}
         defaultOpen
       >
@@ -358,73 +362,15 @@ function CompanyTab() {
             />
             <p className="text-[10px] text-grey mt-1">{profile.tagline.length}/120</p>
           </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Site web">
-              <input
-                value={profile.website_url}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, website_url: e.target.value }))
-                }
-                placeholder="https://entreprise.com"
-                className={inputCls}
+          <Field label="Logo de l'entreprise">
+            {organization?.id ? (
+              <LogoUploader
+                organizationId={organization.id}
+                value={profile.logo_url}
+                onChange={(url) => setProfile((p) => ({ ...p, logo_url: url }))}
               />
-            </Field>
-            <Field label="LinkedIn">
-              <input
-                value={profile.linkedin_url}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, linkedin_url: e.target.value }))
-                }
-                placeholder="https://linkedin.com/company/…"
-                className={inputCls}
-              />
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Welcome to the Jungle">
-              <input
-                value={profile.wtj_url}
-                onChange={(e) => setProfile((p) => ({ ...p, wtj_url: e.target.value }))}
-                placeholder="https://welcometothejungle.com/…"
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Logo de l'entreprise">
-              {organization?.id ? (
-                <LogoUploader
-                  organizationId={organization.id}
-                  value={profile.logo_url}
-                  onChange={(url) => setProfile((p) => ({ ...p, logo_url: url }))}
-                />
-              ) : null}
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Année de création">
-              <input
-                type="number"
-                value={profile.founded_year ?? ""}
-                onChange={(e) =>
-                  setProfile((p) => ({
-                    ...p,
-                    founded_year: e.target.value ? Number(e.target.value) : null,
-                  }))
-                }
-                placeholder="2020"
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Effectif">
-              <input
-                value={profile.employee_count}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, employee_count: e.target.value }))
-                }
-                placeholder="ex : 45, 100-200…"
-                className={inputCls}
-              />
-            </Field>
-          </div>
+            ) : null}
+          </Field>
         </div>
       </SettingsSection>
 
@@ -520,36 +466,27 @@ function CompanyTab() {
 
       <Card>
         <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 20 }}>
-          Identité
+          Données administratives
         </h2>
-        <Field label="Nom de l'entreprise">
+        <Field label="SIRET (requis pour la promesse d'embauche)">
           <input
-            value={profile.name}
-            onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
+            value={profile.siret}
+            onChange={(e) =>
+              setProfile((p) => ({
+                ...p,
+                siret: e.target.value.replace(/\s/g, ""),
+              }))
+            }
+            placeholder="12345678900012"
+            maxLength={14}
             className={inputCls}
           />
+          {profile.siret && profile.siret.length !== 14 && (
+            <p className="text-[11px] text-danger mt-1">
+              Le SIRET doit contenir 14 chiffres
+            </p>
+          )}
         </Field>
-        <div className="mt-4">
-          <Field label="SIRET (requis pour la promesse d'embauche)">
-            <input
-              value={profile.siret}
-              onChange={(e) =>
-                setProfile((p) => ({
-                  ...p,
-                  siret: e.target.value.replace(/\s/g, ""),
-                }))
-              }
-              placeholder="12345678900012"
-              maxLength={14}
-              className={inputCls}
-            />
-            {profile.siret && profile.siret.length !== 14 && (
-              <p className="text-[11px] text-danger mt-1">
-                Le SIRET doit contenir 14 chiffres
-              </p>
-            )}
-          </Field>
-        </div>
         <div className="mt-4">
           <Field label="Adresse du siège social (rue)">
             <input
@@ -585,19 +522,6 @@ function CompanyTab() {
             />
           </Field>
         </div>
-      </Card>
-
-      <Card>
-        <h2 className="font-display text-aubergine mb-4" style={{ fontSize: 20 }}>
-          Présentation & produit
-        </h2>
-        <textarea
-          value={profile.description}
-          onChange={(e) => setProfile((p) => ({ ...p, description: e.target.value }))}
-          rows={5}
-          placeholder="Pitch, mission, produit, marché…"
-          className={`${inputCls} resize-none leading-relaxed`}
-        />
       </Card>
 
       <Card>

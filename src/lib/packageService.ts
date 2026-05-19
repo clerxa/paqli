@@ -337,6 +337,8 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
     seniority: (pkg as Record<string, unknown>).seniority as string ?? "",
     location: (pkg as Record<string, unknown>).location as string ?? "",
     hiringManager: (pkg as Record<string, unknown>).hiring_manager as string ?? "",
+    hiringManagerEmail: (pkg as Record<string, unknown>).hiring_manager_email as string ?? "",
+    hiringManagerLinkedin: (pkg as Record<string, unknown>).hiring_manager_linkedin as string ?? "",
     whyOpen: (pkg as Record<string, unknown>).why_open as string ?? "",
     fixedSalary: Number((pkg as Record<string, unknown>).fixed_salary) || 0,
     salaryRangeMin: Number((pkg as Record<string, unknown>).salary_range_min) || 0,

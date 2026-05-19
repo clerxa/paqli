@@ -309,6 +309,12 @@ function PackageRow({
           </div>
         )}
       </div>
+      {shareOpen && (
+        <SalaryWidgetModal
+          packageId={pkg.id}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -279,6 +279,14 @@ function PackageRow({
             >
               Dupliquer
             </MenuItem>
+            <MenuItem
+              onClick={() => {
+                setMenuOpen(false);
+                setShareOpen(true);
+              }}
+            >
+              📋 Copier pour diffusion
+            </MenuItem>
             {pkg.status !== "archived" && (
               <MenuItem
                 onClick={() => {

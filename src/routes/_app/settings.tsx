@@ -41,6 +41,7 @@ import {
   calcTestimonialsCompleteness,
 } from "@/lib/organizationCompleteness";
 import { LogoUploader } from "@/components/paqli/settings/LogoUploader";
+import { CompanyProfileTab } from "@/components/paqli/settings/CompanyProfileTab";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -49,14 +50,16 @@ export const Route = createFileRoute("/_app/settings")({
   }),
 });
 
-type TabKey = "company" | "defaults" | "users" | "plan" | "benchmark";
+type TabKey = "company" | "branding" | "defaults" | "users" | "plan" | "benchmark";
 
 const TABS: { key: TabKey; label: string; icon: typeof Building2 }[] = [
   { key: "company", label: "Mon entreprise", icon: Building2 },
+  { key: "branding", label: "Marque & témoignages", icon: Sparkles },
   { key: "defaults", label: "Défauts package", icon: Sparkles },
   { key: "users", label: "Utilisateurs", icon: UsersIcon },
   { key: "plan", label: "Plan & facturation", icon: CreditCard },
 ];
+
 
 function SettingsPage() {
   const search = Route.useSearch();

@@ -209,6 +209,8 @@ export interface PackageData {
   job_title?: string | null;
   seniority?: string | null;
   hiring_manager?: string | null;
+  hiring_manager_email?: string | null;
+  hiring_manager_linkedin?: string | null;
   career_path?: string | null;
   non_compete_enabled?: boolean | null;
   probation_months?: number | null;

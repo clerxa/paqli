@@ -135,7 +135,22 @@ export function StepNewJob() {
             onChange={(v) => patch({ whyOpen: v })}
             options={WHY_OPEN.map((w) => ({ value: w, label: w }))}
           />
+          <TextField
+            label="Email du manager"
+            value={config.hiringManagerEmail}
+            onChange={(v) => patch({ hiringManagerEmail: v.slice(0, 255) })}
+            placeholder="prenom.nom@entreprise.com"
+          />
+          <TextField
+            label="LinkedIn du manager"
+            value={config.hiringManagerLinkedin}
+            onChange={(v) => patch({ hiringManagerLinkedin: v.slice(0, 500) })}
+            placeholder="https://linkedin.com/in/…"
+          />
         </div>
+        <p className="text-[11px] text-grey">
+          Affiché au candidat pour qu'il puisse contacter le manager directement.
+        </p>
         <TextArea
           label="Description de l'équipe"
           value={config.teamDescription}

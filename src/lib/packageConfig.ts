@@ -195,6 +195,8 @@ export interface PackageConfig {
   seniority: string;
   location: string;
   hiringManager: string;
+  hiringManagerEmail: string;
+  hiringManagerLinkedin: string;
   whyOpen: string;
   fixedSalary: number;
   salaryRangeMin: number;
@@ -299,6 +301,8 @@ export const emptyConfig: PackageConfig = {
   seniority: "",
   location: "",
   hiringManager: "",
+  hiringManagerEmail: "",
+  hiringManagerLinkedin: "",
   whyOpen: "",
   fixedSalary: 0,
   salaryRangeMin: 0,

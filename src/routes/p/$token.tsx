@@ -1097,6 +1097,42 @@ function TeamCultureTab({ pkg, org, testimonials, onExternalLink }: { pkg: Pkg; 
                 )}
               </div>
             )}
+            {(pkg.hiring_manager || pkg.hiring_manager_email || pkg.hiring_manager_linkedin) && (
+              <div className="pt-3 mt-1 border-t border-[rgba(45,38,64,0.06)]">
+                <div className="text-[11px] uppercase tracking-[0.15em] text-aubergine-light mb-1.5">
+                  Votre futur manager
+                </div>
+                {pkg.hiring_manager && (
+                  <div className="text-[13px] text-aubergine font-medium">
+                    {pkg.hiring_manager}
+                  </div>
+                )}
+                {(pkg.hiring_manager_email || pkg.hiring_manager_linkedin) && (
+                  <div className="flex flex-wrap gap-3 mt-1.5 text-[12px]">
+                    {pkg.hiring_manager_email && (
+                      <a
+                        href={`mailto:${pkg.hiring_manager_email}`}
+                        onClick={() => onExternalLink(`mailto:${pkg.hiring_manager_email}`)}
+                        className="inline-flex items-center gap-1 text-aubergine underline"
+                      >
+                        {pkg.hiring_manager_email}
+                      </a>
+                    )}
+                    {pkg.hiring_manager_linkedin && (
+                      <a
+                        href={pkg.hiring_manager_linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => onExternalLink(pkg.hiring_manager_linkedin!)}
+                        className="inline-flex items-center gap-1 text-aubergine underline"
+                      >
+                        LinkedIn <ExternalLink size={11} />
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}

@@ -508,30 +508,54 @@ function PackageView({
 
       {tab === "package" && (
         <>
-          {/* 1. VUE GLOBALE — Estimation totale tout compris */}
+          {/* 1. VUE GLOBALE — Estimation totale BRUTE (hors equity) */}
           <SectionTitle>Estimation totale du package</SectionTitle>
-          <div className="rounded-2xl p-7 mb-5" style={{ background: "#2D2640" }}>
-            <div className="text-[10px] uppercase tracking-[0.15em]" style={{ color: "#B8AECF" }}>
-              Tout compris · rémunération + equity + épargne + avantages
-            </div>
-            {estimate.hasBspce ? (
-              <>
-                <div className="font-display text-white mt-2" style={{ fontSize: 38, lineHeight: 1.05 }}>
-                  ~{formatEur(estimate.totalRange.lowSeniority)} – ~{formatEur(estimate.totalRange.highSeniority)}
+          {(() => {
+            const grossTotal =
+              (pkg.gross_salary ?? 0) +
+              (pkg.variable_target ?? 0) +
+              (estimate.benefitsEst ?? 0) +
+              (estimate.peeEst ?? 0) +
+              (estimate.interEst ?? 0) +
+              (estimate.participationEst ?? 0);
+            const realistic = estimate.equityByScenario.find((s) => s.label === "realiste");
+            return (
+              <div className="rounded-2xl p-7 mb-5" style={{ background: "#2D2640" }}>
+                <div className="text-[10px] uppercase tracking-[0.15em]" style={{ color: "#B8AECF" }}>
+                  Tout compris · brut annuel · rémunération + épargne + avantages
                 </div>
-                <div className="text-[11px] mt-1" style={{ color: "#B8AECF" }}>
-                  selon votre ancienneté au moment de la cession des BSPCE
+                <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
+                  ~{formatEur(grossTotal)}
                 </div>
-              </>
-            ) : (
-              <div className="font-display text-white mt-2" style={{ fontSize: 40, lineHeight: 1.05 }}>
-                {formatRange(estimate.totalRange.low, estimate.totalRange.high)}
+                <div className="text-[12px] mt-3 leading-relaxed" style={{ color: "#B8AECF" }}>
+                  Montants bruts annuels — hors equity. Règles fiscales 2026 appliquées plus bas pour le net.
+                </div>
+
+                {realistic && (realistic.estimate > 0 || realistic.estimateLowSeniority > 0) && (
+                  <div
+                    className="mt-4 rounded-xl p-4"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "0.5px solid rgba(255,255,255,0.12)" }}
+                  >
+                    <div className="text-[10px] uppercase tracking-[0.12em]" style={{ color: "#D4C9A8" }}>
+                      + Equity (potentiel, non inclus dans le total)
+                    </div>
+                    {realistic.isMultiRate ? (
+                      <div className="font-display text-white mt-1" style={{ fontSize: 24, lineHeight: 1.1 }}>
+                        ~{formatEur(realistic.estimateLowSeniority)} – ~{formatEur(realistic.estimateHighSeniority)}
+                      </div>
+                    ) : (
+                      <div className="font-display text-white mt-1" style={{ fontSize: 26, lineHeight: 1.1 }}>
+                        ~{formatEur(realistic.estimate)}
+                      </div>
+                    )}
+                    <div className="text-[11px] mt-1" style={{ color: "#B8AECF" }}>
+                      Scénario réaliste à {realistic.horizonYears} ans — gain net estimé, conditionné à un événement de liquidité.
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-            <div className="text-[12px] mt-3 leading-relaxed" style={{ color: "#B8AECF" }}>
-              Ordre de grandeur basé sur le scénario réaliste — règles fiscales 2026.
-            </div>
-          </div>
+            );
+          })()}
 
           {/* 2. COMPOSITION SYNTHÉTIQUE — vue type tableau, lignes dépliables */}
           <div data-section="package_composition" className="mb-5">

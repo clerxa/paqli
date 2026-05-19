@@ -1341,44 +1341,84 @@ export type Database = {
           benchmark_analysis: Json | null
           benchmark_analyzed_at: string | null
           benefits: Json | null
+          career_path: string | null
           company_values: string[] | null
           contract_type: string | null
           created_at: string
           created_by: string
           culture_note: string | null
+          equipment_budget: number | null
+          equipment_laptop: string | null
+          equity_acceleration: boolean | null
+          equity_cliff_months: number | null
+          equity_notes: string | null
+          equity_quantity: number | null
+          equity_strike_price: number | null
+          equity_type: string | null
+          equity_valuation: number | null
+          equity_vesting_years: number | null
+          fixed_salary: number | null
           flexible_hours: boolean | null
           glassdoor_url: string | null
           gross_salary: number | null
           growth_paths: Json | null
+          hiring_manager: string | null
           id: string
           interview_notes: string | null
+          job_family: string | null
           job_summary: string | null
+          job_title: string | null
           job_type: string | null
+          location: string | null
           location_city: string | null
           location_details: string | null
           manager_style: string | null
           missions: Json | null
+          mobility_clause: boolean | null
+          non_compete_compensation_pct: number | null
+          non_compete_enabled: boolean | null
+          non_compete_months: number | null
           onboarding_note: string | null
           organization_id: string
+          probation_months: number | null
+          probation_objectives: string | null
           process_duration: string | null
           process_steps: Json | null
           remote_days: number | null
           remote_guaranteed: boolean | null
           remote_policy: string | null
+          remote_work_days_specific: number | null
+          remote_work_override: boolean | null
+          salary_negotiable: boolean | null
+          salary_range_max: number | null
+          salary_range_min: number | null
+          salary_show_range: boolean | null
           scenario_display: string
           scenario_message: string | null
+          seniority: string | null
+          signing_bonus_amount: number | null
+          signing_bonus_clawback_months: number | null
           stack: string[] | null
           start_date: string | null
+          start_date_specific: string | null
           status: string
           team_description: string | null
           team_size: number | null
           title: string
           training_budget: number | null
+          training_budget_specific: number | null
+          training_details: string | null
           trial_period_months: number | null
           trial_period_renewable: boolean | null
           updated_at: string
           variable_config: Json
+          variable_criteria: string | null
+          variable_enabled: boolean | null
+          variable_frequency: string | null
+          variable_guaranteed_months: number | null
+          variable_max: number | null
           variable_target: number | null
+          why_open: string | null
           wtj_url: string | null
         }
         Insert: {
@@ -1387,44 +1427,84 @@ export type Database = {
           benchmark_analysis?: Json | null
           benchmark_analyzed_at?: string | null
           benefits?: Json | null
+          career_path?: string | null
           company_values?: string[] | null
           contract_type?: string | null
           created_at?: string
           created_by: string
           culture_note?: string | null
+          equipment_budget?: number | null
+          equipment_laptop?: string | null
+          equity_acceleration?: boolean | null
+          equity_cliff_months?: number | null
+          equity_notes?: string | null
+          equity_quantity?: number | null
+          equity_strike_price?: number | null
+          equity_type?: string | null
+          equity_valuation?: number | null
+          equity_vesting_years?: number | null
+          fixed_salary?: number | null
           flexible_hours?: boolean | null
           glassdoor_url?: string | null
           gross_salary?: number | null
           growth_paths?: Json | null
+          hiring_manager?: string | null
           id?: string
           interview_notes?: string | null
+          job_family?: string | null
           job_summary?: string | null
+          job_title?: string | null
           job_type?: string | null
+          location?: string | null
           location_city?: string | null
           location_details?: string | null
           manager_style?: string | null
           missions?: Json | null
+          mobility_clause?: boolean | null
+          non_compete_compensation_pct?: number | null
+          non_compete_enabled?: boolean | null
+          non_compete_months?: number | null
           onboarding_note?: string | null
           organization_id: string
+          probation_months?: number | null
+          probation_objectives?: string | null
           process_duration?: string | null
           process_steps?: Json | null
           remote_days?: number | null
           remote_guaranteed?: boolean | null
           remote_policy?: string | null
+          remote_work_days_specific?: number | null
+          remote_work_override?: boolean | null
+          salary_negotiable?: boolean | null
+          salary_range_max?: number | null
+          salary_range_min?: number | null
+          salary_show_range?: boolean | null
           scenario_display?: string
           scenario_message?: string | null
+          seniority?: string | null
+          signing_bonus_amount?: number | null
+          signing_bonus_clawback_months?: number | null
           stack?: string[] | null
           start_date?: string | null
+          start_date_specific?: string | null
           status?: string
           team_description?: string | null
           team_size?: number | null
           title: string
           training_budget?: number | null
+          training_budget_specific?: number | null
+          training_details?: string | null
           trial_period_months?: number | null
           trial_period_renewable?: boolean | null
           updated_at?: string
           variable_config?: Json
+          variable_criteria?: string | null
+          variable_enabled?: boolean | null
+          variable_frequency?: string | null
+          variable_guaranteed_months?: number | null
+          variable_max?: number | null
           variable_target?: number | null
+          why_open?: string | null
           wtj_url?: string | null
         }
         Update: {
@@ -1433,44 +1513,84 @@ export type Database = {
           benchmark_analysis?: Json | null
           benchmark_analyzed_at?: string | null
           benefits?: Json | null
+          career_path?: string | null
           company_values?: string[] | null
           contract_type?: string | null
           created_at?: string
           created_by?: string
           culture_note?: string | null
+          equipment_budget?: number | null
+          equipment_laptop?: string | null
+          equity_acceleration?: boolean | null
+          equity_cliff_months?: number | null
+          equity_notes?: string | null
+          equity_quantity?: number | null
+          equity_strike_price?: number | null
+          equity_type?: string | null
+          equity_valuation?: number | null
+          equity_vesting_years?: number | null
+          fixed_salary?: number | null
           flexible_hours?: boolean | null
           glassdoor_url?: string | null
           gross_salary?: number | null
           growth_paths?: Json | null
+          hiring_manager?: string | null
           id?: string
           interview_notes?: string | null
+          job_family?: string | null
           job_summary?: string | null
+          job_title?: string | null
           job_type?: string | null
+          location?: string | null
           location_city?: string | null
           location_details?: string | null
           manager_style?: string | null
           missions?: Json | null
+          mobility_clause?: boolean | null
+          non_compete_compensation_pct?: number | null
+          non_compete_enabled?: boolean | null
+          non_compete_months?: number | null
           onboarding_note?: string | null
           organization_id?: string
+          probation_months?: number | null
+          probation_objectives?: string | null
           process_duration?: string | null
           process_steps?: Json | null
           remote_days?: number | null
           remote_guaranteed?: boolean | null
           remote_policy?: string | null
+          remote_work_days_specific?: number | null
+          remote_work_override?: boolean | null
+          salary_negotiable?: boolean | null
+          salary_range_max?: number | null
+          salary_range_min?: number | null
+          salary_show_range?: boolean | null
           scenario_display?: string
           scenario_message?: string | null
+          seniority?: string | null
+          signing_bonus_amount?: number | null
+          signing_bonus_clawback_months?: number | null
           stack?: string[] | null
           start_date?: string | null
+          start_date_specific?: string | null
           status?: string
           team_description?: string | null
           team_size?: number | null
           title?: string
           training_budget?: number | null
+          training_budget_specific?: number | null
+          training_details?: string | null
           trial_period_months?: number | null
           trial_period_renewable?: boolean | null
           updated_at?: string
           variable_config?: Json
+          variable_criteria?: string | null
+          variable_enabled?: boolean | null
+          variable_frequency?: string | null
+          variable_guaranteed_months?: number | null
+          variable_max?: number | null
           variable_target?: number | null
+          why_open?: string | null
           wtj_url?: string | null
         }
         Relationships: [

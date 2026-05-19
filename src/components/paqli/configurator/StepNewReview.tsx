@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { Step5Preview } from "./Step5Preview";
 import { SalaryWidget } from "@/components/recruiter/SalaryWidget";
+import { TransparencyMissingFields } from "@/components/recruiter/TransparencyMissingFields";
+import type {
+  TransparencyCompany,
+  TransparencyPackage,
+} from "@/lib/transparencyScore";
 
 interface CP {
   meal_voucher_enabled: boolean | null;
@@ -18,6 +24,7 @@ interface CP {
   employer_match_rate: number | null;
   remote_work_policy: string | null;
   remote_work_days_per_week: number | null;
+  training_budget_per_person: number | null;
 }
 
 function fmt(n: number) {
@@ -36,6 +43,7 @@ function fmtK(n: number) {
 
 export function StepNewReview() {
   const { config } = usePackageConfig();
+  const navigate = useNavigate();
   const [cp, setCp] = useState<CP | null>(null);
 
   useEffect(() => {
@@ -43,12 +51,38 @@ export function StepNewReview() {
       const { data } = await supabase
         .from("company_profile")
         .select(
-          "meal_voucher_enabled,meal_voucher_daily_amount,meal_voucher_employer_rate,meal_voucher_provider,health_insurance_employer_rate,incentive_enabled,incentive_average_amount,profit_sharing_enabled,pee_enabled,perco_enabled,employer_match_rate,remote_work_policy,remote_work_days_per_week",
+          "meal_voucher_enabled,meal_voucher_daily_amount,meal_voucher_employer_rate,meal_voucher_provider,health_insurance_employer_rate,incentive_enabled,incentive_average_amount,profit_sharing_enabled,pee_enabled,perco_enabled,employer_match_rate,remote_work_policy,remote_work_days_per_week,training_budget_per_person",
         )
         .maybeSingle();
       if (data) setCp(data as CP);
     })();
   }, []);
+
+  const transparencyPkg: TransparencyPackage = {
+    fixed_salary: config.fixedSalary || config.grossSalary || null,
+    salary_range_min: config.salaryRangeMin || null,
+    salary_range_max: config.salaryRangeMax || null,
+    variable_enabled: config.variableEnabled ?? null,
+    variable_criteria: config.variableCriteria || null,
+    equity_type: config.equityType || null,
+    job_title: config.jobTitle || null,
+    seniority: config.seniority || null,
+    hiring_manager: config.hiringManager || null,
+    team_description: config.teamDescription || null,
+    career_path: config.careerPath || null,
+    non_compete_enabled: config.nonCompeteEnabled ?? null,
+    probation_months: config.probationMonths || null,
+    probation_objectives: config.probationObjectives || null,
+    training_budget_specific: config.trainingBudgetSpecific || null,
+  };
+  const transparencyCompany: TransparencyCompany = {
+    health_insurance_employer_rate: cp?.health_insurance_employer_rate ?? null,
+    meal_voucher_enabled: cp?.meal_voucher_enabled ?? null,
+    remote_work_policy: cp?.remote_work_policy ?? null,
+    profit_sharing_enabled: cp?.profit_sharing_enabled ?? null,
+    incentive_enabled: cp?.incentive_enabled ?? null,
+    training_budget_per_person: cp?.training_budget_per_person ?? null,
+  };
 
   const fixed = config.fixedSalary || config.grossSalary || 0;
   const variable = config.variableEnabled ? config.variableTarget || 0 : 0;
@@ -82,6 +116,14 @@ export function StepNewReview() {
           Récapitulatif tel que le verra le candidat.
         </p>
       </div>
+
+      <TransparencyMissingFields
+        pkg={transparencyPkg}
+        company={transparencyCompany}
+        onGoToSettings={() => navigate({ to: "/settings" })}
+      />
+
+
 
       <div
         className="rounded-lg p-5"

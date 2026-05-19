@@ -195,6 +195,8 @@ export interface PackageConfig {
   seniority: string;
   location: string;
   hiringManager: string;
+  hiringManagerEmail: string;
+  hiringManagerLinkedin: string;
   whyOpen: string;
   fixedSalary: number;
   salaryRangeMin: number;

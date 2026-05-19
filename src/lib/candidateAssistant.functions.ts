@@ -425,10 +425,49 @@ export const askCandidateAssistant = createServerFn({ method: "POST" })
       .maybeSingle();
     if (companyRow) companyData = companyRow as Record<string, any>;
 
+    // Charger en parallèle : organisation (branding/culture), témoignages, catalogues equity & épargne
+    const [orgRes, testimonialsRes, equityCatalogRes, savingsCatalogRes] =
+      await Promise.all([
+        supabaseAdmin
+          .from("organizations")
+          .select("*")
+          .eq("id", link.organization_id)
+          .maybeSingle(),
+        supabaseAdmin
+          .from("employee_testimonials")
+          .select("first_name, job_title, seniority_years, quote, quote_context")
+          .eq("organization_id", link.organization_id)
+          .eq("is_active", true)
+          .order("display_order")
+          .limit(5),
+        supabaseAdmin
+          .from("org_equity_catalog")
+          .select("*")
+          .eq("organization_id", link.organization_id)
+          .order("display_order"),
+        supabaseAdmin
+          .from("org_savings_catalog")
+          .select("*")
+          .eq("organization_id", link.organization_id)
+          .order("display_order"),
+      ]);
+
+    const orgData = (orgRes.data as Record<string, any> | null) ?? null;
+    const testimonialsData =
+      (testimonialsRes.data as Array<Record<string, any>> | null) ?? [];
+    const equityCatalogData =
+      (equityCatalogRes.data as Array<Record<string, any>> | null) ?? [];
+    const savingsCatalogData =
+      (savingsCatalogRes.data as Array<Record<string, any>> | null) ?? [];
+
     // Étape 5 : construire le prompt système Paq
     const system = buildPaqSystemPrompt({
       pkg: pkgData,
       company: companyData,
+      org: orgData,
+      testimonials: testimonialsData,
+      equityCatalog: equityCatalogData,
+      savingsCatalog: savingsCatalogData,
       orgName: data.orgName,
       candidateName: link.candidate_name,
       candidateContext: data.candidateContext,

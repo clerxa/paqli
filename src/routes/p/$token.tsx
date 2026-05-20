@@ -595,7 +595,7 @@ function PackageView({
       )}
 
       {tab === "comparatif" && (
-        <BenchmarkTab pkg={pkg} />
+        <BenchmarkTab pkg={pkg} token={data.token} />
       )}
 
       {tab === "mon_offre" && (

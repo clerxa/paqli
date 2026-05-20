@@ -462,3 +462,93 @@ function EmptyHint({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+function PrefillPreview({
+  prefilled,
+  mode,
+  jobSelected,
+}: {
+  prefilled: {
+    benefits: number;
+    equity: number;
+    savings: number;
+    companyProfile: boolean;
+  };
+  mode: "job" | "scratch";
+  jobSelected: { title: string; location_city: string | null } | null;
+}) {
+  const items: { label: string; ok: boolean }[] = [
+    {
+      label:
+        mode === "job" && jobSelected
+          ? `Missions, stack, manager, process (offre « ${jobSelected.title} »)`
+          : "Missions & process (à compléter)",
+      ok: mode === "job" && !!jobSelected,
+    },
+    {
+      label: "Politique remote, RTT, tickets resto, formation",
+      ok: prefilled.companyProfile,
+    },
+    {
+      label: `${prefilled.benefits} avantage${prefilled.benefits > 1 ? "s" : ""} du catalogue entreprise`,
+      ok: prefilled.benefits > 0,
+    },
+    {
+      label: `${prefilled.equity} dispositif equity pré-configuré`,
+      ok: prefilled.equity > 0,
+    },
+    {
+      label: `${prefilled.savings} dispositif${prefilled.savings > 1 ? "s" : ""} d'épargne (PEE/PERCO/…)`,
+      ok: prefilled.savings > 0,
+    },
+  ];
+
+  const okCount = items.filter((i) => i.ok).length;
+  const empty = okCount === 0;
+
+  return (
+    <div
+      className="rounded-[12px] border border-[rgba(139,127,168,0.25)] px-4 py-3.5"
+      style={{ background: "linear-gradient(180deg,#F5F2FA 0%,#FAF8F5 100%)" }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <Sparkles size={14} className="text-aubergine" />
+        <span className="text-[12px] font-medium text-aubergine">
+          {empty
+            ? "Aucune donnée d'entreprise détectée"
+            : `Pré-rempli automatiquement (${okCount}/${items.length})`}
+        </span>
+      </div>
+      {empty ? (
+        <p className="text-[11.5px] text-grey leading-snug">
+          Renseignez votre profil entreprise et votre catalogue d'avantages
+          dans{" "}
+          <Link to="/settings" className="text-aubergine underline">
+            Paramètres
+          </Link>{" "}
+          — ils seront alors appliqués automatiquement à chaque nouveau
+          package.
+        </p>
+      ) : (
+        <ul className="space-y-1">
+          {items.map((it, i) => (
+            <li
+              key={i}
+              className={`flex items-start gap-1.5 text-[11.5px] leading-snug ${
+                it.ok ? "text-aubergine-light" : "text-grey/60"
+              }`}
+            >
+              <Check
+                size={12}
+                className={`mt-0.5 shrink-0 ${
+                  it.ok ? "text-[#3B6D11]" : "text-grey/30"
+                }`}
+              />
+              <span>{it.label}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

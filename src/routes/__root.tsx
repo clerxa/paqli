@@ -84,11 +84,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Paqli" },
       { name: "twitter:description", content: "Paqli is a B2B SaaS for HR teams to create and share compensation packages." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1d8f3239-fe39-4207-b897-83db1f7c91ab/id-preview-c78360a6--d9b0919a-c7c5-48ec-95d6-ba05515ca430.lovable.app-1778762699767.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1d8f3239-fe39-4207-b897-83db1f7c91ab/id-preview-c78360a6--d9b0919a-c7c5-48ec-95d6-ba05515ca430.lovable.app-1778762699767.png" },
+      { property: "og:image", content: "https://paqli.fr/og-paqli.png" },
+      { name: "twitter:image", content: "https://paqli.fr/og-paqli.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {

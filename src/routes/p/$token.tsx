@@ -138,7 +138,7 @@ const TABS: { key: TabKey; label: string; highlight?: boolean; optional?: boolea
   { key: "flex", label: "Flexibilité" },
   { key: "team", label: "Équipe & culture" },
   { key: "package", label: "Package", highlight: true },
-  { key: "comparatif", label: "Comparatif marché" },
+  { key: "comparatif", label: "Benchmark marché" },
   { key: "mon_offre", label: "Mon offre actuelle", optional: true },
   { key: "questions", label: "Échanger" },
   { key: "next", label: "Ma décision" },
@@ -573,18 +573,8 @@ function PackageView({
             />
           </div>
 
-          {/* 3. POSITIONNEMENT MARCHÉ */}
-          {pkg.benchmark && (pkg.gross_salary ?? 0) > 0 && (
-            <>
-              <SectionTitle className="mt-8">Positionnement marché</SectionTitle>
-              <BenchmarkBar benchmark={pkg.benchmark} gross={pkg.gross_salary ?? 0} />
-            </>
-          )}
+          {/* Positionnement marché déplacé vers l'onglet "Benchmark marché" */}
 
-          {/* 3.b ANALYSE IA DU BENCHMARK */}
-          {(pkg.gross_salary ?? 0) > 0 && (
-            <BenchmarkAnalysisCard token={data.token} />
-          )}
 
 
           {/* 4. DISCLAIMER global */}
@@ -605,7 +595,7 @@ function PackageView({
       )}
 
       {tab === "comparatif" && (
-        <BenchmarkTab pkg={pkg} />
+        <BenchmarkTab pkg={pkg} token={data.token} />
       )}
 
       {tab === "mon_offre" && (
@@ -2247,185 +2237,33 @@ function ExpiredDecisionBlock({ onContact }: { onContact: () => void }) {
 
 /* -------------------- Comparatif (benchmark concurrentiel IA) -------------------- */
 
-function BenchmarkTab({ pkg }: { pkg: PackageData }) {
-  const cb = pkg.competitor_benchmark;
+function BenchmarkTab({ pkg, token }: { pkg: PackageData; token: string }) {
+  const hasBenchmark = !!pkg.benchmark && (pkg.gross_salary ?? 0) > 0;
+  const hasSalary = (pkg.gross_salary ?? 0) > 0;
 
-  if (!cb) {
+  if (!hasBenchmark && !hasSalary) {
     return (
       <section className="rounded-2xl p-6 bg-white border-[0.5px] border-[rgba(45,38,64,0.08)]">
         <h2 className="font-display text-aubergine mb-2" style={{ fontSize: 18 }}>
-          Comparatif marché
+          Benchmark marché
         </h2>
         <p className="text-[13px] text-grey leading-relaxed">
-          L'analyse comparative n'est pas encore disponible pour cette offre.
+          Le positionnement marché n'est pas encore disponible pour cette offre.
         </p>
       </section>
     );
   }
 
-  const c = cb.content;
-  const companies = c.criteria[0]?.scores.map((s) => s.company) ?? [c.company];
-
   return (
     <div className="space-y-5">
-      {/* Synthèse */}
-      <section className="rounded-2xl p-6 bg-white border-[0.5px] border-[rgba(45,38,64,0.08)]">
-        <div className="text-[11px] uppercase tracking-wider text-grey mb-2">
-          Analyse indépendante
-        </div>
-        <h2 className="font-display text-aubergine mb-3" style={{ fontSize: 20 }}>
-          {c.company} face au marché
-        </h2>
-        {c.axes?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {c.axes.map((a, i) => (
-              <span
-                key={i}
-                className="text-[11px] px-2 py-1 rounded-full"
-                style={{ background: "#FAEEDA", color: "#7A5417" }}
-              >
-                {a}
-              </span>
-            ))}
-          </div>
-        )}
-        <p className="text-[13px] text-aubergine leading-relaxed whitespace-pre-line">
-          {c.synthesis}
-        </p>
-      </section>
-
-      {/* Tableau de scores */}
-      <section className="rounded-2xl p-5 bg-white border-[0.5px] border-[rgba(45,38,64,0.08)]">
-        <h3 className="font-display text-aubergine mb-3" style={{ fontSize: 16 }}>
-          Comparatif détaillé
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="text-[11px] uppercase tracking-wider text-grey border-b border-[rgba(45,38,64,0.08)]">
-                <th className="py-2 pr-3 font-medium">Critère</th>
-                <th className="py-2 px-2 font-medium text-center w-12">Poids</th>
-                {companies.map((co) => (
-                  <th
-                    key={co}
-                    className="py-2 px-2 font-medium text-center"
-                    style={{
-                      color: co === c.company ? "#7A5417" : undefined,
-                    }}
-                  >
-                    {co}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {c.criteria.map((cr, i) => (
-                <tr
-                  key={i}
-                  className="border-b border-[rgba(45,38,64,0.04)] align-top"
-                >
-                  <td className="py-3 pr-3">
-                    <div className="text-[13px] font-medium text-aubergine">
-                      {cr.name}
-                    </div>
-                    <div className="text-[11px] text-grey mt-1 leading-snug">
-                      {cr.insight}
-                    </div>
-                  </td>
-                  <td className="py-3 px-2 text-center text-[12px] text-grey tabular-nums">
-                    {Math.round(cr.weight * 100)}%
-                  </td>
-                  {companies.map((co) => {
-                    const s = cr.scores.find((x) => x.company === co);
-                    const isMe = co === c.company;
-                    return (
-                      <td key={co} className="py-3 px-2 text-center">
-                        <div
-                          className="text-[14px] font-display tabular-nums"
-                          style={{ color: isMe ? "#7A5417" : "#2D2640" }}
-                          title={s?.note}
-                        >
-                          {s?.score ?? "—"}/5
-                        </div>
-                        <div className="text-[10px] text-grey mt-1 leading-snug max-w-[140px] mx-auto">
-                          {s?.note}
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Arguments par concurrent */}
-      {c.competitor_arguments?.length > 0 && (
-        <section className="rounded-2xl p-5 bg-white border-[0.5px] border-[rgba(45,38,64,0.08)]">
-          <h3 className="font-display text-aubergine mb-3" style={{ fontSize: 16 }}>
-            Différenciation par concurrent
-          </h3>
-          <div className="space-y-2">
-            {c.competitor_arguments.map((a, i) => (
-              <div
-                key={i}
-                className="rounded-lg p-3"
-                style={{ background: "#FAF8F5" }}
-              >
-                <div className="text-[11px] uppercase tracking-wider text-grey mb-1">
-                  {a.competitor}
-                </div>
-                <p className="text-[13px] text-aubergine leading-relaxed">
-                  {a.argument}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+      {hasBenchmark && (
+        <BenchmarkBar
+          benchmark={pkg.benchmark!}
+          gross={pkg.gross_salary ?? 0}
+        />
       )}
-
-      {/* Vigilances */}
-      {c.watchpoints?.length > 0 && (
-        <section className="rounded-2xl p-5 bg-white border-[0.5px] border-[rgba(45,38,64,0.08)]">
-          <h3 className="font-display text-aubergine mb-3" style={{ fontSize: 16 }}>
-            Points à avoir en tête
-          </h3>
-          <ul className="space-y-2">
-            {c.watchpoints.map((w, i) => (
-              <li key={i} className="text-[13px] text-aubergine leading-relaxed">
-                <span className="font-medium">{w.criterion} — </span>
-                <span className="text-grey">{w.framing}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Profil idéal */}
-      {c.ideal_candidate && (
-        <section
-          className="rounded-2xl p-5"
-          style={{ background: "#2D2640", color: "#FAF8F5" }}
-        >
-          <div className="text-[11px] uppercase tracking-wider opacity-70 mb-2">
-            Pour qui {c.company} est le bon choix
-          </div>
-          <p className="text-[13px] leading-relaxed opacity-95">
-            {c.ideal_candidate}
-          </p>
-        </section>
-      )}
-
-      <p className="text-[10px] text-grey text-center">
-        Analyse générée le{" "}
-        {new Date(cb.generated_at).toLocaleDateString("fr-FR", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        })}
-        . Source : données déclarées par l'employeur + connaissance du marché.
-      </p>
+      {hasSalary && <BenchmarkAnalysisCard token={token} />}
     </div>
   );
 }
+

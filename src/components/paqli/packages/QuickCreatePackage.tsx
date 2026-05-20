@@ -116,7 +116,12 @@ export function QuickCreatePackage() {
         return;
       }
 
-      let cfg: PackageConfig = { ...emptyConfig, status: "draft" };
+      // Start from org defaults (benefits, equity, savings, company profile)
+      // — falls back to fresh load if the in-state copy isn't ready yet.
+      const base =
+        defaults.config ??
+        (await loadOrgDefaultsConfig(organization.id)).config;
+      let cfg: PackageConfig = { ...base, status: "draft" };
 
       if (mode === "job" && jobId) {
         const job = await getJob(jobId);

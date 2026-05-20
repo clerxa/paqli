@@ -573,18 +573,8 @@ function PackageView({
             />
           </div>
 
-          {/* 3. POSITIONNEMENT MARCHÉ */}
-          {pkg.benchmark && (pkg.gross_salary ?? 0) > 0 && (
-            <>
-              <SectionTitle className="mt-8">Positionnement marché</SectionTitle>
-              <BenchmarkBar benchmark={pkg.benchmark} gross={pkg.gross_salary ?? 0} />
-            </>
-          )}
+          {/* Positionnement marché déplacé vers l'onglet "Benchmark marché" */}
 
-          {/* 3.b ANALYSE IA DU BENCHMARK */}
-          {(pkg.gross_salary ?? 0) > 0 && (
-            <BenchmarkAnalysisCard token={data.token} />
-          )}
 
 
           {/* 4. DISCLAIMER global */}

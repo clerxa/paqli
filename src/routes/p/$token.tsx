@@ -47,6 +47,17 @@ import {
 
 export const Route = createFileRoute("/p/$token")({
   component: PublicPackagePage,
+  head: () => ({
+    meta: [
+      { title: "Votre proposition — paqli" },
+      { name: "description", content: "Découvrez votre proposition de rémunération personnalisée." },
+      { property: "og:title", content: "Votre proposition — paqli" },
+      { property: "og:description", content: "Découvrez votre proposition de rémunération personnalisée." },
+      { property: "og:image", content: "https://paqli.fr/og-paqli.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://paqli.fr/og-paqli.png" },
+    ],
+  }),
 });
 
 

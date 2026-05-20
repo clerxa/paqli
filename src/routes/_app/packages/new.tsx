@@ -2,23 +2,26 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Configurator } from "@/components/paqli/configurator/Configurator";
+import { QuickCreatePackage } from "@/components/paqli/packages/QuickCreatePackage";
 import { PackageConfigProvider } from "@/contexts/PackageConfigContext";
 import { applyJobToConfig, getJob } from "@/lib/jobsService";
 import { emptyConfig, type PackageConfig } from "@/lib/packageConfig";
 
 interface NewSearch {
   jobId?: string;
+  expert?: string;
 }
 
 export const Route = createFileRoute("/_app/packages/new")({
   validateSearch: (search): NewSearch => ({
     jobId: typeof search.jobId === "string" ? search.jobId : undefined,
+    expert: typeof search.expert === "string" ? search.expert : undefined,
   }),
   component: NewPackagePage,
 });
 
 function NewPackagePage() {
-  const { jobId } = Route.useSearch();
+  const { jobId, expert } = Route.useSearch();
   const [initial, setInitial] = useState<PackageConfig | null>(null);
   const [ready, setReady] = useState(!jobId);
 
@@ -45,6 +48,11 @@ function NewPackagePage() {
       active = false;
     };
   }, [jobId]);
+
+  // Quick Create par défaut. Mode expert ou jobId pré-rempli → configurator direct.
+  if (!jobId && !expert) {
+    return <QuickCreatePackage />;
+  }
 
   if (!ready) {
     return (

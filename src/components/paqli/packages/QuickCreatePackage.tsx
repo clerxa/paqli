@@ -8,9 +8,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { useJobs } from "@/hooks/useJobs";
 import { usePackages, duplicatePackage } from "@/hooks/usePackages";
 import { applyJobToConfig, getJob } from "@/lib/jobsService";
-import { emptyConfig, type PackageConfig } from "@/lib/packageConfig";
+import { type PackageConfig } from "@/lib/packageConfig";
 import { upsertPackage } from "@/lib/packageService";
-import { Briefcase, Copy, FilePlus, ChevronRight } from "lucide-react";
+import { loadOrgDefaultsConfig } from "@/lib/orgDefaults";
+import {
+  Briefcase,
+  Copy,
+  FilePlus,
+  ChevronRight,
+  Sparkles,
+  Check,
+} from "lucide-react";
 
 type Mode = "job" | "duplicate" | "scratch";
 
@@ -32,6 +40,39 @@ export function QuickCreatePackage() {
   const [grossSalary, setGrossSalary] = useState<string>("");
   const [startDate, setStartDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Org defaults (benefits, equity, savings, company_profile)
+  const [defaults, setDefaults] = useState<{
+    config: PackageConfig | null;
+    prefilled: {
+      benefits: number;
+      equity: number;
+      savings: number;
+      companyProfile: boolean;
+    };
+    loading: boolean;
+  }>({
+    config: null,
+    prefilled: { benefits: 0, equity: 0, savings: 0, companyProfile: false },
+    loading: true,
+  });
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    let active = true;
+    loadOrgDefaultsConfig(organization.id)
+      .then((res) => {
+        if (!active) return;
+        setDefaults({ config: res.config, prefilled: res.prefilled, loading: false });
+      })
+      .catch((e) => {
+        console.error("loadOrgDefaultsConfig", e);
+        if (active) setDefaults((d) => ({ ...d, loading: false }));
+      });
+    return () => {
+      active = false;
+    };
+  }, [organization?.id]);
 
   // Auto-pick the first job/package when switching mode
   useEffect(() => {
@@ -75,7 +116,12 @@ export function QuickCreatePackage() {
         return;
       }
 
-      let cfg: PackageConfig = { ...emptyConfig, status: "draft" };
+      // Start from org defaults (benefits, equity, savings, company profile)
+      // — falls back to fresh load if the in-state copy isn't ready yet.
+      const base =
+        defaults.config ??
+        (await loadOrgDefaultsConfig(organization.id)).config;
+      let cfg: PackageConfig = { ...base, status: "draft" };
 
       if (mode === "job" && jobId) {
         const job = await getJob(jobId);
@@ -189,6 +235,21 @@ export function QuickCreatePackage() {
             description="Saisie manuelle complète"
           />
         </div>
+
+        {/* Pre-filled preview — only meaningful when not duplicating */}
+        {mode !== "duplicate" && !defaults.loading && (
+          <PrefillPreview
+            prefilled={defaults.prefilled}
+            mode={mode}
+            jobSelected={
+              mode === "job"
+                ? jobs.find((j) => j.id === jobId) ?? null
+                : null
+            }
+          />
+        )}
+
+
 
         {/* Selection details */}
         <Card className="space-y-4">
@@ -398,6 +459,96 @@ function EmptyHint({ children }: { children: React.ReactNode }) {
   return (
     <div className="text-[12px] text-grey bg-[#FAF8F5] rounded-lg px-3 py-2">
       {children}
+    </div>
+  );
+}
+
+function PrefillPreview({
+  prefilled,
+  mode,
+  jobSelected,
+}: {
+  prefilled: {
+    benefits: number;
+    equity: number;
+    savings: number;
+    companyProfile: boolean;
+  };
+  mode: "job" | "scratch";
+  jobSelected: { title: string; location_city: string | null } | null;
+}) {
+  const items: { label: string; ok: boolean }[] = [
+    {
+      label:
+        mode === "job" && jobSelected
+          ? `Missions, stack, manager, process (offre « ${jobSelected.title} »)`
+          : "Missions & process (à compléter)",
+      ok: mode === "job" && !!jobSelected,
+    },
+    {
+      label: "Politique remote, RTT, tickets resto, formation",
+      ok: prefilled.companyProfile,
+    },
+    {
+      label: `${prefilled.benefits} avantage${prefilled.benefits > 1 ? "s" : ""} du catalogue entreprise`,
+      ok: prefilled.benefits > 0,
+    },
+    {
+      label: `${prefilled.equity} dispositif equity pré-configuré`,
+      ok: prefilled.equity > 0,
+    },
+    {
+      label: `${prefilled.savings} dispositif${prefilled.savings > 1 ? "s" : ""} d'épargne (PEE/PERCO/…)`,
+      ok: prefilled.savings > 0,
+    },
+  ];
+
+  const okCount = items.filter((i) => i.ok).length;
+  const empty = okCount === 0;
+
+  return (
+    <div
+      className="rounded-[12px] border border-[rgba(139,127,168,0.25)] px-4 py-3.5"
+      style={{ background: "linear-gradient(180deg,#F5F2FA 0%,#FAF8F5 100%)" }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <Sparkles size={14} className="text-aubergine" />
+        <span className="text-[12px] font-medium text-aubergine">
+          {empty
+            ? "Aucune donnée d'entreprise détectée"
+            : `Pré-rempli automatiquement (${okCount}/${items.length})`}
+        </span>
+      </div>
+      {empty ? (
+        <p className="text-[11.5px] text-grey leading-snug">
+          Renseignez votre profil entreprise et votre catalogue d'avantages
+          dans{" "}
+          <Link to="/settings" className="text-aubergine underline">
+            Paramètres
+          </Link>{" "}
+          — ils seront alors appliqués automatiquement à chaque nouveau
+          package.
+        </p>
+      ) : (
+        <ul className="space-y-1">
+          {items.map((it, i) => (
+            <li
+              key={i}
+              className={`flex items-start gap-1.5 text-[11.5px] leading-snug ${
+                it.ok ? "text-aubergine-light" : "text-grey/60"
+              }`}
+            >
+              <Check
+                size={12}
+                className={`mt-0.5 shrink-0 ${
+                  it.ok ? "text-[#3B6D11]" : "text-grey/30"
+                }`}
+              />
+              <span>{it.label}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

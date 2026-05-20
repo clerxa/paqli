@@ -138,7 +138,7 @@ const TABS: { key: TabKey; label: string; highlight?: boolean; optional?: boolea
   { key: "flex", label: "Flexibilité" },
   { key: "team", label: "Équipe & culture" },
   { key: "package", label: "Package", highlight: true },
-  { key: "comparatif", label: "Comparatif marché" },
+  { key: "comparatif", label: "Benchmark marché" },
   { key: "mon_offre", label: "Mon offre actuelle", optional: true },
   { key: "questions", label: "Échanger" },
   { key: "next", label: "Ma décision" },

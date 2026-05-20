@@ -236,6 +236,21 @@ export function QuickCreatePackage() {
           />
         </div>
 
+        {/* Pre-filled preview — only meaningful when not duplicating */}
+        {mode !== "duplicate" && !defaults.loading && (
+          <PrefillPreview
+            prefilled={defaults.prefilled}
+            mode={mode}
+            jobSelected={
+              mode === "job"
+                ? jobs.find((j) => j.id === jobId) ?? null
+                : null
+            }
+          />
+        )}
+
+
+
         {/* Selection details */}
         <Card className="space-y-4">
           {mode === "job" && (

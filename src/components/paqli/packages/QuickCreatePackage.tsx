@@ -8,9 +8,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { useJobs } from "@/hooks/useJobs";
 import { usePackages, duplicatePackage } from "@/hooks/usePackages";
 import { applyJobToConfig, getJob } from "@/lib/jobsService";
-import { emptyConfig, type PackageConfig } from "@/lib/packageConfig";
+import { type PackageConfig } from "@/lib/packageConfig";
 import { upsertPackage } from "@/lib/packageService";
-import { Briefcase, Copy, FilePlus, ChevronRight } from "lucide-react";
+import { loadOrgDefaultsConfig } from "@/lib/orgDefaults";
+import {
+  Briefcase,
+  Copy,
+  FilePlus,
+  ChevronRight,
+  Sparkles,
+  Check,
+} from "lucide-react";
 
 type Mode = "job" | "duplicate" | "scratch";
 

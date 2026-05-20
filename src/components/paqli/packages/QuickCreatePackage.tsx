@@ -41,6 +41,39 @@ export function QuickCreatePackage() {
   const [startDate, setStartDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Org defaults (benefits, equity, savings, company_profile)
+  const [defaults, setDefaults] = useState<{
+    config: PackageConfig | null;
+    prefilled: {
+      benefits: number;
+      equity: number;
+      savings: number;
+      companyProfile: boolean;
+    };
+    loading: boolean;
+  }>({
+    config: null,
+    prefilled: { benefits: 0, equity: 0, savings: 0, companyProfile: false },
+    loading: true,
+  });
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    let active = true;
+    loadOrgDefaultsConfig(organization.id)
+      .then((res) => {
+        if (!active) return;
+        setDefaults({ config: res.config, prefilled: res.prefilled, loading: false });
+      })
+      .catch((e) => {
+        console.error("loadOrgDefaultsConfig", e);
+        if (active) setDefaults((d) => ({ ...d, loading: false }));
+      });
+    return () => {
+      active = false;
+    };
+  }, [organization?.id]);
+
   // Auto-pick the first job/package when switching mode
   useEffect(() => {
     if (mode === "job" && !jobId && jobs.length > 0) {

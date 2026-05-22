@@ -21,6 +21,7 @@ import { Route as AppAlertsRouteImport } from './routes/_app/alerts'
 import { Route as AppPackagesIndexRouteImport } from './routes/_app/packages/index'
 import { Route as AppJobsIndexRouteImport } from './routes/_app/jobs/index'
 import { Route as AppCandidatesIndexRouteImport } from './routes/_app/candidates/index'
+import { Route as AppAcademyIndexRouteImport } from './routes/_app/academy/index'
 import { Route as ApiPublicTrackBehaviorRouteImport } from './routes/api/public/track-behavior'
 import { Route as ApiPublicNotifyRhRouteImport } from './routes/api/public/notify-rh'
 import { Route as ApiPublicComputeEngagementRouteImport } from './routes/api/public/compute-engagement'
@@ -28,6 +29,7 @@ import { Route as AppPackagesNewRouteImport } from './routes/_app/packages/new'
 import { Route as AppJobsNewRouteImport } from './routes/_app/jobs/new'
 import { Route as AppJobsIdRouteImport } from './routes/_app/jobs/$id'
 import { Route as AppCandidatesIdRouteImport } from './routes/_app/candidates/$id'
+import { Route as AppAcademyRsuRouteImport } from './routes/_app/academy/rsu'
 import { Route as AppPackagesIdIndexRouteImport } from './routes/_app/packages/$id/index'
 import { Route as ApiPublicHooksRunRemindersRouteImport } from './routes/api/public/hooks/run-reminders'
 import { Route as ApiPublicHooksDeadlineNotifierRouteImport } from './routes/api/public/hooks/deadline-notifier'
@@ -92,6 +94,11 @@ const AppCandidatesIndexRoute = AppCandidatesIndexRouteImport.update({
   path: '/candidates/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAcademyIndexRoute = AppAcademyIndexRouteImport.update({
+  id: '/academy/',
+  path: '/academy/',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiPublicTrackBehaviorRoute = ApiPublicTrackBehaviorRouteImport.update({
   id: '/api/public/track-behavior',
   path: '/api/public/track-behavior',
@@ -128,6 +135,11 @@ const AppCandidatesIdRoute = AppCandidatesIdRouteImport.update({
   path: '/candidates/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAcademyRsuRoute = AppAcademyRsuRouteImport.update({
+  id: '/academy/rsu',
+  path: '/academy/rsu',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPackagesIdIndexRoute = AppPackagesIdIndexRouteImport.update({
   id: '/packages/$id/',
   path: '/packages/$id/',
@@ -160,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
+  '/academy/rsu': typeof AppAcademyRsuRoute
   '/candidates/$id': typeof AppCandidatesIdRoute
   '/jobs/$id': typeof AppJobsIdRoute
   '/jobs/new': typeof AppJobsNewRoute
@@ -167,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/api/public/compute-engagement': typeof ApiPublicComputeEngagementRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
   '/api/public/track-behavior': typeof ApiPublicTrackBehaviorRoute
+  '/academy/': typeof AppAcademyIndexRoute
   '/candidates/': typeof AppCandidatesIndexRoute
   '/jobs/': typeof AppJobsIndexRoute
   '/packages/': typeof AppPackagesIndexRoute
@@ -184,6 +198,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
+  '/academy/rsu': typeof AppAcademyRsuRoute
   '/candidates/$id': typeof AppCandidatesIdRoute
   '/jobs/$id': typeof AppJobsIdRoute
   '/jobs/new': typeof AppJobsNewRoute
@@ -191,6 +206,7 @@ export interface FileRoutesByTo {
   '/api/public/compute-engagement': typeof ApiPublicComputeEngagementRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
   '/api/public/track-behavior': typeof ApiPublicTrackBehaviorRoute
+  '/academy': typeof AppAcademyIndexRoute
   '/candidates': typeof AppCandidatesIndexRoute
   '/jobs': typeof AppJobsIndexRoute
   '/packages': typeof AppPackagesIndexRoute
@@ -210,6 +226,7 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/settings': typeof AppSettingsRoute
   '/p/$token': typeof PTokenRoute
+  '/_app/academy/rsu': typeof AppAcademyRsuRoute
   '/_app/candidates/$id': typeof AppCandidatesIdRoute
   '/_app/jobs/$id': typeof AppJobsIdRoute
   '/_app/jobs/new': typeof AppJobsNewRoute
@@ -217,6 +234,7 @@ export interface FileRoutesById {
   '/api/public/compute-engagement': typeof ApiPublicComputeEngagementRoute
   '/api/public/notify-rh': typeof ApiPublicNotifyRhRoute
   '/api/public/track-behavior': typeof ApiPublicTrackBehaviorRoute
+  '/_app/academy/': typeof AppAcademyIndexRoute
   '/_app/candidates/': typeof AppCandidatesIndexRoute
   '/_app/jobs/': typeof AppJobsIndexRoute
   '/_app/packages/': typeof AppPackagesIndexRoute
@@ -236,6 +254,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/p/$token'
+    | '/academy/rsu'
     | '/candidates/$id'
     | '/jobs/$id'
     | '/jobs/new'
@@ -243,6 +262,7 @@ export interface FileRouteTypes {
     | '/api/public/compute-engagement'
     | '/api/public/notify-rh'
     | '/api/public/track-behavior'
+    | '/academy/'
     | '/candidates/'
     | '/jobs/'
     | '/packages/'
@@ -260,6 +280,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/p/$token'
+    | '/academy/rsu'
     | '/candidates/$id'
     | '/jobs/$id'
     | '/jobs/new'
@@ -267,6 +288,7 @@ export interface FileRouteTypes {
     | '/api/public/compute-engagement'
     | '/api/public/notify-rh'
     | '/api/public/track-behavior'
+    | '/academy'
     | '/candidates'
     | '/jobs'
     | '/packages'
@@ -285,6 +307,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/settings'
     | '/p/$token'
+    | '/_app/academy/rsu'
     | '/_app/candidates/$id'
     | '/_app/jobs/$id'
     | '/_app/jobs/new'
@@ -292,6 +315,7 @@ export interface FileRouteTypes {
     | '/api/public/compute-engagement'
     | '/api/public/notify-rh'
     | '/api/public/track-behavior'
+    | '/_app/academy/'
     | '/_app/candidates/'
     | '/_app/jobs/'
     | '/_app/packages/'
@@ -401,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCandidatesIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/academy/': {
+      id: '/_app/academy/'
+      path: '/academy'
+      fullPath: '/academy/'
+      preLoaderRoute: typeof AppAcademyIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/public/track-behavior': {
       id: '/api/public/track-behavior'
       path: '/api/public/track-behavior'
@@ -450,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCandidatesIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/academy/rsu': {
+      id: '/_app/academy/rsu'
+      path: '/academy/rsu'
+      fullPath: '/academy/rsu'
+      preLoaderRoute: typeof AppAcademyRsuRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/packages/$id/': {
       id: '/_app/packages/$id/'
       path: '/packages/$id'
@@ -485,10 +523,12 @@ interface AppRouteChildren {
   AppAlertsRoute: typeof AppAlertsRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppAcademyRsuRoute: typeof AppAcademyRsuRoute
   AppCandidatesIdRoute: typeof AppCandidatesIdRoute
   AppJobsIdRoute: typeof AppJobsIdRoute
   AppJobsNewRoute: typeof AppJobsNewRoute
   AppPackagesNewRoute: typeof AppPackagesNewRoute
+  AppAcademyIndexRoute: typeof AppAcademyIndexRoute
   AppCandidatesIndexRoute: typeof AppCandidatesIndexRoute
   AppJobsIndexRoute: typeof AppJobsIndexRoute
   AppPackagesIndexRoute: typeof AppPackagesIndexRoute
@@ -500,10 +540,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppAlertsRoute: AppAlertsRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppAcademyRsuRoute: AppAcademyRsuRoute,
   AppCandidatesIdRoute: AppCandidatesIdRoute,
   AppJobsIdRoute: AppJobsIdRoute,
   AppJobsNewRoute: AppJobsNewRoute,
   AppPackagesNewRoute: AppPackagesNewRoute,
+  AppAcademyIndexRoute: AppAcademyIndexRoute,
   AppCandidatesIndexRoute: AppCandidatesIndexRoute,
   AppJobsIndexRoute: AppJobsIndexRoute,
   AppPackagesIndexRoute: AppPackagesIndexRoute,

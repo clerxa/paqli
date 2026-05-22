@@ -2,6 +2,7 @@ import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { NumberField, TextArea, EduBanner } from "./fields";
 import { SelectField, Toggle } from "./fields-v2";
 import type { EquityDeviceForm, EquityType } from "@/lib/packageConfig";
+import { Step4Scenarios } from "./Step4Scenarios";
 
 const EQUITY_TYPES: { value: EquityType; label: string }[] = [
   { value: "bspce", label: "BSPCE" },
@@ -173,6 +174,10 @@ export function StepNewEquity() {
             Ces informations alimentent le simulateur fiscal VEGA pour calculer
             le gain net selon le TMI du candidat.
           </EduBanner>
+
+          <div className="border-t border-[rgba(45,38,64,0.06)] pt-6">
+            <Step4Scenarios />
+          </div>
         </>
       )}
     </div>

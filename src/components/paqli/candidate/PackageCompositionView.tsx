@@ -6,6 +6,9 @@ import {
   type PackageEstimate,
   type ScenarioEstimate,
 } from "@/lib/clientCalc";
+import { RSUSimulatorModal } from "@/components/candidate/RSUSimulatorModal";
+import { RSUSummaryCards } from "@/components/candidate/RSUSummaryCards";
+
 
 /**
  * Vue synthétique du package côté candidat — style "tableau" avec lignes

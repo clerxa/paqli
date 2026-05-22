@@ -647,14 +647,186 @@ function NumField({
   );
 }
 
+/* ============================================================
+ *  Scénarios de valorisation par défaut (equity)
+ * ============================================================ */
+
+interface ScenariosDefaults {
+  default_scenario_pessimistic_m: number;
+  default_scenario_realistic_m: number;
+  default_scenario_optimistic_m: number;
+  default_scenario_pessimistic_years: number;
+  default_scenario_realistic_years: number;
+  default_scenario_optimistic_years: number;
+  default_scenario_message: string;
+  default_scenario_display: "all" | "realistic_only" | "realistic_optimistic";
+}
+
+const emptyScenarios: ScenariosDefaults = {
+  default_scenario_pessimistic_m: 80,
+  default_scenario_realistic_m: 200,
+  default_scenario_optimistic_m: 500,
+  default_scenario_pessimistic_years: 5,
+  default_scenario_realistic_years: 4,
+  default_scenario_optimistic_years: 5,
+  default_scenario_message: "",
+  default_scenario_display: "all",
+};
+
+function ScenariosDefaultsCard() {
+  const { organization } = useAuth();
+  const [data, setData] = useState<ScenariosDefaults>(emptyScenarios);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    (async () => {
+      setLoading(true);
+      const { data: row } = await supabase
+        .from("organizations")
+        .select(
+          "default_scenario_pessimistic_m, default_scenario_realistic_m, default_scenario_optimistic_m, default_scenario_pessimistic_years, default_scenario_realistic_years, default_scenario_optimistic_years, default_scenario_message, default_scenario_display",
+        )
+        .eq("id", organization.id)
+        .maybeSingle();
+      if (row) {
+        const d = row as any;
+        setData({
+          default_scenario_pessimistic_m: Number(d.default_scenario_pessimistic_m ?? 80),
+          default_scenario_realistic_m: Number(d.default_scenario_realistic_m ?? 200),
+          default_scenario_optimistic_m: Number(d.default_scenario_optimistic_m ?? 500),
+          default_scenario_pessimistic_years: Number(d.default_scenario_pessimistic_years ?? 5),
+          default_scenario_realistic_years: Number(d.default_scenario_realistic_years ?? 4),
+          default_scenario_optimistic_years: Number(d.default_scenario_optimistic_years ?? 5),
+          default_scenario_message: d.default_scenario_message ?? "",
+          default_scenario_display: (d.default_scenario_display ?? "all") as ScenariosDefaults["default_scenario_display"],
+        });
+      }
+      setLoading(false);
+    })();
+  }, [organization?.id]);
+
+  async function save() {
+    if (!organization?.id) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("organizations")
+      .update(data as never)
+      .eq("id", organization.id);
+    setSaving(false);
+    if (error) toast.error("Erreur d'enregistrement");
+    else toast.success("Scénarios par défaut enregistrés");
+  }
+
+  if (loading) {
+    return (
+      <Card>
+        <div className="flex items-center gap-2 text-grey text-[12px]">
+          <Loader2 size={14} className="animate-spin" /> Chargement…
+        </div>
+      </Card>
+    );
+  }
+
+  const scenarios: { key: "pessimistic" | "realistic" | "optimistic"; title: string; bg: string }[] = [
+    { key: "pessimistic", title: "Pessimiste", bg: "#F5F0EC" },
+    { key: "realistic", title: "Réaliste", bg: "#F5F2FA" },
+    { key: "optimistic", title: "Optimiste", bg: "#EAF3DE" },
+  ];
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="font-display text-aubergine" style={{ fontSize: 20 }}>
+          Scénarios de valorisation equity
+        </h2>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="text-[12px] px-3 py-1.5 rounded-lg bg-aubergine text-lin disabled:opacity-40"
+        >
+          {saving ? "…" : "Enregistrer"}
+        </button>
+      </div>
+      <p className="text-[12px] text-grey mb-4">
+        Servent à projeter la valeur des BSPCE / actions dans chaque package.
+        Vous pourrez les ajuster au cas par cas dans un package si besoin.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        {scenarios.map((s) => {
+          const mKey = `default_scenario_${s.key}_m` as const;
+          const yKey = `default_scenario_${s.key}_years` as const;
+          return (
+            <div
+              key={s.key}
+              className="rounded-[12px] p-3 space-y-2"
+              style={{ background: s.bg, border: "1px solid rgba(45,38,64,0.08)" }}
+            >
+              <div className="text-[10px] uppercase tracking-wider text-aubergine-light font-medium">
+                {s.title}
+              </div>
+              <NumField
+                label="Valorisation cible (M€)"
+                value={data[mKey]}
+                onChange={(v) => setData({ ...data, [mKey]: v })}
+              />
+              <NumField
+                label="Horizon (ans)"
+                value={data[yKey]}
+                onChange={(v) => setData({ ...data, [yKey]: v })}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      <label className="block mb-3">
+        <div className="text-[11px] text-grey mb-1">
+          Message de contexte affiché au candidat
+        </div>
+        <textarea
+          value={data.default_scenario_message}
+          onChange={(e) =>
+            setData({ ...data, default_scenario_message: e.target.value })
+          }
+          rows={2}
+          maxLength={500}
+          placeholder="Ex : Notre dernière Série B valorise l'entreprise à 45M€…"
+          className="w-full bg-white border-[0.5px] border-[rgba(45,38,64,0.12)] rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-lavande"
+        />
+      </label>
+
+      <label className="block">
+        <div className="text-[11px] text-grey mb-1">
+          Scénarios affichés par défaut au candidat
+        </div>
+        <select
+          value={data.default_scenario_display}
+          onChange={(e) =>
+            setData({
+              ...data,
+              default_scenario_display: e.target
+                .value as ScenariosDefaults["default_scenario_display"],
+            })
+          }
+          className={`${inputCls} max-w-sm`}
+        >
+          <option value="all">Les trois scénarios (recommandé)</option>
+          <option value="realistic_only">Réaliste uniquement</option>
+          <option value="realistic_optimistic">Réaliste + optimiste</option>
+        </select>
+      </label>
+    </Card>
+  );
+}
+
 export function OrgCatalogSections() {
-  // Les avantages (TR, mutuelle, transport, formation, télétravail…) sont
-  // gérés dans l'onglet « Mon entreprise » pour éviter les doublons.
-  // Ce catalogue ne contient plus que les modèles equity & épargne salariale
-  // qui servent à pré-remplir un nouveau package.
   return (
     <>
       <EquityCatalogCard />
+      <ScenariosDefaultsCard />
       <SavingsCatalogCard />
     </>
   );

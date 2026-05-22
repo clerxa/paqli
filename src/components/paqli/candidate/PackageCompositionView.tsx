@@ -6,6 +6,9 @@ import {
   type PackageEstimate,
   type ScenarioEstimate,
 } from "@/lib/clientCalc";
+import { RSUSimulatorModal } from "@/components/candidate/RSUSimulatorModal";
+import { RSUSummaryCards } from "@/components/candidate/RSUSummaryCards";
+
 
 /**
  * Vue synthétique du package côté candidat — style "tableau" avec lignes
@@ -222,8 +225,18 @@ export function PackageCompositionView({
               }
             />
           ))}
+
+          {hasScenarios && (
+            <div className="mt-3 space-y-3">
+              <RSUSummaryCards scenarios={scenariosToShow} />
+              <div className="flex justify-end">
+                <RSUSimulatorModal equityDevices={pkg.equity_devices} />
+              </div>
+            </div>
+          )}
         </Group>
       )}
+
 
       {/* ÉPARGNE SALARIALE */}
       {hasSavings && (

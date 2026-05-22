@@ -81,7 +81,14 @@ export interface EquityDeviceRow {
   current_valuation_m: number;
   vesting_years: number;
   cliff_months: number;
+  // Champs RSU/AGA optionnels (moteur VEGA)
+  award_year?: number | null;
+  regime?: string | null;
+  currency?: string | null;
+  conservation_end_date?: string | null;
+  total_acquisition_gain?: number | null;
 }
+
 
 export interface SavingsDeviceRow {
   id: string;

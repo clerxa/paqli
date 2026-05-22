@@ -150,12 +150,121 @@ export function StepNewEquity() {
               />
             </div>
 
+            {(d.type === "rsu" || d.type === "aga") && (
+              <div className="space-y-3 rounded-md p-3 bg-[#FAF7F2] border border-[rgba(45,38,64,0.06)]">
+                <div className="flex items-center gap-2 text-[12px] font-medium text-aubergine">
+                  Paramètres fiscaux RSU / AGA
+                  <FieldTooltip>
+                    Ces champs alimentent le simulateur fiscal VEGA côté
+                    candidat. Le régime fiscal est déduit automatiquement
+                    de l'année d'attribution mais peut être ajusté.
+                  </FieldTooltip>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="block">
+                    <span className="text-[12px] text-aubergine-light font-medium flex items-center gap-1">
+                      Année d'attribution
+                      <FieldTooltip>
+                        Année à laquelle le plan a été attribué (acte
+                        d'attribution). Détermine le régime fiscal applicable.
+                      </FieldTooltip>
+                    </span>
+                    <input
+                      type="number"
+                      min={2000}
+                      max={2100}
+                      value={d.awardYear ?? ""}
+                      onChange={(e) => {
+                        const year = e.target.value ? Number(e.target.value) : null;
+                        update(i, {
+                          awardYear: year,
+                          // auto-infer regime si pas surchargé
+                          regime: year ? inferRegimeFromYear(year) : d.regime,
+                        });
+                      }}
+                      placeholder={String(new Date().getFullYear())}
+                      className="w-full text-[13px] mt-1 px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] bg-white"
+                    />
+                  </label>
+
+                  <div>
+                    <SelectField
+                      label="Régime fiscal"
+                      value={d.regime ?? (d.awardYear ? inferRegimeFromYear(d.awardYear) : "AGA_POST2018")}
+                      onChange={(v) => update(i, { regime: v as any })}
+                      options={REGIME_OPTIONS}
+                    />
+                    <span className="text-[11px] text-grey mt-1 block">
+                      Déduit de l'année — ajustable manuellement.
+                    </span>
+                  </div>
+
+                  <div>
+                    <SelectField
+                      label="Devise du plan"
+                      value={d.currency ?? "EUR"}
+                      onChange={(v) => update(i, { currency: v as any })}
+                      options={[
+                        { value: "EUR", label: "EUR (€)" },
+                        { value: "USD", label: "USD ($)" },
+                      ]}
+                    />
+                  </div>
+
+                  <label className="block">
+                    <span className="text-[12px] text-aubergine-light font-medium flex items-center gap-1">
+                      Fin de période de conservation
+                      <FieldTooltip>
+                        Date à laquelle les actions deviennent cessibles
+                        (post-AGA / post-vesting + période de conservation).
+                        Sert au calcul des abattements pour durée de détention.
+                      </FieldTooltip>
+                    </span>
+                    <input
+                      type="date"
+                      value={d.conservationEndDate ?? ""}
+                      onChange={(e) => update(i, { conservationEndDate: e.target.value || null })}
+                      className="w-full text-[13px] mt-1 px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] bg-white"
+                    />
+                  </label>
+
+                  <label className="block col-span-2">
+                    <span className="text-[12px] text-aubergine-light font-medium flex items-center gap-1">
+                      Gain d'acquisition total (€)
+                      <FieldTooltip>
+                        Valeur brute des actions à la date d'acquisition
+                        définitive. Si non renseigné, le simulateur l'estime
+                        depuis quantité × valeur d'attribution.
+                      </FieldTooltip>
+                    </span>
+                    <div className="relative mt-1">
+                      <input
+                        type="number"
+                        min={0}
+                        value={d.totalAcquisitionGain ?? ""}
+                        onChange={(e) =>
+                          update(i, {
+                            totalAcquisitionGain: e.target.value ? Number(e.target.value) : null,
+                          })
+                        }
+                        placeholder="ex : 50000"
+                        className="w-full text-[13px] px-3 py-2 rounded-md border border-[rgba(45,38,64,0.15)] bg-white"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-grey">€</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            )}
+
             <TextArea
               label="Conditions particulières"
               value={d.specialConditions}
               onChange={(v) => update(i, { specialConditions: v })}
               placeholder="ex : accélération en cas de rachat, plan qualifié…"
             />
+
           </div>
         );
       })}

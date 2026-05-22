@@ -44,32 +44,6 @@ export function Step5Preview() {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   }
 
-  const s1 = calcStep1Preview(config);
-  const s2 = calcStep2Preview(config);
-  const s3 = calcStep3Preview(config);
-
-  
-  const pessScenario = config.scenarios.find((s) => s.label === "pessimiste");
-  const optiScenario = config.scenarios.find((s) => s.label === "optimiste");
-  const equityLow =
-    pessScenario && config.equityDevices.length > 0
-      ? estimateScenarioTotal(config.equityDevices, pessScenario.targetValuationM)
-      : 0;
-  const equityHigh =
-    optiScenario && config.equityDevices.length > 0
-      ? estimateScenarioTotal(config.equityDevices, optiScenario.targetValuationM)
-      : s2.equityEst;
-
-  const minTotal =
-    s1.salaryEst + s1.benefitsEst + s3.peeEst + equityLow;
-  const maxTotal =
-    s1.salaryEst +
-    s1.variableEst +
-    s1.benefitsEst +
-    equityHigh +
-    s3.peeEst +
-    s3.interEst +
-    s3.participationEst;
 
   async function ensureSaved(): Promise<string | null> {
     if (config.packageId) return config.packageId;

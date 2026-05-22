@@ -38,7 +38,7 @@ const main: NavItem[] = [
 ];
 
 const formation: NavItem[] = [
-  { label: "Académie RH", icon: GraduationCap, disabled: true },
+  { to: "/academy", label: "Académie RH", icon: GraduationCap },
   { label: "Certifications", icon: Award, disabled: true },
 ];
 

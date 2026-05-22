@@ -1159,6 +1159,14 @@ export type Database = {
           address_zip: string | null
           created_at: string
           culture_note: string | null
+          default_scenario_display: string | null
+          default_scenario_message: string | null
+          default_scenario_optimistic_m: number | null
+          default_scenario_optimistic_years: number | null
+          default_scenario_pessimistic_m: number | null
+          default_scenario_pessimistic_years: number | null
+          default_scenario_realistic_m: number | null
+          default_scenario_realistic_years: number | null
           description: string | null
           employee_count: string | null
           founded_year: number | null
@@ -1186,6 +1194,14 @@ export type Database = {
           address_zip?: string | null
           created_at?: string
           culture_note?: string | null
+          default_scenario_display?: string | null
+          default_scenario_message?: string | null
+          default_scenario_optimistic_m?: number | null
+          default_scenario_optimistic_years?: number | null
+          default_scenario_pessimistic_m?: number | null
+          default_scenario_pessimistic_years?: number | null
+          default_scenario_realistic_m?: number | null
+          default_scenario_realistic_years?: number | null
           description?: string | null
           employee_count?: string | null
           founded_year?: number | null
@@ -1213,6 +1229,14 @@ export type Database = {
           address_zip?: string | null
           created_at?: string
           culture_note?: string | null
+          default_scenario_display?: string | null
+          default_scenario_message?: string | null
+          default_scenario_optimistic_m?: number | null
+          default_scenario_optimistic_years?: number | null
+          default_scenario_pessimistic_m?: number | null
+          default_scenario_pessimistic_years?: number | null
+          default_scenario_realistic_m?: number | null
+          default_scenario_realistic_years?: number | null
           description?: string | null
           employee_count?: string | null
           founded_year?: number | null

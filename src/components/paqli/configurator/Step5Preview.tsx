@@ -365,28 +365,3 @@ export function Step5Preview() {
   );
 }
 
-function RecapSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <div className="text-[11px] uppercase tracking-wider text-grey mb-2">
-        {title}
-      </div>
-      <div className="space-y-1">{children}</div>
-    </div>
-  );
-}
-
-function RecapRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between text-[13px]">
-      <span className="text-aubergine-light">{label}</span>
-      <span className="font-medium text-aubergine">{value}</span>
-    </div>
-  );
-}

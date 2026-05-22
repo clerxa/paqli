@@ -62,13 +62,18 @@ export function StepNewEquity() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="font-display text-aubergine" style={{ fontSize: 22 }}>
-          Equity
-        </h2>
-        <p className="text-[12px] text-grey mt-1">
-          Vous pouvez cumuler plusieurs plans (ex : BSPCE + ESPP).
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-display text-aubergine" style={{ fontSize: 22 }}>
+            Equity
+          </h2>
+          <p className="text-[12px] text-grey mt-1">
+            Vous pouvez cumuler plusieurs plans (ex : BSPCE + ESPP).
+          </p>
+        </div>
+        <EquityKnowledgePanel
+          packageContext={`Package en cours : ${config.title || "(sans titre)"} — ${devices.length} plan(s) equity configuré(s).`}
+        />
       </div>
 
       {devices.length === 0 && (

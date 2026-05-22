@@ -138,6 +138,11 @@ export async function upsertPackage(
         vesting_years: d.vestingYears || 4,
         cliff_months: d.cliffMonths || 0,
         special_conditions: d.specialConditions || null,
+        award_year: d.awardYear ?? null,
+        regime: d.regime ?? null,
+        currency: d.currency ?? "EUR",
+        conservation_end_date: d.conservationEndDate || null,
+        total_acquisition_gain: d.totalAcquisitionGain ?? null,
       })),
     );
     if (error) throw error;
@@ -311,6 +316,14 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
       vestingYears: Number(d.vesting_years) || 4,
       cliffMonths: Number(d.cliff_months) || 0,
       specialConditions: d.special_conditions ?? "",
+      awardYear: (d as any).award_year ?? null,
+      regime: ((d as any).regime ?? null) as PackageConfig["equityDevices"][number]["regime"],
+      currency: (((d as any).currency as "EUR" | "USD") ?? "EUR"),
+      conservationEndDate: (d as any).conservation_end_date ?? null,
+      totalAcquisitionGain:
+        (d as any).total_acquisition_gain !== null && (d as any).total_acquisition_gain !== undefined
+          ? Number((d as any).total_acquisition_gain)
+          : null,
     })),
     savingsDevices: (sv ?? []).map((d) => ({
       id: d.id,

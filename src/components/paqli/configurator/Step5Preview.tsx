@@ -124,110 +124,21 @@ export function Step5Preview() {
 
   const url = generatedToken ? buildCandidateUrl(generatedToken) : "";
 
-  const hasEquity = config.equityDevices.length > 0;
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h2 className="font-display text-aubergine" style={{ fontSize: 22 }}>
-          Aperçu & partage
-        </h2>
+        <h3 className="font-display text-aubergine" style={{ fontSize: 18 }}>
+          Publier & partager
+        </h3>
         <p className="text-[12px] text-grey mt-1">
-          Vérifiez le récapitulatif puis publiez le package et générez un lien
-          candidat.
+          Publiez le package et générez un lien personnalisé à envoyer au candidat.
         </p>
       </div>
 
-      {/* Recap */}
-      <div className="rounded-[12px] border border-[rgba(45,38,64,0.08)] bg-white p-5 space-y-5">
-        <div>
-          <div
-            className="font-display text-aubergine"
-            style={{ fontSize: 18 }}
-          >
-            {config.title || "Nouveau package"}
-          </div>
-          <div className="text-[12px] text-grey">
-            {organization?.name ?? ""}
-          </div>
-        </div>
-
-        <RecapSection title="Rémunération fixe">
-          <RecapRow label="Fixe brut annuel" value={formatEur(config.grossSalary)} />
-          {config.variableTarget > 0 && (
-            <RecapRow
-              label="Variable cible"
-              value={formatEur(config.variableTarget)}
-            />
-          )}
-          {s1.benefitsEst > 0 && (
-            <RecapRow
-              label="Avantages"
-              value={`~${formatEur(s1.benefitsEst)}  (estimation)`}
-            />
-          )}
-        </RecapSection>
-
-        {hasEquity && (
-          <RecapSection title="Equity">
-            {config.equityDevices.map((d) => (
-              <RecapRow
-                key={d.id}
-                label={`${d.type.toUpperCase()} — ${d.quantity.toLocaleString("fr-FR")} ${d.type === "bspce" || d.type === "stock_options" ? "bons" : "actions"}`}
-                value={
-                  pessScenario && optiScenario
-                    ? `${formatEur(estimateScenarioTotal([d], pessScenario.targetValuationM))} → ${formatEur(estimateScenarioTotal([d], optiScenario.targetValuationM))}  (fourch.)`
-                    : "—"
-                }
-              />
-            ))}
-          </RecapSection>
-        )}
-
-        {config.savingsDevices.length > 0 && (
-          <RecapSection title="Épargne salariale">
-            {config.savingsDevices.map((d) => {
-              const label =
-                d.type === "pee"
-                  ? `PEE abondé ${d.matchingRate || 0}%`
-                  : d.type === "perco"
-                    ? `PERCO abondé ${d.matchingRate || 0}%`
-                    : d.type === "interessement"
-                      ? "Intéressement moy."
-                      : "Participation moy.";
-              const val =
-                d.type === "pee" || d.type === "perco"
-                  ? `jusqu'à ${formatEur(d.capAmount)}`
-                  : `~${formatEur(d.avg3y)}`;
-              return <RecapRow key={d.id} label={label} value={val} />;
-            })}
-          </RecapSection>
-        )}
-
-        <div className="border-t border-[rgba(45,38,64,0.08)] pt-4 flex items-center justify-between">
-          <span className="text-[12px] uppercase tracking-wider text-grey">
-            Ordre de grandeur total
-          </span>
-          <span
-            className="font-display text-aubergine"
-            style={{ fontSize: 18 }}
-          >
-            ~{formatEur(minTotal)} – ~{formatEur(maxTotal)}
-          </span>
-        </div>
-      </div>
-
-      <AttractivenessScore packageId={config.packageId} />
-
-      <JobPostingGenerator
-        packageId={config.packageId}
-        packageTitle={config.title || "package"}
-      />
-
       <WarnBanner>
-        Ces montants sont des estimations indicatives arrondies, calculées sur
-        la base des règles fiscales en vigueur (2026). Ils ne constituent pas un
-        résultat garanti ni un conseil fiscal.
+        Les montants affichés au candidat sont des estimations indicatives
+        (règles fiscales 2026). Ils ne constituent pas un conseil fiscal.
+
       </WarnBanner>
 
       {/* Link generation */}

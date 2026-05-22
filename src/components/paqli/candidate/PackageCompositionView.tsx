@@ -225,8 +225,18 @@ export function PackageCompositionView({
               }
             />
           ))}
+
+          {hasScenarios && (
+            <div className="mt-3 space-y-3">
+              <RSUSummaryCards scenarios={scenariosToShow} />
+              <div className="flex justify-end">
+                <RSUSimulatorModal equityDevices={pkg.equity_devices} />
+              </div>
+            </div>
+          )}
         </Group>
       )}
+
 
       {/* ÉPARGNE SALARIALE */}
       {hasSavings && (

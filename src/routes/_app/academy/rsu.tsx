@@ -3,6 +3,7 @@ import { ChevronLeft, Info, Calculator, AlertTriangle, BookOpen, HelpCircle } fr
 import { Topbar } from "@/components/paqli/Topbar";
 import { Card } from "@/components/paqli/Card";
 import { REGIME_KNOWLEDGE, FAQ, GLOSSARY } from "@/lib/vega/knowledge";
+import { RSUAcademySimulator } from "@/components/paqli/academy/RSUAcademySimulator";
 
 export const Route = createFileRoute("/_app/academy/rsu")({
   head: () => ({

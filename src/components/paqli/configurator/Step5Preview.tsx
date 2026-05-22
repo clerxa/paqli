@@ -4,21 +4,14 @@ import { toast } from "sonner";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/paqli/Button";
-import { AttractivenessScore } from "@/components/paqli/AttractivenessScore";
-import { JobPostingGenerator } from "@/components/paqli/JobPostingGenerator";
-import { Chip, NumberField, TextField, WarnBanner } from "./fields";
+import { Chip, TextField, WarnBanner } from "./fields";
 import {
   buildCandidateUrl,
   generateCandidateLink,
   publishPackage,
 } from "@/lib/candidateLinks";
-import {
-  calcStep1Preview,
-  calcStep2Preview,
-  calcStep3Preview,
-  estimateScenarioTotal,
-  formatEur,
-} from "@/lib/packageConfig";
+
+
 
 
 export function Step5Preview() {
@@ -51,32 +44,6 @@ export function Step5Preview() {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   }
 
-  const s1 = calcStep1Preview(config);
-  const s2 = calcStep2Preview(config);
-  const s3 = calcStep3Preview(config);
-
-  
-  const pessScenario = config.scenarios.find((s) => s.label === "pessimiste");
-  const optiScenario = config.scenarios.find((s) => s.label === "optimiste");
-  const equityLow =
-    pessScenario && config.equityDevices.length > 0
-      ? estimateScenarioTotal(config.equityDevices, pessScenario.targetValuationM)
-      : 0;
-  const equityHigh =
-    optiScenario && config.equityDevices.length > 0
-      ? estimateScenarioTotal(config.equityDevices, optiScenario.targetValuationM)
-      : s2.equityEst;
-
-  const minTotal =
-    s1.salaryEst + s1.benefitsEst + s3.peeEst + equityLow;
-  const maxTotal =
-    s1.salaryEst +
-    s1.variableEst +
-    s1.benefitsEst +
-    equityHigh +
-    s3.peeEst +
-    s3.interEst +
-    s3.participationEst;
 
   async function ensureSaved(): Promise<string | null> {
     if (config.packageId) return config.packageId;
@@ -157,110 +124,21 @@ export function Step5Preview() {
 
   const url = generatedToken ? buildCandidateUrl(generatedToken) : "";
 
-  const hasEquity = config.equityDevices.length > 0;
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h2 className="font-display text-aubergine" style={{ fontSize: 22 }}>
-          Aperçu & partage
-        </h2>
+        <h3 className="font-display text-aubergine" style={{ fontSize: 18 }}>
+          Publier & partager
+        </h3>
         <p className="text-[12px] text-grey mt-1">
-          Vérifiez le récapitulatif puis publiez le package et générez un lien
-          candidat.
+          Publiez le package et générez un lien personnalisé à envoyer au candidat.
         </p>
       </div>
 
-      {/* Recap */}
-      <div className="rounded-[12px] border border-[rgba(45,38,64,0.08)] bg-white p-5 space-y-5">
-        <div>
-          <div
-            className="font-display text-aubergine"
-            style={{ fontSize: 18 }}
-          >
-            {config.title || "Nouveau package"}
-          </div>
-          <div className="text-[12px] text-grey">
-            {organization?.name ?? ""}
-          </div>
-        </div>
-
-        <RecapSection title="Rémunération fixe">
-          <RecapRow label="Fixe brut annuel" value={formatEur(config.grossSalary)} />
-          {config.variableTarget > 0 && (
-            <RecapRow
-              label="Variable cible"
-              value={formatEur(config.variableTarget)}
-            />
-          )}
-          {s1.benefitsEst > 0 && (
-            <RecapRow
-              label="Avantages"
-              value={`~${formatEur(s1.benefitsEst)}  (estimation)`}
-            />
-          )}
-        </RecapSection>
-
-        {hasEquity && (
-          <RecapSection title="Equity">
-            {config.equityDevices.map((d) => (
-              <RecapRow
-                key={d.id}
-                label={`${d.type.toUpperCase()} — ${d.quantity.toLocaleString("fr-FR")} ${d.type === "bspce" || d.type === "stock_options" ? "bons" : "actions"}`}
-                value={
-                  pessScenario && optiScenario
-                    ? `${formatEur(estimateScenarioTotal([d], pessScenario.targetValuationM))} → ${formatEur(estimateScenarioTotal([d], optiScenario.targetValuationM))}  (fourch.)`
-                    : "—"
-                }
-              />
-            ))}
-          </RecapSection>
-        )}
-
-        {config.savingsDevices.length > 0 && (
-          <RecapSection title="Épargne salariale">
-            {config.savingsDevices.map((d) => {
-              const label =
-                d.type === "pee"
-                  ? `PEE abondé ${d.matchingRate || 0}%`
-                  : d.type === "perco"
-                    ? `PERCO abondé ${d.matchingRate || 0}%`
-                    : d.type === "interessement"
-                      ? "Intéressement moy."
-                      : "Participation moy.";
-              const val =
-                d.type === "pee" || d.type === "perco"
-                  ? `jusqu'à ${formatEur(d.capAmount)}`
-                  : `~${formatEur(d.avg3y)}`;
-              return <RecapRow key={d.id} label={label} value={val} />;
-            })}
-          </RecapSection>
-        )}
-
-        <div className="border-t border-[rgba(45,38,64,0.08)] pt-4 flex items-center justify-between">
-          <span className="text-[12px] uppercase tracking-wider text-grey">
-            Ordre de grandeur total
-          </span>
-          <span
-            className="font-display text-aubergine"
-            style={{ fontSize: 18 }}
-          >
-            ~{formatEur(minTotal)} – ~{formatEur(maxTotal)}
-          </span>
-        </div>
-      </div>
-
-      <AttractivenessScore packageId={config.packageId} />
-
-      <JobPostingGenerator
-        packageId={config.packageId}
-        packageTitle={config.title || "package"}
-      />
-
       <WarnBanner>
-        Ces montants sont des estimations indicatives arrondies, calculées sur
-        la base des règles fiscales en vigueur (2026). Ils ne constituent pas un
-        résultat garanti ni un conseil fiscal.
+        Les montants affichés au candidat sont des estimations indicatives
+        (règles fiscales 2026). Ils ne constituent pas un conseil fiscal.
+
       </WarnBanner>
 
       {/* Link generation */}
@@ -487,28 +365,3 @@ export function Step5Preview() {
   );
 }
 
-function RecapSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <div className="text-[11px] uppercase tracking-wider text-grey mb-2">
-        {title}
-      </div>
-      <div className="space-y-1">{children}</div>
-    </div>
-  );
-}
-
-function RecapRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between text-[13px]">
-      <span className="text-aubergine-light">{label}</span>
-      <span className="font-medium text-aubergine">{value}</span>
-    </div>
-  );
-}

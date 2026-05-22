@@ -33,6 +33,16 @@ export const defaultBenefits: BenefitsConfig = {
   creche: false,
 };
 
+export type RSURegime =
+  | "AGA_PRE2012"
+  | "AGA_2012_2015"
+  | "AGA_2015_2016"
+  | "AGA_2017"
+  | "AGA_POST2018"
+  | "NON_QUALIFIE";
+
+export type EquityCurrency = "EUR" | "USD";
+
 export interface EquityDeviceForm {
   id: string;
   type: EquityType;
@@ -42,6 +52,12 @@ export interface EquityDeviceForm {
   vestingYears: number;
   cliffMonths: number;
   specialConditions: string;
+  // Champs RSU/AGA (utilisés par le moteur VEGA)
+  awardYear?: number | null;
+  regime?: RSURegime | null;
+  currency?: EquityCurrency;
+  conservationEndDate?: string | null;
+  totalAcquisitionGain?: number | null;
 }
 
 export interface SavingsDeviceForm {

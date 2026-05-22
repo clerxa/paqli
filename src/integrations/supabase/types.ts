@@ -690,38 +690,53 @@ export type Database = {
       }
       equity_devices: {
         Row: {
+          award_year: number | null
           cliff_months: number
+          conservation_end_date: string | null
           created_at: string
+          currency: string
           current_valuation_m: number
           id: string
           package_id: string
           quantity: number
+          regime: string | null
           special_conditions: string | null
           strike_price: number
+          total_acquisition_gain: number | null
           type: string
           vesting_years: number
         }
         Insert: {
+          award_year?: number | null
           cliff_months?: number
+          conservation_end_date?: string | null
           created_at?: string
+          currency?: string
           current_valuation_m?: number
           id?: string
           package_id: string
           quantity?: number
+          regime?: string | null
           special_conditions?: string | null
           strike_price?: number
+          total_acquisition_gain?: number | null
           type: string
           vesting_years?: number
         }
         Update: {
+          award_year?: number | null
           cliff_months?: number
+          conservation_end_date?: string | null
           created_at?: string
+          currency?: string
           current_valuation_m?: number
           id?: string
           package_id?: string
           quantity?: number
+          regime?: string | null
           special_conditions?: string | null
           strike_price?: number
+          total_acquisition_gain?: number | null
           type?: string
           vesting_years?: number
         }

@@ -1,8 +1,11 @@
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
-import { NumberField, TextArea, EduBanner } from "./fields";
+import { NumberField, TextArea, EduBanner, TextField } from "./fields";
 import { SelectField, Toggle } from "./fields-v2";
-import type { EquityDeviceForm, EquityType } from "@/lib/packageConfig";
+import type { EquityDeviceForm, EquityType, RSURegime } from "@/lib/packageConfig";
 import { Step4Scenarios } from "./Step4Scenarios";
+import { EquityKnowledgePanel } from "./EquityKnowledgePanel";
+import { FieldTooltip } from "./FieldTooltip";
+import { REGIME_OPTIONS, inferRegimeFromYear } from "@/lib/vega/rsuRegimes";
 
 const EQUITY_TYPES: { value: EquityType; label: string }[] = [
   { value: "bspce", label: "BSPCE" },
@@ -59,13 +62,18 @@ export function StepNewEquity() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="font-display text-aubergine" style={{ fontSize: 22 }}>
-          Equity
-        </h2>
-        <p className="text-[12px] text-grey mt-1">
-          Vous pouvez cumuler plusieurs plans (ex : BSPCE + ESPP).
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-display text-aubergine" style={{ fontSize: 22 }}>
+            Equity
+          </h2>
+          <p className="text-[12px] text-grey mt-1">
+            Vous pouvez cumuler plusieurs plans (ex : BSPCE + ESPP).
+          </p>
+        </div>
+        <EquityKnowledgePanel
+          packageContext={`Package en cours : ${config.title || "(sans titre)"} — ${devices.length} plan(s) equity configuré(s).`}
+        />
       </div>
 
       {devices.length === 0 && (

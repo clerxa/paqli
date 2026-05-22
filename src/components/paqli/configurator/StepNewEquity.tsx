@@ -2,6 +2,7 @@ import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { NumberField, TextArea, EduBanner } from "./fields";
 import { SelectField, Toggle } from "./fields-v2";
 import type { EquityDeviceForm, EquityType } from "@/lib/packageConfig";
+import { Step4Scenarios } from "./Step4Scenarios";
 
 const EQUITY_TYPES: { value: EquityType; label: string }[] = [
   { value: "bspce", label: "BSPCE" },

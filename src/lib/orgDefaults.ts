@@ -135,6 +135,32 @@ export async function loadOrgDefaultsConfig(
     savingsDevices,
   };
 
+  const orgRow = org.data as any;
+  if (orgRow) {
+    cfg = {
+      ...cfg,
+      scenarios: [
+        {
+          label: "pessimiste",
+          targetValuationM: Number(orgRow.default_scenario_pessimistic_m ?? 80),
+          horizonYears: Number(orgRow.default_scenario_pessimistic_years ?? 5),
+        },
+        {
+          label: "realiste",
+          targetValuationM: Number(orgRow.default_scenario_realistic_m ?? 200),
+          horizonYears: Number(orgRow.default_scenario_realistic_years ?? 4),
+        },
+        {
+          label: "optimiste",
+          targetValuationM: Number(orgRow.default_scenario_optimistic_m ?? 500),
+          horizonYears: Number(orgRow.default_scenario_optimistic_years ?? 5),
+        },
+      ],
+      scenarioMessage: orgRow.default_scenario_message ?? cfg.scenarioMessage,
+      scenarioDisplay: (orgRow.default_scenario_display ?? cfg.scenarioDisplay) as PackageConfig["scenarioDisplay"],
+    };
+  }
+
   return {
     config: cfg,
     prefilled: {

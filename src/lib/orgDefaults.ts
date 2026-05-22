@@ -31,7 +31,7 @@ export interface OrgDefaultsResult {
 export async function loadOrgDefaultsConfig(
   orgId: string,
 ): Promise<OrgDefaultsResult> {
-  const [cp, b, e, s] = await Promise.all([
+  const [cp, b, e, s, org] = await Promise.all([
     supabase
       .from("company_profile")
       .select("*")
@@ -52,6 +52,13 @@ export async function loadOrgDefaultsConfig(
       .select("*")
       .eq("organization_id", orgId)
       .order("display_order"),
+    supabase
+      .from("organizations")
+      .select(
+        "default_scenario_pessimistic_m, default_scenario_realistic_m, default_scenario_optimistic_m, default_scenario_pessimistic_years, default_scenario_realistic_years, default_scenario_optimistic_years, default_scenario_message, default_scenario_display",
+      )
+      .eq("id", orgId)
+      .maybeSingle(),
   ]);
 
   let cfg: PackageConfig = { ...emptyConfig, status: "draft" };

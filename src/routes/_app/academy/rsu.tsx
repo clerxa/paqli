@@ -168,6 +168,13 @@ function RSUAcademyPage() {
           </Card>
         </section>
 
+        {/* Simulateur */}
+        <section>
+          <SectionTitle icon={Calculator}>Simulateur interactif</SectionTitle>
+          <RSUAcademySimulator />
+        </section>
+
+
         {/* FAQ */}
         <section>
           <SectionTitle icon={HelpCircle}>FAQ candidats — les questions fréquentes</SectionTitle>

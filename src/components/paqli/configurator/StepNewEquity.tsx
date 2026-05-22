@@ -1,8 +1,11 @@
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
-import { NumberField, TextArea, EduBanner } from "./fields";
+import { NumberField, TextArea, EduBanner, TextField } from "./fields";
 import { SelectField, Toggle } from "./fields-v2";
-import type { EquityDeviceForm, EquityType } from "@/lib/packageConfig";
+import type { EquityDeviceForm, EquityType, RSURegime } from "@/lib/packageConfig";
 import { Step4Scenarios } from "./Step4Scenarios";
+import { EquityKnowledgePanel } from "./EquityKnowledgePanel";
+import { FieldTooltip } from "./FieldTooltip";
+import { REGIME_OPTIONS, inferRegimeFromYear } from "@/lib/vega/rsuRegimes";
 
 const EQUITY_TYPES: { value: EquityType; label: string }[] = [
   { value: "bspce", label: "BSPCE" },

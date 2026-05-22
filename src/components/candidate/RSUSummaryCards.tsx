@@ -38,7 +38,9 @@ export function RSUSummaryCards({
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {scenarios.map((s) => {
-          const brut = s.gross ?? s.estimate / (1 - PFU);
+          const rate = s.taxRateHighSeniority ?? PFU;
+          const brut = rate < 1 ? s.estimate / (1 - rate) : s.estimate;
+
           const impots = brut - s.estimate;
           const meta = LABELS[s.label] ?? { title: s.label, tone: "#F0EBE8" };
           return (

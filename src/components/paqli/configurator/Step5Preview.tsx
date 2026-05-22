@@ -4,21 +4,14 @@ import { toast } from "sonner";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/paqli/Button";
-import { AttractivenessScore } from "@/components/paqli/AttractivenessScore";
-import { JobPostingGenerator } from "@/components/paqli/JobPostingGenerator";
-import { Chip, NumberField, TextField, WarnBanner } from "./fields";
+import { Chip, TextField, WarnBanner } from "./fields";
 import {
   buildCandidateUrl,
   generateCandidateLink,
   publishPackage,
 } from "@/lib/candidateLinks";
-import {
-  calcStep1Preview,
-  calcStep2Preview,
-  calcStep3Preview,
-  estimateScenarioTotal,
-  formatEur,
-} from "@/lib/packageConfig";
+
+
 
 
 export function Step5Preview() {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Sparkles, Trash2, Plus } from "lucide-react";
 import { usePackageConfig } from "@/contexts/PackageConfigContext";
 import { TextArea } from "./fields";

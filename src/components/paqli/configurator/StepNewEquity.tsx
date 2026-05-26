@@ -4,6 +4,7 @@ import { SelectField, Toggle } from "./fields-v2";
 import type { EquityDeviceForm, EquityType, RSURegime } from "@/lib/packageConfig";
 import { Step4Scenarios } from "./Step4Scenarios";
 import { EquityKnowledgePanel } from "./EquityKnowledgePanel";
+import { EquitySimulatorSection } from "./EquitySimulatorSection";
 import { FieldTooltip } from "./FieldTooltip";
 import { REGIME_OPTIONS, inferRegimeFromYear } from "@/lib/vega/rsuRegimes";
 
@@ -286,6 +287,8 @@ export function StepNewEquity() {
               onChange={(v) => patch({ equityAcceleration: v })}
             />
           </div>
+
+          <EquitySimulatorSection />
 
           <EduBanner>
             Ces informations alimentent le simulateur fiscal VEGA pour calculer

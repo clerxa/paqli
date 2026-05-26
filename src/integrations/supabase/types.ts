@@ -1390,9 +1390,20 @@ export type Database = {
           equipment_laptop: string | null
           equity_acceleration: boolean | null
           equity_cliff_months: number | null
+          equity_company_valuation: number | null
+          equity_is_listed: boolean | null
+          equity_last_price: number | null
+          equity_last_price_currency: string | null
+          equity_last_round_date: string | null
           equity_notes: string | null
+          equity_price_fetched_at: string | null
           equity_quantity: number | null
+          equity_scenario_base: number | null
+          equity_scenario_bear: number | null
+          equity_scenario_bull: number | null
           equity_strike_price: number | null
+          equity_ticker: string | null
+          equity_total_shares: number | null
           equity_type: string | null
           equity_valuation: number | null
           equity_vesting_years: number | null
@@ -1481,9 +1492,20 @@ export type Database = {
           equipment_laptop?: string | null
           equity_acceleration?: boolean | null
           equity_cliff_months?: number | null
+          equity_company_valuation?: number | null
+          equity_is_listed?: boolean | null
+          equity_last_price?: number | null
+          equity_last_price_currency?: string | null
+          equity_last_round_date?: string | null
           equity_notes?: string | null
+          equity_price_fetched_at?: string | null
           equity_quantity?: number | null
+          equity_scenario_base?: number | null
+          equity_scenario_bear?: number | null
+          equity_scenario_bull?: number | null
           equity_strike_price?: number | null
+          equity_ticker?: string | null
+          equity_total_shares?: number | null
           equity_type?: string | null
           equity_valuation?: number | null
           equity_vesting_years?: number | null
@@ -1572,9 +1594,20 @@ export type Database = {
           equipment_laptop?: string | null
           equity_acceleration?: boolean | null
           equity_cliff_months?: number | null
+          equity_company_valuation?: number | null
+          equity_is_listed?: boolean | null
+          equity_last_price?: number | null
+          equity_last_price_currency?: string | null
+          equity_last_round_date?: string | null
           equity_notes?: string | null
+          equity_price_fetched_at?: string | null
           equity_quantity?: number | null
+          equity_scenario_base?: number | null
+          equity_scenario_bear?: number | null
+          equity_scenario_bull?: number | null
           equity_strike_price?: number | null
+          equity_ticker?: string | null
+          equity_total_shares?: number | null
           equity_type?: string | null
           equity_valuation?: number | null
           equity_vesting_years?: number | null

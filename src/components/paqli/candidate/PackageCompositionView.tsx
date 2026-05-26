@@ -8,6 +8,7 @@ import {
 } from "@/lib/clientCalc";
 import { RSUSimulatorModal } from "@/components/candidate/RSUSimulatorModal";
 import { RSUSummaryCards } from "@/components/candidate/RSUSummaryCards";
+import { EquityValuationCard } from "@/components/candidate/EquityValuationCard";
 
 
 /**
@@ -225,6 +226,10 @@ export function PackageCompositionView({
               }
             />
           ))}
+
+          <div className="mt-3">
+            <EquityValuationCard pkg={pkg} />
+          </div>
 
           {hasScenarios && (
             <div className="mt-3 space-y-3">

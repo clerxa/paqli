@@ -213,6 +213,17 @@ export interface PackageData {
   variable_enabled?: boolean | null;
   variable_criteria?: string | null;
   equity_type?: string | null;
+  equity_is_listed?: boolean;
+  equity_ticker?: string | null;
+  equity_company_valuation?: number | null;
+  equity_total_shares?: number | null;
+  equity_last_round_date?: string | null;
+  equity_scenario_bear?: number;
+  equity_scenario_base?: number;
+  equity_scenario_bull?: number;
+  equity_last_price?: number | null;
+  equity_last_price_currency?: "EUR" | "USD";
+  equity_price_fetched_at?: string | null;
   job_title?: string | null;
   seniority?: string | null;
   hiring_manager?: string | null;

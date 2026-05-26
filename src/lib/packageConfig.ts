@@ -250,6 +250,19 @@ export interface PackageConfig {
   nonCompeteMonths: number;
   nonCompeteCompensationPct: number;
   mobilityClause: boolean;
+
+  // --- Simulateur equity (package-level) ---
+  equityIsListed: boolean;
+  equityTicker: string;
+  equityCompanyValuation: number; // €
+  equityTotalShares: number;
+  equityLastRoundDate: string; // YYYY-MM-DD
+  equityScenarioBear: number;
+  equityScenarioBase: number;
+  equityScenarioBull: number;
+  equityLastPrice: number; // dans la devise native
+  equityLastPriceCurrency: "EUR" | "USD";
+  equityPriceFetchedAt: string; // ISO
 }
 
 export type ScenarioLabel = "pessimiste" | "realiste" | "optimiste";
@@ -356,6 +369,18 @@ export const emptyConfig: PackageConfig = {
   nonCompeteMonths: 0,
   nonCompeteCompensationPct: 0,
   mobilityClause: false,
+
+  equityIsListed: false,
+  equityTicker: "",
+  equityCompanyValuation: 0,
+  equityTotalShares: 0,
+  equityLastRoundDate: "",
+  equityScenarioBear: 1.0,
+  equityScenarioBase: 3.0,
+  equityScenarioBull: 7.0,
+  equityLastPrice: 0,
+  equityLastPriceCurrency: "EUR",
+  equityPriceFetchedAt: "",
 };
 
 export function roundForDisplay(value: number): number {

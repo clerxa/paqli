@@ -48,7 +48,7 @@ export const getPackagePublic = createServerFn({ method: "POST" })
            equity_devices (
              id, type, quantity, strike_price,
              current_valuation_m, vesting_years, cliff_months,
-             special_conditions,
+             special_conditions, vesting_schedule,
              award_year, regime, currency, conservation_end_date, total_acquisition_gain
            ),
            savings_devices ( id, type, matching_rate, cap_amount, avg_3y ),

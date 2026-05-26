@@ -402,5 +402,28 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
     nonCompeteMonths: Number((pkg as Record<string, unknown>).non_compete_months) || 0,
     nonCompeteCompensationPct: Number((pkg as Record<string, unknown>).non_compete_compensation_pct) || 0,
     mobilityClause: !!(pkg as Record<string, unknown>).mobility_clause,
+
+    equityIsListed: !!(pkg as Record<string, unknown>).equity_is_listed,
+    equityTicker: ((pkg as Record<string, unknown>).equity_ticker as string) ?? "",
+    equityCompanyValuation:
+      Number((pkg as Record<string, unknown>).equity_company_valuation) || 0,
+    equityTotalShares:
+      Number((pkg as Record<string, unknown>).equity_total_shares) || 0,
+    equityLastRoundDate:
+      ((pkg as Record<string, unknown>).equity_last_round_date as string) ?? "",
+    equityScenarioBear:
+      Number((pkg as Record<string, unknown>).equity_scenario_bear) || 1.0,
+    equityScenarioBase:
+      Number((pkg as Record<string, unknown>).equity_scenario_base) || 3.0,
+    equityScenarioBull:
+      Number((pkg as Record<string, unknown>).equity_scenario_bull) || 7.0,
+    equityLastPrice:
+      Number((pkg as Record<string, unknown>).equity_last_price) || 0,
+    equityLastPriceCurrency:
+      (((pkg as Record<string, unknown>).equity_last_price_currency as
+        | "EUR"
+        | "USD") ?? "EUR"),
+    equityPriceFetchedAt:
+      ((pkg as Record<string, unknown>).equity_price_fetched_at as string) ?? "",
   };
 }

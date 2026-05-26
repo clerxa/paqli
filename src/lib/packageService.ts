@@ -153,7 +153,7 @@ export async function upsertPackage(
         special_conditions: d.specialConditions || null,
         vesting_schedule:
           d.vestingSchedule && d.vestingSchedule.length > 0
-            ? (d.vestingSchedule as unknown as Record<string, unknown>[])
+            ? (JSON.parse(JSON.stringify(d.vestingSchedule)) as never)
             : null,
         award_year: d.awardYear ?? null,
         regime: d.regime ?? null,

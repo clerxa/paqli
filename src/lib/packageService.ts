@@ -107,6 +107,19 @@ export async function upsertPackage(
     non_compete_months: config.nonCompeteMonths || null,
     non_compete_compensation_pct: config.nonCompeteCompensationPct || null,
     mobility_clause: !!config.mobilityClause,
+
+    // Simulateur equity
+    equity_is_listed: !!config.equityIsListed,
+    equity_ticker: config.equityTicker || null,
+    equity_company_valuation: config.equityCompanyValuation || null,
+    equity_total_shares: config.equityTotalShares || null,
+    equity_last_round_date: config.equityLastRoundDate || null,
+    equity_scenario_bear: config.equityScenarioBear ?? 1.0,
+    equity_scenario_base: config.equityScenarioBase ?? 3.0,
+    equity_scenario_bull: config.equityScenarioBull ?? 7.0,
+    equity_last_price: config.equityLastPrice || null,
+    equity_last_price_currency: config.equityLastPriceCurrency || "EUR",
+    equity_price_fetched_at: config.equityPriceFetchedAt || null,
   };
 
   let packageId = config.packageId;

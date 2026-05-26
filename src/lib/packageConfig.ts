@@ -369,6 +369,18 @@ export const emptyConfig: PackageConfig = {
   nonCompeteMonths: 0,
   nonCompeteCompensationPct: 0,
   mobilityClause: false,
+
+  equityIsListed: false,
+  equityTicker: "",
+  equityCompanyValuation: 0,
+  equityTotalShares: 0,
+  equityLastRoundDate: "",
+  equityScenarioBear: 1.0,
+  equityScenarioBase: 3.0,
+  equityScenarioBull: 7.0,
+  equityLastPrice: 0,
+  equityLastPriceCurrency: "EUR",
+  equityPriceFetchedAt: "",
 };
 
 export function roundForDisplay(value: number): number {

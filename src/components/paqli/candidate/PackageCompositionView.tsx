@@ -8,6 +8,7 @@ import {
 } from "@/lib/clientCalc";
 import { RSUSimulatorModal } from "@/components/candidate/RSUSimulatorModal";
 import { RSUSummaryCards } from "@/components/candidate/RSUSummaryCards";
+import { EquityValuationCard } from "@/components/candidate/EquityValuationCard";
 
 
 /**

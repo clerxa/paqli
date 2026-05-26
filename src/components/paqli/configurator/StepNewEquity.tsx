@@ -288,6 +288,8 @@ export function StepNewEquity() {
             />
           </div>
 
+          <EquitySimulatorSection />
+
           <EduBanner>
             Ces informations alimentent le simulateur fiscal VEGA pour calculer
             le gain net selon le TMI du candidat.

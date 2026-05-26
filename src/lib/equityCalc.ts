@@ -81,33 +81,7 @@ export function computeEquityValuation(
   const currentTotalValueNet = currentTotalValueGross * (1 - PFU);
 
   // Vesting schedule
-  const steps: VestingStep[] = [];
-
-  // Cliff = 1/vestingYears des actions
-  if (cliffMonths > 0) {
-    const cliffShares = Math.round(quantity / vestingYears);
-    steps.push({
-      label: `Après cliff (${cliffMonths} mois)`,
-      monthsFromNow: cliffMonths,
-      sharesVested: cliffShares,
-      valueGross: perShareGain * cliffShares,
-      netEstimate: perShareGain * cliffShares * (1 - PFU),
-    });
-  }
-
-  const startYear = cliffMonths > 0 ? 2 : 1;
-  for (let year = startYear; year <= vestingYears; year++) {
-    const shares = Math.round(quantity * (year / vestingYears));
-    const label =
-      year === vestingYears ? `Fully vested (An ${year})` : `An ${year}`;
-    steps.push({
-      label,
-      monthsFromNow: year * 12,
-      sharesVested: shares,
-      valueGross: perShareGain * shares,
-      netEstimate: perShareGain * shares * (1 - PFU),
-    });
-  }
+  const steps: VestingStep[] = buildVestingSteps(device, quantity, perShareGain);
 
   // Scénarios (non cotée)
   let scenarios: EquityValuation["scenarios"];

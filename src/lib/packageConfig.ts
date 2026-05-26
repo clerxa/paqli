@@ -43,6 +43,21 @@ export type RSURegime =
 
 export type EquityCurrency = "EUR" | "USD";
 
+export type VestingFrequency = "monthly" | "quarterly" | "semi" | "annual";
+
+export interface VestingPhase {
+  /** Mois auquel la phase démarre (depuis le grant). */
+  startMonth: number;
+  /** Durée de la phase en mois. */
+  durationMonths: number;
+  /** Cadence d'acquisition à l'intérieur de la phase. */
+  frequency: VestingFrequency;
+  /** Part du plan acquise pendant cette phase (en %). */
+  percentage: number;
+  /** Libellé optionnel ("Cliff", "Tail", "Re-up"...). */
+  label?: string;
+}
+
 export interface EquityDeviceForm {
   id: string;
   type: EquityType;
@@ -52,6 +67,8 @@ export interface EquityDeviceForm {
   vestingYears: number;
   cliffMonths: number;
   specialConditions: string;
+  /** Vesting personnalisé (optionnel). Si vide/absent, fallback linéaire annuel + cliff. */
+  vestingSchedule?: VestingPhase[] | null;
   // Champs RSU/AGA (utilisés par le moteur VEGA)
   awardYear?: number | null;
   regime?: RSURegime | null;

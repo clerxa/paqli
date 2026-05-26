@@ -704,6 +704,7 @@ export type Database = {
           strike_price: number
           total_acquisition_gain: number | null
           type: string
+          vesting_schedule: Json | null
           vesting_years: number
         }
         Insert: {
@@ -721,6 +722,7 @@ export type Database = {
           strike_price?: number
           total_acquisition_gain?: number | null
           type: string
+          vesting_schedule?: Json | null
           vesting_years?: number
         }
         Update: {
@@ -738,6 +740,7 @@ export type Database = {
           strike_price?: number
           total_acquisition_gain?: number | null
           type?: string
+          vesting_schedule?: Json | null
           vesting_years?: number
         }
         Relationships: [

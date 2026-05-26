@@ -151,6 +151,10 @@ export async function upsertPackage(
         vesting_years: d.vestingYears || 4,
         cliff_months: d.cliffMonths || 0,
         special_conditions: d.specialConditions || null,
+        vesting_schedule:
+          d.vestingSchedule && d.vestingSchedule.length > 0
+            ? (JSON.parse(JSON.stringify(d.vestingSchedule)) as never)
+            : null,
         award_year: d.awardYear ?? null,
         regime: d.regime ?? null,
         currency: d.currency ?? "EUR",
@@ -329,6 +333,7 @@ export async function loadPackage(id: string): Promise<PackageConfig | null> {
       vestingYears: Number(d.vesting_years) || 4,
       cliffMonths: Number(d.cliff_months) || 0,
       specialConditions: d.special_conditions ?? "",
+      vestingSchedule: ((d as any).vesting_schedule ?? null) as PackageConfig["equityDevices"][number]["vestingSchedule"],
       awardYear: (d as any).award_year ?? null,
       regime: ((d as any).regime ?? null) as PackageConfig["equityDevices"][number]["regime"],
       currency: (((d as any).currency as "EUR" | "USD") ?? "EUR"),

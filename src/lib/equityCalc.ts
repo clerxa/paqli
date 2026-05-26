@@ -61,8 +61,6 @@ export function computeEquityValuation(
   const { device } = input;
   const quantity = device.quantity || 0;
   const strike = device.strikePrice || 0;
-  const vestingYears = device.vestingYears || 4;
-  const cliffMonths = device.cliffMonths ?? 12;
 
   // Prix par action :
   // - Si coté : currentPrice

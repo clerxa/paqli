@@ -151,6 +151,10 @@ export async function upsertPackage(
         vesting_years: d.vestingYears || 4,
         cliff_months: d.cliffMonths || 0,
         special_conditions: d.specialConditions || null,
+        vesting_schedule:
+          d.vestingSchedule && d.vestingSchedule.length > 0
+            ? (d.vestingSchedule as unknown as Record<string, unknown>[])
+            : null,
         award_year: d.awardYear ?? null,
         regime: d.regime ?? null,
         currency: d.currency ?? "EUR",

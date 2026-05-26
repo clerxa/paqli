@@ -227,6 +227,10 @@ export function PackageCompositionView({
             />
           ))}
 
+          <div className="mt-3">
+            <EquityValuationCard pkg={pkg} />
+          </div>
+
           {hasScenarios && (
             <div className="mt-3 space-y-3">
               <RSUSummaryCards scenarios={scenariosToShow} />

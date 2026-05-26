@@ -67,6 +67,36 @@ function buildPaqSystemPrompt(args: {
   const brand = company.brand_name ?? company.legal_name ?? orgName ?? "l'entreprise";
   const jobTitle = pkg.job_title ?? pkg.title ?? "ce poste";
 
+  // Bloc equity enrichi avec données du simulateur (coté / non coté + scénarios)
+  let equitySimBlock = "";
+  if (pkg.equity_type && pkg.equity_type !== "aucun" && pkg.equity_type !== null) {
+    const qty = Number(pkg.equity_quantity) || 0;
+    if (pkg.equity_is_listed && pkg.equity_last_price) {
+      const price = Number(pkg.equity_last_price);
+      const cur = pkg.equity_last_price_currency || "EUR";
+      const totalBrut = qty * price;
+      const totalNet = totalBrut * 0.7;
+      equitySimBlock = `
+SIMULATEUR EQUITY (société cotée — ${pkg.equity_ticker ?? "?"}) :
+- Cours retenu : ${price} ${cur} (récupéré ${pkg.equity_price_fetched_at ?? "récemment"})
+- Valeur brute si fully vested : ~${fmt(totalBrut)} ${cur}
+- Valeur nette estimée (PFU 30%) : ~${fmt(totalNet)} ${cur}`;
+    } else if (!pkg.equity_is_listed && pkg.equity_company_valuation && pkg.equity_total_shares) {
+      const pps = Number(pkg.equity_company_valuation) / Number(pkg.equity_total_shares);
+      const totalBrut = qty * pps;
+      const bear = totalBrut * Number(pkg.equity_scenario_bear || 1);
+      const base = totalBrut * Number(pkg.equity_scenario_base || 3);
+      const bull = totalBrut * Number(pkg.equity_scenario_bull || 7);
+      equitySimBlock = `
+SIMULATEUR EQUITY (société non cotée) :
+- Valorisation entreprise : ${fmt(Number(pkg.equity_company_valuation))} € · ${pkg.equity_total_shares} actions
+- Prix par action implicite : ~${pps.toFixed(2)} €
+- Valeur brute fully vested aujourd'hui : ~${fmt(totalBrut)} €
+- Scénarios à terme (brut) : pessimiste ~${fmt(bear)} € · réaliste ~${fmt(base)} € · optimiste ~${fmt(bull)} €
+- Net estimé (PFU 30%) : ~${fmt(base * 0.7)} € en scénario réaliste`;
+    }
+  }
+
   const equityBlock =
     pkg.equity_type && pkg.equity_type !== "aucun" && pkg.equity_type !== null
       ? `- Quantité : ${val(pkg.equity_quantity)} unités
@@ -74,8 +104,9 @@ function buildPaqSystemPrompt(args: {
 - Valorisation entreprise : ${pkg.equity_valuation ? fmt(pkg.equity_valuation) : "non précisée"}
 - Vesting : ${pkg.equity_vesting_years ?? 4} ans avec cliff de ${pkg.equity_cliff_months ?? 12} mois
 - Accélération en cas de liquidité : ${bool(pkg.equity_acceleration)}
-- Notes equity : ${val(pkg.equity_notes, "aucune")}`
+- Notes equity : ${val(pkg.equity_notes, "aucune")}${equitySimBlock}`
       : "";
+
 
   const variableBlock = pkg.variable_enabled
     ? `- Variable max : ${fmt(pkg.variable_max)}
